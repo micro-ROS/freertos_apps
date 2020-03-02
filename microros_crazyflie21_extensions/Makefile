@@ -2,10 +2,10 @@ DEBUG ?= 0
 
 PROJECTFOLDER = $(shell pwd)
 
-TOPFOLDER = $(PROJECTFOLDER)/..
+TOPFOLDER = $(PROJECTFOLDER)/../..
 UROS_DIR = $(TOPFOLDER)/mcu_ws
 
-EXTENSIONS_DIR = $(TOPFOLDER)/crazyflie_microros_extensions
+EXTENSIONS_DIR = $(TOPFOLDER)/freertos_apps/microros_crazyflie21_extensions
 SRC_DIR = $(EXTENSIONS_DIR)/src
 CRAZYFLIE_BASE = $(TOPFOLDER)/crazyflie_firmware
 
@@ -21,6 +21,7 @@ endif
 # micro-ROS variables
 
 MICROROS_INCLUDES += $(shell find $(UROS_DIR)/install -name 'include' | sed -E "s/(.*)/-I\1/")
+MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/src
 MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include
 MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include/FreeRTOS_POSIX
 MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include/private
@@ -58,13 +59,14 @@ APP = 1
 APP_STACKSIZE = 2250
 APP_PRIORITY = 3
 
-PROJ_OBJ += microrosapp.o
+PROJ_OBJ += app.o
 MEMMANG_OBJ = custom_memory_manager.o
 PROJ_OBJ += $(MICROROS_LIBRARIES) 
 PROJ_OBJ += $(MICROROS_POSIX_FREERTOS_OBJECTS)
 INCLUDES += $(MICROROS_INCLUDES)
 VPATH += $(MICROROS_POSIX_FREERTOS_OBJECTS_VPATH) 
 VPATH += $(SRC_DIR)/
+VPATH += $(UROS_APP_FOLDER)/
 CFLAGS += -DFREERTOS_HEAP_SIZE=50000
 CROSS_COMPILE ?= $(TOPFOLDER)/toolchain/bin/arm-none-eabi-
 
