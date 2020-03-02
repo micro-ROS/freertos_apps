@@ -37,7 +37,7 @@ endif
 #######################################
 # Build path
 EXTENSIONS_DIR = $(shell pwd)
-TOPFOLDER = $(EXTENSIONS_DIR)/..
+TOPFOLDER = $(EXTENSIONS_DIR)/../..
 UROS_DIR = $(TOPFOLDER)/mcu_ws
 BUILD_DIR = $(EXTENSIONS_DIR)/build
 
@@ -161,7 +161,7 @@ FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c \
 Src/custom_memory_manager.c \
 Src/libatomic.c \
 Src/allocators.c \
-Src/app.c
+$(UROS_APP_FOLDER)/app.c
 
 # Removing heap4 manager while being polite with STM32CubeMX
 TMPVAR := $(C_SOURCES)
