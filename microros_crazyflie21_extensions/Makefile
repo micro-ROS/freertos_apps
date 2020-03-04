@@ -88,6 +88,7 @@ colcon_compile: arm_toolchain
 	cd $(UROS_DIR); \
 	colcon build \
 		--packages-ignore-regex=.*_cpp \
+		--metas $(UROS_DIR)/colcon.meta $(UROS_APP_FOLDER)/app-colcon.meta \
 		--cmake-args \
 		-DCMAKE_POSITION_INDEPENDENT_CODE=OFF \
 		-DTHIRDPARTY=ON \
