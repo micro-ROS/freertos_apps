@@ -177,18 +177,19 @@ startup_stm32f407xx.s
 #######################################
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
-CROSS_COMPILE_PREFIX = $(TOPFOLDER)/toolchain/bin/arm-none-eabi-
+CROSS_COMPILE_NAME_PREFIX=arm-none-eabi-
+CROSS_COMPILE = $(TOPFOLDER)/toolchain/bin/$(CROSS_COMPILE_NAME_PREFIX)
 
 ifdef GCC_PATH
-CC = $(GCC_PATH)/$(CROSS_COMPILE_PREFIX)gcc
-AS = $(GCC_PATH)/$(CROSS_COMPILE_PREFIX)gcc -x assembler-with-cpp
-CP = $(GCC_PATH)/$(CROSS_COMPILE_PREFIX)objcopy
-SZ = $(GCC_PATH)/$(CROSS_COMPILE_PREFIX)size
+CC = $(GCC_PATH)/$(CROSS_COMPILE_NAME_PREFIX)gcc
+AS = $(GCC_PATH)/$(CROSS_COMPILE_NAME_PREFIX)gcc -x assembler-with-cpp
+CP = $(GCC_PATH)/$(CROSS_COMPILE_NAME_PREFIX)objcopy
+SZ = $(GCC_PATH)/$(CROSS_COMPILE_NAME_PREFIX)size
 else
-CC = $(CROSS_COMPILE_PREFIX)gcc
-AS = $(CROSS_COMPILE_PREFIX)gcc -x assembler-with-cpp
-CP = $(CROSS_COMPILE_PREFIX)objcopy
-SZ = $(CROSS_COMPILE_PREFIX)size
+CC = $(CROSS_COMPILE)gcc
+AS = $(CROSS_COMPILE)gcc -x assembler-with-cpp
+CP = $(CROSS_COMPILE)objcopy
+SZ = $(CROSS_COMPILE)size
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
@@ -314,7 +315,7 @@ all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET
 arm_toolchain: $(EXTENSIONS_DIR)/arm_toolchain.cmake.in
 	rm -f $(EXTENSIONS_DIR)/arm_toolchain.cmake; \
 	cat $(EXTENSIONS_DIR)/arm_toolchain.cmake.in | \
-		sed "s/@CROSS_COMPILE_PREFIX@/$(subst /,\/,$(CROSS_COMPILE_PREFIX))/g" | \
+		sed "s/@CROSS_COMPILE@/$(subst /,\/,$(CROSS_COMPILE))/g" | \
 		sed "s/@FREERTOS_TOPDIR@/$(subst /,\/,$(TOPFOLDER))/g" | \
 		sed "s/@ARCH_CPU_FLAGS@/\"$(ARCHCPUFLAGS)\"/g" | \
 		sed "s/@ARCH_OPT_FLAGS@/\"$(ARCHOPTIMIZATION)\"/g" | \
