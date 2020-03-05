@@ -43,7 +43,7 @@ void appMain(void *argument)
   rcl_node_options_t node_ops = rcl_node_get_default_options();
 
   rcl_node_t node = rcl_get_zero_initialized_node();
-  RCCHECK(rcl_node_init(&node, "int32_publisher_rcl", "", &context, &node_ops))
+  RCCHECK(rcl_node_init(&node, "olimex_node", "", &context, &node_ops))
 
   rcl_publisher_options_t publisher_ops = rcl_publisher_get_default_options();
   rcl_publisher_t publisher = rcl_get_zero_initialized_publisher();
@@ -71,7 +71,6 @@ void appMain(void *argument)
   RCCHECK(rcl_wait_set_init(&wait_set, 1, 1, 0, 0, 1, 0, &context, rcl_get_default_allocator()))
 
   std_msgs__msg__Int32 msg;
-  const int num_msg = 1000;
   msg.data = 0;
   
   printf("Free heap post uROS configuration: %d bytes\n", xPortGetFreeHeapSize());
@@ -127,8 +126,7 @@ void appMain(void *argument)
       RCSOFTCHECK(rcl_send_response(&serv,&req_id,&res))
     }
     usleep(10000);
-  } while (true );
-  printf("TOTAL sent: %i\n", num_msg);
+  } while (true);
 
   RCCHECK(rcl_publisher_fini(&publisher, &node))
   RCCHECK(rcl_node_fini(&node))
