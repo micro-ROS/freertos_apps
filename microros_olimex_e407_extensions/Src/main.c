@@ -22,6 +22,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "lwip.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -416,6 +417,8 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_initTaskFunction */
 void initTaskFunction(void *argument)
 {
+  /* init code for USB_DEVICE */
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
   HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
   bool availableNetwork = false;
