@@ -31,10 +31,6 @@ void appMain(void *argument)
   //Init RCL options
   rcl_init_options_t options = rcl_get_zero_initialized_init_options();
   rcl_init_options_init(&options, rcl_get_default_allocator());
-
-  // Set Micro-XRCE-DDS client key
-  // rmw_init_options_t* rmw_options = rcl_init_options_get_rmw_init_options(&options);
-  // rmw_uros_options_set_client_key(0xBA5EBA11, rmw_options);
   
   // Init RCL context
   rcl_context_t context = rcl_get_zero_initialized_context();
