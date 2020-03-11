@@ -27,7 +27,6 @@ void * trigger_guard_condition(void *args){
 // App main function
 void appMain(void *argument)
 {
-  
   //Init RCL options
   rcl_init_options_t options = rcl_get_zero_initialized_init_options();
   rcl_init_options_init(&options, rcl_get_default_allocator());
@@ -39,7 +38,7 @@ void appMain(void *argument)
   // Create a node
   rcl_node_options_t node_ops = rcl_node_get_default_options();
   rcl_node_t node = rcl_get_zero_initialized_node();
-  rcl_node_init(&node, "pingpong", "", &context, &node_ops);
+  rcl_node_init(&node, "pingpong_node", "", &context, &node_ops);
 
   // Create a ping ping_publisher
   rcl_publisher_options_t ping_publisher_ops = rcl_publisher_get_default_options();
@@ -74,25 +73,21 @@ void appMain(void *argument)
   rcl_wait_set_t wait_set = rcl_get_zero_initialized_wait_set();
   rcl_wait_set_init(&wait_set, 2, 1, 0, 0, 0, 0, &context, rcl_get_default_allocator());
 
-  // Create and allocate the pingpong message
+  // Create and allocate the pingpong publication message
   std_msgs__msg__Header msg;
-  
   char msg_buffer[STRING_BUFFER_LEN];
   msg.frame_id.data = msg_buffer;
   msg.frame_id.capacity = STRING_BUFFER_LEN;
 
+  // Create and allocate the pingpong subscription message
   std_msgs__msg__Header rcv_msg;
-
   char rcv_buffer[STRING_BUFFER_LEN];
   rcv_msg.frame_id.data = rcv_buffer;
   rcv_msg.frame_id.capacity = STRING_BUFFER_LEN;
 
+  // Set device id and sequence number;
   int device_id = rand();
-  int seq_no = rand();
-  sprintf(msg.frame_id.data, "%d", seq_no);
-  msg.frame_id.size = strlen(msg.frame_id.data);
-  
-  // frame_id should contain node identity
+  int seq_no;
   
   int pong_count = 0;
   struct timespec ts;
@@ -116,21 +111,23 @@ void appMain(void *argument)
 
     // Check if it is time to send a ping
     if (wait_set.guard_conditions[index_guardcondition]) {
+      // Generate a new random sequence number
       seq_no = rand();
       sprintf(msg.frame_id.data, "%d_%d", seq_no, device_id);
       msg.frame_id.size = strlen(msg.frame_id.data);
       
+      // Fill the message timestamp
       clock_gettime(CLOCK_REALTIME, &ts);
-
       msg.stamp.sec = ts.tv_sec;
       msg.stamp.nanosec = ts.tv_nsec;
 
+      // Reset the pong count and publish the ping message
       pong_count = 0;
       rcl_publish(&ping_publisher, (const void*)&msg, NULL);
       // printf("Ping send seq 0x%x\n", seq_no);
     }
     
-    // Check if some pong is received
+    // Check if some pong message is received
     if (wait_set.subscriptions[index_pong_subscription]) {
       rc = rcl_take(wait_set.subscriptions[index_pong_subscription], &rcv_msg, NULL, NULL);
 
@@ -140,7 +137,7 @@ void appMain(void *argument)
       }
     }
 
-    // Check if some ping is received and answer it
+    // Check if some ping message is received and pong it
     if (wait_set.subscriptions[index_ping_subscription]) {
       rc = rcl_take(wait_set.subscriptions[index_ping_subscription], &rcv_msg, NULL, NULL);
 
