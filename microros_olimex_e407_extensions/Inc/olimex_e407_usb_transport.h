@@ -22,14 +22,8 @@ extern "C"
 
 #include "stm32f4xx_hal.h"
 
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart3;
-extern UART_HandleTypeDef huart6;
-extern DMA_HandleTypeDef hdma_usart3_rx;
-
 typedef struct uxrSerialPlatform
 {
-    UART_HandleTypeDef * uart;
 } uxrSerialPlatform;
 
 #ifdef __cplusplus
