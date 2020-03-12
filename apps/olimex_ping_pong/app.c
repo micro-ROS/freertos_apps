@@ -40,23 +40,25 @@ void appMain(void *argument)
   rcl_node_t node = rcl_get_zero_initialized_node();
   rcl_node_init(&node, "pingpong_node", "", &context, &node_ops);
 
-  // Create a ping ping_publisher
+  // Create a reliable ping publisher
   rcl_publisher_options_t ping_publisher_ops = rcl_publisher_get_default_options();
   rcl_publisher_t ping_publisher = rcl_get_zero_initialized_publisher();
   rcl_publisher_init(&ping_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/ping", &ping_publisher_ops);
 
-  // Create a ping pong_publisher
+  // Create a best effort pong publisher
   rcl_publisher_options_t pong_publisher_ops = rcl_publisher_get_default_options();
+  pong_publisher_ops.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
   rcl_publisher_t pong_publisher = rcl_get_zero_initialized_publisher();
   rcl_publisher_init(&pong_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/pong", &pong_publisher_ops);
 
-  // Create a pong subscriber
+  // Create a reliable pong subscriber
   rcl_subscription_options_t pong_subscription_ops = rcl_subscription_get_default_options();
   rcl_subscription_t pong_subscription = rcl_get_zero_initialized_subscription();
   rcl_subscription_init(&pong_subscription, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/pong", &pong_subscription_ops);
 
-  // Create a ping subscriber
+  // Create a best effort ping subscriber
   rcl_subscription_options_t ping_subscription_ops = rcl_subscription_get_default_options();
+  ping_subscription_ops.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
   rcl_subscription_t ping_subscription = rcl_get_zero_initialized_subscription();
   rcl_subscription_init(&ping_subscription, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/ping", &ping_subscription_ops);
 
