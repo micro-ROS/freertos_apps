@@ -2,7 +2,7 @@
     "names": {
         "rmw_microxrcedds": {
             "cmake-args": [
-                "-DRMW_UXRCE_TRANSPORT=custom",
+                "-DRMW_UXRCE_TRANSPORT=custom_serial",
                 "-DRMW_UXRCE_MAX_NODES=1",
                 "-DRMW_UXRCE_MAX_PUBLISHERS=2",
                 "-DRMW_UXRCE_MAX_SUBSCRIPTIONS=2",

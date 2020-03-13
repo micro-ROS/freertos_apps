@@ -1,4 +1,4 @@
-#include "olimex_e407_serial_transport.h"
+#include <uxr/client/profile/transport/serial/serial_transport_external.h>
 #include "stm32f4xx_hal_dma.h"
 
 #include <unistd.h>
