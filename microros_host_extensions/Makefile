@@ -14,13 +14,56 @@
 
 OUTPUT_ROOT     := "build"
 
-.phony: all clean arm
+BUILDTYPE		?= "debug"
 
-all:
-	make -f Makefile.x86
+ifeq ($(BUILDTYPE),release)
+else
+  BUILDTYPE = debug
+endif
 
-arm:
-	make -f Makefile.arm
+OUTPUT_ROOT     := "build/x86-$(BUILDTYPE)"
+CMAKE_FOLDER    := "./$(OUTPUT_ROOT)/cmake"
+CMAKE_DEFINES   := "-DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain/toolchain_linux-i686.cmake"
+CMAKE_TYPE      := "-DCMAKE_BUILD_TYPE=$(BUILDTYPE)"
+
+.phony: all clean
+
+all: libmicroros
+	git submodule update --recursive
+	mkdir -p $(CMAKE_FOLDER)
+	cmake -B$(CMAKE_FOLDER) -H./ $(CMAKE_DEFINES) $(CMAKE_TYPE)
+	make -C $(CMAKE_FOLDER)
 
 clean:
 	rm -rf $(OUTPUT_ROOT)
+
+#######################################
+# build micro-ROS
+#######################################
+
+colcon_compile:
+	cd $(UROS_DIR); \
+	colcon build \
+		--packages-ignore-regex=.*_cpp \
+		--metas $(UROS_DIR)/colcon.meta $(UROS_APP_FOLDER)/app-colcon.meta \
+		--cmake-args \
+		-DCMAKE_POSITION_INDEPENDENT_CODE=OFF \
+		-DTHIRDPARTY=ON \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_TESTING=OFF \
+		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
+		-DCMAKE_TOOLCHAIN_FILE=$(EXTENSIONS_DIR)/arm_toolchain.cmake \
+		-DCMAKE_VERBOSE_MAKEFILE=ON; \
+
+libmicroros: colcon_compile
+	mkdir -p $(UROS_DIR)/libmicroros; cd $(UROS_DIR)/libmicroros; \
+	for file in $$(find $(UROS_DIR)/install/ -name '*.a'); do \
+		folder=$$(echo $$file | sed -E "s/(.+)\/(.+).a/\2/"); \
+		mkdir -p $$folder; cd $$folder; ar x $$file; \
+		for f in *; do \
+			mv $$f ../$$folder-$$f; \
+		done; \
+		cd ..; rm -rf $$folder; \
+	done ; \
+	ar rc libmicroros.a *.obj; mkdir -p $(BUILD_DIR); cp libmicroros.a $(BUILD_DIR); ranlib $(BUILD_DIR)/libmicroros.a; \
+	cd ..; rm -rf libmicroros;
