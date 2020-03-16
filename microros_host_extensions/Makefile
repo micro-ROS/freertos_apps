@@ -12,6 +12,11 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+EXTENSIONS_DIR = $(shell pwd)
+TOPFOLDER = $(EXTENSIONS_DIR)/../..
+UROS_DIR = $(TOPFOLDER)/mcu_ws
+BUILD_DIR = $(EXTENSIONS_DIR)/build
+
 OUTPUT_ROOT     := "build"
 
 BUILDTYPE		?= "debug"
@@ -23,15 +28,15 @@ endif
 
 OUTPUT_ROOT     := "build/x86-$(BUILDTYPE)"
 CMAKE_FOLDER    := "./$(OUTPUT_ROOT)/cmake"
-CMAKE_DEFINES   := "-DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain/toolchain_linux-i686.cmake"
+CMAKE_DEFINES   := "-DCMAKE_TOOLCHAIN_FILE=$(EXTENSIONS_DIR)/cmake/toolchain/toolchain_linux-i686.cmake"
 CMAKE_TYPE      := "-DCMAKE_BUILD_TYPE=$(BUILDTYPE)"
 
 .phony: all clean
 
-all: libmicroros
+all:
 	git submodule update --recursive
 	mkdir -p $(CMAKE_FOLDER)
-	cmake -B$(CMAKE_FOLDER) -H./ $(CMAKE_DEFINES) $(CMAKE_TYPE)
+	cmake -B$(CMAKE_FOLDER) -H./ $(CMAKE_DEFINES) $(CMAKE_TYPE) -DUROS_APP_FOLDER=$(UROS_APP_FOLDER)
 	make -C $(CMAKE_FOLDER)
 
 clean:
@@ -44,6 +49,7 @@ clean:
 colcon_compile:
 	cd $(UROS_DIR); \
 	colcon build \
+		--merge-install \
 		--packages-ignore-regex=.*_cpp \
 		--metas $(UROS_DIR)/colcon.meta $(UROS_APP_FOLDER)/app-colcon.meta \
 		--cmake-args \
@@ -51,13 +57,13 @@ colcon_compile:
 		-DTHIRDPARTY=ON \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_TESTING=OFF \
-		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
-		-DCMAKE_TOOLCHAIN_FILE=$(EXTENSIONS_DIR)/arm_toolchain.cmake \
+		-DCMAKE_BUILD_TYPE=$(BUILDTYPE) \
+		-DCMAKE_TOOLCHAIN_FILE=$(EXTENSIONS_DIR)/cmake/toolchain/toolchain_linux-i686.cmake \
 		-DCMAKE_VERBOSE_MAKEFILE=ON; \
 
 libmicroros: colcon_compile
 	mkdir -p $(UROS_DIR)/libmicroros; cd $(UROS_DIR)/libmicroros; \
-	for file in $$(find $(UROS_DIR)/install/ -name '*.a'); do \
+	for file in $$(find $(UROS_DIR)/install/lib -name '*.a'); do \
 		folder=$$(echo $$file | sed -E "s/(.+)\/(.+).a/\2/"); \
 		mkdir -p $$folder; cd $$folder; ar x $$file; \
 		for f in *; do \
@@ -65,5 +71,5 @@ libmicroros: colcon_compile
 		done; \
 		cd ..; rm -rf $$folder; \
 	done ; \
-	ar rc libmicroros.a *.obj; mkdir -p $(BUILD_DIR); cp libmicroros.a $(BUILD_DIR); ranlib $(BUILD_DIR)/libmicroros.a; \
+	ar rc libmicroros.a *.o; mkdir -p $(BUILD_DIR); cp libmicroros.a $(BUILD_DIR); ranlib $(BUILD_DIR)/libmicroros.a; \
 	cd ..; rm -rf libmicroros;

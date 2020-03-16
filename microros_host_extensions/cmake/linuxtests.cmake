@@ -18,23 +18,35 @@ function(BuildTestApp APPNAME APPFILES)
     target_include_directories(${APPNAME} PUBLIC ${FREERTOS_SOURCE})
     target_include_directories(${APPNAME} PUBLIC ${PATH_INCLUDE})
     target_include_directories(${APPNAME} PUBLIC ${PATH_PORTABLE})
+    target_include_directories(${APPNAME} PUBLIC ${CMAKE_SOURCE_DIR}/../../mcu_ws/install/include)
     set_target_properties(${APPNAME} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${BUILD_LIB}"
         LIBRARY_OUTPUT_DIRECTORY "${BUILD_LIB}"
         RUNTIME_OUTPUT_DIRECTORY "${BUILD_BIN}")
     target_link_libraries(${APPNAME} LINK_PUBLIC
                           ${LIBFREERTOS} ${LIBFREERTOSLINUX}
-                          ${EXE_LINK_LIBS})
+                          ${EXE_LINK_LIBS} ${CMAKE_SOURCE_DIR}/build/libmicroros.a)
 endfunction(BuildTestApp)
 
-# linux test program 01
-set(LINUXTES01 "linuxtest01")
-set(TEST01_FILES
-      "${PATH_TESTS}/linuxtest01.c")
-BuildTestApp(${LINUXTES01} ${TEST01_FILES})
+set(MICROROSAPP "microrosapp")
+set(MICROROSAPP_FILES
+        # "${CMAKE_SOURCE_DIR}/allocators.c"
+        ${CMAKE_SOURCE_DIR}/main.c
+        # ${UROS_APP_FOLDER}/app.c
+        )
+BuildTestApp(${MICROROSAPP} ${MICROROSAPP_FILES})
 
-# linux test program 02
-set(LINUXTES02 "linuxtest02")
-set(TEST02_FILES
-      "${PATH_TESTS}/linuxtest02.c")
-BuildTestApp(${LINUXTES02} ${TEST02_FILES})
+# add_executable(${MICROROSAPP} ${MICROROSAPP_FILES})
+# target_include_directories(${MICROROSAPP} SYSTEM PRIVATE ${FREERTOS_INCLUDE})
+# target_include_directories(${MICROROSAPP} PUBLIC ${FREERTOS_SOURCE})
+# target_include_directories(${MICROROSAPP} PUBLIC ${PATH_INCLUDE})
+# target_include_directories(${MICROROSAPP} PUBLIC ${PATH_PORTABLE})
+# target_include_directories(${MICROROSAPP} PUBLIC ${CMAKE_SOURCE_DIR}/../../mcu_ws/install/include)
+# set_target_properties(${MICROROSAPP} PROPERTIES
+#     ARCHIVE_OUTPUT_DIRECTORY "${BUILD_LIB}"
+#     LIBRARY_OUTPUT_DIRECTORY "${BUILD_LIB}"
+#     RUNTIME_OUTPUT_DIRECTORY "${BUILD_BIN}")
+# target_link_libraries(${MICROROSAPP} LINK_PUBLIC
+#                         ${LIBFREERTOS} ${LIBFREERTOSLINUX}
+#                         ${EXE_LINK_LIBS} ${CMAKE_SOURCE_DIR}/build/libmicroros.a)
+

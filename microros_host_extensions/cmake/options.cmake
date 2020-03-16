@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 #
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
-  set(FLAGS_COMMON ${FLAGS_COMMON} "-march=i686 -m32")
+  set(FLAGS_COMMON ${FLAGS_COMMON} "-march=native")
 elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
   set(FLAGS_COMMON ${FLAGS_COMMON} "-mcpu=cortex-a7 -mfloat-abi=hard")
   set(FLAGS_COMMON ${FLAGS_COMMON} "-mfpu=neon-vfpv4")
@@ -35,7 +35,7 @@ endif()
 set(EXE_LINK_LIBS "pthread")
 
 # file folders
-set(FREERTOS_ROOT     "${CMAKE_SOURCE_DIR}/FreeRTOS-Kernel")
+set(FREERTOS_ROOT     "${CMAKE_SOURCE_DIR}/../../freertos")
 set(FREERTOS_SOURCE   "${FREERTOS_ROOT}")
 set(FREERTOS_INCLUDE  "${FREERTOS_ROOT}/include")
 
