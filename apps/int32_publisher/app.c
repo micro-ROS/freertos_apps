@@ -30,11 +30,11 @@ void appMain(void *argument)
   rcl_node_options_t node_ops = rcl_node_get_default_options();
 
   rcl_node_t node = rcl_get_zero_initialized_node();
-  RCCHECK(rcl_node_init(&node, "olimex_node", "", &context, &node_ops))
+  RCCHECK(rcl_node_init(&node, "int32_publisher", "", &context, &node_ops))
 
   rcl_publisher_options_t publisher_ops = rcl_publisher_get_default_options();
   rcl_publisher_t publisher = rcl_get_zero_initialized_publisher();
-  RCCHECK(rcl_publisher_init(&publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32), "/olimex/publisher", &publisher_ops))
+  RCCHECK(rcl_publisher_init(&publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32), "/int32_publisher", &publisher_ops))
 
   std_msgs__msg__Int32 msg;
   msg.data = 0;
