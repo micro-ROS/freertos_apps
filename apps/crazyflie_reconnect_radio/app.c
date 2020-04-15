@@ -38,7 +38,7 @@ void appMain(){
         // ####################### RADIO INIT #######################
 
         int radio_connected = logGetVarId("radio", "isConnected");
-        int radio_rssi = logGetVarId("radio", "rssi");
+
         while(!logGetUint(radio_connected)) vTaskDelay(100);
         DEBUG_PRINT("Radio connected\n");
 
@@ -50,6 +50,7 @@ void appMain(){
         rcl_context_t      context;
         rcl_init_options_t init_options;
         rcl_ret_t          rc;
+        rcl_ret_t          rc_aux __attribute__((unused));
 
         init_options = rcl_get_zero_initialized_init_options();                          
         rcl_allocator_t freeRTOS_allocator = rcutils_get_zero_initialized_allocator();   
@@ -96,7 +97,7 @@ void appMain(){
             &pub_opt_odom);
 
         if(rc != RCL_RET_OK){
-            (void*) rcl_node_fini(&node);
+            rc_aux = rcl_node_fini(&node);
         }
         RCCHECK()
 
@@ -116,8 +117,8 @@ void appMain(){
             &pub_opt_att);
 
         if(rc != RCL_RET_OK){
-            (void*) rcl_publisher_fini(&pub_odom, &node);
-            (void*) rcl_node_fini(&node);
+            rc_aux = rcl_publisher_fini(&pub_odom, &node);
+            rc_aux = rcl_node_fini(&node);
         }
         RCCHECK()
 
@@ -161,6 +162,7 @@ void appMain(){
             odom.z     = logGetFloat(Zid);
 
             // Debug
+            // int radio_rssi = logGetVarId("radio", "rssi");
             // odom.x     = logGetFloat(radio_rssi);
             // odom.y     = xPortGetFreeHeapSize();
 
