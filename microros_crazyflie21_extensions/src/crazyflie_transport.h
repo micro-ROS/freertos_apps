@@ -22,7 +22,9 @@ extern "C"
 
 typedef struct uxrSerialPlatform
 {
-    
+    uint8_t radio_channel;  
+    uint8_t default_radio_channel; 
+    bool primary_channel;
 } uxrSerialPlatform;
 
 #ifdef __cplusplus
