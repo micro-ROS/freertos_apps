@@ -9,7 +9,7 @@ EXTENSIONS_DIR = $(TOPFOLDER)/freertos_apps/microros_crazyflie21_extensions
 SRC_DIR = $(EXTENSIONS_DIR)/src
 CRAZYFLIE_BASE = $(TOPFOLDER)/crazyflie_firmware
 
-ARCHCPUFLAGS = -DRCUTILS_LOG_MIN_SEVERITY=5 -DARM_MATH_CM4 -D__FPU_PRESENT=1 -D__TARGET_FPU_VFP  -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mcpu=cortex-m4 -mthumb -ffunction-sections -fdata-sections
+ARCHCPUFLAGS = -DARM_MATH_CM4 -D__FPU_PRESENT=1 -D__TARGET_FPU_VFP  -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mcpu=cortex-m4 -mthumb -ffunction-sections -fdata-sections
 
 ifeq ($(DEBUG), 1)
 	ARCHCPUFLAGS += -O0 -g3
