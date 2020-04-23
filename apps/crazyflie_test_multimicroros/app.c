@@ -227,8 +227,6 @@ void microros_secondary(void * params){
 
         // ####################### MAIN LOOP #######################
 
-        uint32_t failcounter = 0;
-        uint32_t packetCounter = 0;
         while(logGetUint(radio_connected)){
 
             rc = rcl_wait_set_clear(&wait_set);
@@ -238,30 +236,16 @@ void microros_secondary(void * params){
             RCSOFTCHECK()
 
             rc = rcl_wait(&wait_set, RCL_MS_TO_NS(10));
-            if(rc != RCL_RET_OK){
-                failcounter++;
-            }else{
-                failcounter = 0;
-            }
-
-            if(failcounter > 20){
-                break;
-            }
-            RCSOFTCHECK()
+            // RCSOFTCHECK()
 
             if (wait_set.subscriptions[0]){
                 geometry_msgs__msg__Point32 rcv;
                 rc = rcl_take(&sub_sensors, &rcv, NULL, NULL);
 
                 if (rc == RCL_RET_OK) {
-                    packetCounter++;
                     memcpy(&sensor_data, &rcv, sizeof(geometry_msgs__msg__Point32));
                     sensor_data_ready = 1;
                 }      
-            }
-
-            if(packetCounter > 10){
-                break;
             }
 
             vTaskDelay(100/portTICK_RATE_MS);

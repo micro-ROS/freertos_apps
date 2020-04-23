@@ -30,12 +30,6 @@ static uint8_t * crtp_buffer_secondary = (uint8_t *)0x10000000 + BUFFER_SIZE;
 static bool init_queue_primary = false;
 static bool init_queue_seconday = false;
 
-static CRTPPacket enable_secondary = {.header = CRTP_HEADER(SECONDARY_CHANNEL_PORT, 1),
-                               .size = 1};
-
-static CRTPPacket disable_secondary = {.header = CRTP_HEADER(SECONDARY_CHANNEL_PORT, 2),
-                                .size = 1};
-
 static struct crtpLinkOperations *link = NULL;
 
 bool uxr_init_serial_platform(struct uxrSerialPlatform* platform, int fd, uint8_t remote_addr, uint8_t local_addr)
