@@ -15,6 +15,10 @@
 #ifndef _UXR_CLIENT_SERIAL_TRANSPORT_CRAZYFLIE_H_
 #define _UXR_CLIENT_SERIAL_TRANSPORT_CRAZYFLIE_H_
 
+#include "stdint.h"
+#include "stdbool.h"
+
+
 #ifdef __cplusplus
 extern "C"
 {

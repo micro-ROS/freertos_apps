@@ -1,5 +1,8 @@
 #include <uxr/client/profile/transport/serial/serial_transport_external.h>
 
+#include "FreeRTOS.h"
+#include "radiolink.h"
+
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +14,7 @@
 #include "debug.h"
 
 #define BUFFER_SIZE 10000
+
 #define PRIMARY_CHANNEL_PORT 9
 #define SECONDARY_CHANNEL_PORT 10
 
@@ -23,16 +27,31 @@ static size_t crpt_secondary_index_max = 0;
 static uint8_t * crtp_buffer_primary   = (uint8_t *)0x10000000;
 static uint8_t * crtp_buffer_secondary = (uint8_t *)0x10000000 + BUFFER_SIZE;
 
+static bool init_queue_primary = false;
+static bool init_queue_seconday = false;
+
+static CRTPPacket enable_secondary = {.header = CRTP_HEADER(SECONDARY_CHANNEL_PORT, 1),
+                               .size = 1};
+
+static CRTPPacket disable_secondary = {.header = CRTP_HEADER(SECONDARY_CHANNEL_PORT, 2),
+                                .size = 1};
+
+static struct crtpLinkOperations *link = NULL;
+
 bool uxr_init_serial_platform(struct uxrSerialPlatform* platform, int fd, uint8_t remote_addr, uint8_t local_addr)
 {
     platform->radio_channel = fd;
     platform->default_radio_channel = configblockGetRadioChannel();
     platform->primary_channel = platform->radio_channel == platform->default_radio_channel;
-    if(platform->primary_channel){
+    if(platform->primary_channel && !init_queue_primary){
       crtpInitTaskQueue(PRIMARY_CHANNEL_PORT);
-    }else{
+      init_queue_primary = true;
+    }else if(!init_queue_seconday){
       crtpInitTaskQueue(SECONDARY_CHANNEL_PORT);
+      init_queue_seconday = true;
     }
+
+    link = radiolinkGetLink();
     
     return true;
 }
@@ -60,8 +79,13 @@ size_t uxr_write_serial_data_platform(uxrSerialPlatform* platform, uint8_t* buf,
     index += to_write;
 
     if(!platform->primary_channel) radiolinkSetChannel(platform->radio_channel);
-    crtpSendPacket(&send_pkg);
-    if(!platform->primary_channel) radiolinkSetChannel(platform->default_radio_channel);
+    while (link->sendPacket(&send_pkg) == false){
+        vTaskDelay(10);
+    }
+    if(!platform->primary_channel){
+      vTaskDelay(10);
+      radiolinkSetChannel(platform->default_radio_channel);
+    }
   }
 
   watchdogReset();
@@ -79,8 +103,6 @@ size_t uxr_read_serial_data_platform(uxrSerialPlatform* platform, uint8_t* buf, 
   static CRTPPacket recv_packet;
   size_t written;
 
-  // size_t retrieved = 0;
-
   *errcode = 0;
 
   uint8_t * crtp_buffer = (platform->primary_channel) ? crtp_buffer_primary : crtp_buffer_secondary;
@@ -89,16 +111,20 @@ size_t uxr_read_serial_data_platform(uxrSerialPlatform* platform, uint8_t* buf, 
 
   if(!platform->primary_channel) radiolinkSetChannel(platform->radio_channel);
 
+
+  size_t retrieved = 0;
   while(  *crpt_index + CRTP_MAX_DATA_SIZE < BUFFER_SIZE && 
           crtpReceivePacketWait((platform->primary_channel) ? PRIMARY_CHANNEL_PORT : SECONDARY_CHANNEL_PORT, &recv_packet, timeout))
   {
     memcpy(&crtp_buffer[*crpt_index], recv_packet.data, recv_packet.size);
     *crpt_index += recv_packet.size;
-    // retrieved += recv_packet.size;
+    retrieved += recv_packet.size;
+    if(retrieved > len){
+      break;
+    }
   }
 
   if(!platform->primary_channel) radiolinkSetChannel(platform->default_radio_channel);
-
 
   if (*crpt_index + CRTP_MAX_DATA_SIZE > BUFFER_SIZE){
     DEBUG_PRINT("MicroXRCEDDS CRTP Buffer full. Clearing buffer.\n");

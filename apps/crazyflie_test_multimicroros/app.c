@@ -1,6 +1,7 @@
 /*FreeRtos includes*/
 #include "FreeRTOS.h"
 #include "task.h"
+#include "static_mem.h"
 
 #include <rcl/rcl.h>
 #include <geometry_msgs/msg/point32.h>
@@ -28,15 +29,18 @@
 #define RCCHECK(clean) if((rc != RCL_RET_OK)){DEBUG_PRINT("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)rc); goto clean;}
 #define RCSOFTCHECK() if((rc != RCL_RET_OK)){DEBUG_PRINT("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)rc);}
 
-int absoluteUsedMemory;
-int usedMemory;
-
 void microros_primary(void * params);
 void microros_secondary(void * params);
 
+static geometry_msgs__msg__Point32 sensor_data;
+static bool sensor_data_ready;
+
+STATIC_MEM_TASK_ALLOC(microros_primary, 1000);
+STATIC_MEM_TASK_ALLOC(microros_secondary, 1000);
+
 void appMain(){ 
     BaseType_t rc __attribute__((unused));
-    TaskHandle_t task_primary, task_secondary;
+    // TaskHandle_t task_primary, task_secondary;
 
     absoluteUsedMemory = 0;
     usedMemory = 0;
@@ -52,25 +56,15 @@ void appMain(){
         vTaskSuspend( NULL );
     }
 
-    rc = xTaskCreate(
-                    microros_primary,       /* Function that implements the task. */
-                    "microROSprimary",      /* Text name for the task. */
-                    2250,                   /* Stack size in words, not bytes. */
-                    NULL,                   /* Parameter passed into the task. */
-                    3,                      /* Priority at which the task is created. */
-                    &task_primary );        /* Used to pass out the created task's handle. */
+    bool created = false;
 
-    rc = xTaskCreate(
-                microros_secondary,       /* Function that implements the task. */
-                "microROSsecondary",      /* Text name for the task. */
-                2250,                   /* Stack size in words, not bytes. */
-                NULL,                   /* Parameter passed into the task. */
-                3,                      /* Priority at which the task is created. */
-                &task_secondary );        /* Used to pass out the created task's handle. */
+    STATIC_MEM_TASK_CREATE(microros_primary, microros_primary, "microROSprimary", &created, 3);
+    STATIC_MEM_TASK_CREATE(microros_secondary, microros_secondary, "microROSsecondary", &created, 3);
 }
 
-void microros_primary(void * params){ 
-     while(1){
+void microros_primary(void * params){
+    bool * created = (bool *) params; 
+    while(1){
 
         // ####################### RADIO INIT #######################
 
@@ -98,10 +92,10 @@ void microros_primary(void * params){
 
         context = rcl_get_zero_initialized_context();                                    
 
-        rc = rcl_init(0, NULL, &init_options, &context); 
+        rc = rcl_init(0, NULL, &init_options, &context);
+        rc_aux = rcl_init_options_fini(&init_options);
         RCCHECK(clean1)
 
-        rc = rcl_init_options_fini(&init_options);
 
         rcl_node_t node = rcl_get_zero_initialized_node();
         rcl_node_options_t node_ops = rcl_node_get_default_options();
@@ -110,15 +104,15 @@ void microros_primary(void * params){
         RCCHECK(clean1)
 
         // Create publisher 1
-        const char* drone_odom = "/drone/odometry";
+        const char* drone_odom = "/drone/publisher";
 
-        rcl_publisher_t pub_odom        = rcl_get_zero_initialized_publisher();
+        rcl_publisher_t pub_sensors        = rcl_get_zero_initialized_publisher();
         const rosidl_message_type_support_t * pub_type_support_odom = ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32);
         rcl_publisher_options_t pub_opt_odom = rcl_publisher_get_default_options();
         pub_opt_odom.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
 
         rc = rcl_publisher_init(
-            &pub_odom,
+            &pub_sensors,
             &node,
             pub_type_support_odom,
             drone_odom,
@@ -129,34 +123,25 @@ void microros_primary(void * params){
         }
         RCCHECK(clean1)
 
-        // Init messages 
-        geometry_msgs__msg__Point32 odom;
-        geometry_msgs__msg__Point32__init(&odom);
-
-        //Get X,Y and Z value
-        int Xid = logGetVarId("stateEstimate", "x");
-        int Yid = logGetVarId("stateEstimate", "y");
-        int Zid = logGetVarId("stateEstimate", "z");
-
         DEBUG_PRINT("Free heap post uROS configuration: %d bytes\n", xPortGetFreeHeapSize());
         DEBUG_PRINT("uROS Used Memory %d bytes\n", usedMemory);
         DEBUG_PRINT("uROS Absolute Used Memory %d bytes\n", absoluteUsedMemory);
 
+        *created = true;
         // ####################### MAIN LOOP #######################
 
         while(logGetUint(radio_connected)){
 
-            odom.x     = logGetFloat(Xid);
-            odom.y     = logGetFloat(Yid);
-            odom.z     = logGetFloat(Zid);
+            if(sensor_data_ready){
+                rc = rcl_publish( &pub_sensors, (const void *) &sensor_data, NULL);
+                sensor_data_ready = 0;
+                RCSOFTCHECK()
+            }
 
-            rc = rcl_publish( &pub_odom, (const void *) &odom, NULL);
-            RCSOFTCHECK()
-            
-            vTaskDelay(500/portTICK_RATE_MS);
+            vTaskDelay(100/portTICK_RATE_MS);
         }
 
-        rc = rcl_publisher_fini(&pub_odom, &node);
+        rc = rcl_publisher_fini(&pub_sensors, &node);
         rc = rcl_node_fini(&node);
 clean1:     
         rc = rcl_shutdown(&context);
@@ -167,8 +152,12 @@ clean1:
 }
 
 void microros_secondary(void * params){
-     while(1){
+    bool * created = (bool *) params; 
+    while(!(*created)){
+        vTaskDelay(100);
+    }
 
+    while(1){
         // ####################### RADIO INIT #######################
 
         int radio_connected = logGetVarId("radio", "isConnected");
@@ -196,45 +185,41 @@ void microros_secondary(void * params){
         context = rcl_get_zero_initialized_context();                                    
 
         rc = rcl_init(0, NULL, &init_options, &context); 
-        RCCHECK(clean2)
-
         rc = rcl_init_options_fini(&init_options);
+        RCCHECK(clean2)
 
         rcl_node_t node = rcl_get_zero_initialized_node();
         rcl_node_options_t node_ops = rcl_node_get_default_options();
 
-        rc = rcl_node_init(&node, "crazyflie_node_1", "", &context, &node_ops);
+        rc = rcl_node_init(&node, "crazyflie_node_2", "", &context, &node_ops);
         RCCHECK(clean2)
 
         // Create publisher 2
-        const char* drone_attitude = "/drone/attitude";
+        const char * echo_topic_name = "/drone/subscriber";
 
-        rcl_publisher_t pub_attitude        = rcl_get_zero_initialized_publisher();
-        const rosidl_message_type_support_t * pub_type_support_att = ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32);
-        rcl_publisher_options_t pub_opt_att = rcl_publisher_get_default_options();
-        pub_opt_att.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
+        rcl_subscription_t sub_sensors      = rcl_get_zero_initialized_subscription();
+        const rosidl_message_type_support_t * sub_type_support = ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32);
+        rcl_subscription_options_t subscription_ops = rcl_subscription_get_default_options();
+        subscription_ops.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
 
-        rc = rcl_publisher_init(
-            &pub_attitude,
+
+        rc = rcl_subscription_init(
+            &sub_sensors,
             &node,
-            pub_type_support_att,
-            drone_attitude,
-            &pub_opt_att);
+            sub_type_support,
+            echo_topic_name,
+            &subscription_ops);
+        RCCHECK(clean2)
+
+        // Create wait set
+        rcl_wait_set_t wait_set = rcl_get_zero_initialized_wait_set();
+        rc = rcl_wait_set_init(&wait_set, 1, 0, 0, 0, 0, 0, &context, rcl_get_default_allocator());
+        RCCHECK(clean2)
 
         if(rc != RCL_RET_OK){
             rc_aux = rcl_node_fini(&node);
         }
         RCCHECK(clean2)
-
-        // Init messages 
-        geometry_msgs__msg__Point32 pose;
-        geometry_msgs__msg__Point32__init(&pose);
-
-        //Get pitch, roll and yaw value
-        int pitchid = logGetVarId("stateEstimate", "pitch");
-        int rollid = logGetVarId("stateEstimate", "roll");
-        int yawid = logGetVarId("stateEstimate", "yaw");
-
 
         DEBUG_PRINT("Free heap post uROS configuration: %d bytes\n", xPortGetFreeHeapSize());
         DEBUG_PRINT("uROS Used Memory %d bytes\n", usedMemory);
@@ -242,19 +227,47 @@ void microros_secondary(void * params){
 
         // ####################### MAIN LOOP #######################
 
+        uint32_t failcounter = 0;
+        uint32_t packetCounter = 0;
         while(logGetUint(radio_connected)){
 
-            pose.x     = logGetFloat(pitchid);
-            pose.y     = logGetFloat(rollid);
-            pose.z     = logGetFloat(yawid);
-
-            rc = rcl_publish( &pub_attitude, (const void *) &pose, NULL);
+            rc = rcl_wait_set_clear(&wait_set);
             RCSOFTCHECK()
-            
-            vTaskDelay(500/portTICK_RATE_MS);
+
+            rc = rcl_wait_set_add_subscription(&wait_set, &sub_sensors, NULL);
+            RCSOFTCHECK()
+
+            rc = rcl_wait(&wait_set, RCL_MS_TO_NS(10));
+            if(rc != RCL_RET_OK){
+                failcounter++;
+            }else{
+                failcounter = 0;
+            }
+
+            if(failcounter > 20){
+                break;
+            }
+            RCSOFTCHECK()
+
+            if (wait_set.subscriptions[0]){
+                geometry_msgs__msg__Point32 rcv;
+                rc = rcl_take(&sub_sensors, &rcv, NULL, NULL);
+
+                if (rc == RCL_RET_OK) {
+                    packetCounter++;
+                    memcpy(&sensor_data, &rcv, sizeof(geometry_msgs__msg__Point32));
+                    sensor_data_ready = 1;
+                }      
+            }
+
+            if(packetCounter > 10){
+                break;
+            }
+
+            vTaskDelay(100/portTICK_RATE_MS);
         }
 
-        rc = rcl_publisher_fini(&pub_attitude, &node);
+        rc = rcl_subscription_fini(&sub_sensors, &node);
         rc = rcl_node_fini(&node);
 clean2:     
         rc = rcl_shutdown(&context);
