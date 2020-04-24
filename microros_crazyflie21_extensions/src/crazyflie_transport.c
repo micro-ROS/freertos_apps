@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <watchdog.h>
 
 #include "crtp.h"
 #include "debug.h"
@@ -43,6 +44,8 @@ size_t uxr_write_serial_data_platform(uxrSerialPlatform* platform, uint8_t* buf,
     index += to_write;
     crtpSendPacket(&send_pkg);
   }
+
+  watchdogReset();
 
   return index;
 }
@@ -93,6 +96,8 @@ size_t uxr_read_serial_data_platform(uxrSerialPlatform* platform, uint8_t* buf, 
     written = crpt_index;
     crpt_index = 0;
   }  
+
+  watchdogReset();
  
   // DEBUG_PRINT("Retrived %d Flushed %d Max %d Current %d\n", retrieved, written, crpt_index_max, crpt_index);
   return written;

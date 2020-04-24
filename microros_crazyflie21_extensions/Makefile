@@ -9,7 +9,7 @@ EXTENSIONS_DIR = $(TOPFOLDER)/freertos_apps/microros_crazyflie21_extensions
 SRC_DIR = $(EXTENSIONS_DIR)/src
 CRAZYFLIE_BASE = $(TOPFOLDER)/crazyflie_firmware
 
-ARCHCPUFLAGS =  -DARM_MATH_CM4 -D__FPU_PRESENT=1 -D__TARGET_FPU_VFP  -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mcpu=cortex-m4 -mthumb -ffunction-sections -fdata-sections
+ARCHCPUFLAGS = -DARM_MATH_CM4 -D__FPU_PRESENT=1 -D__TARGET_FPU_VFP  -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mcpu=cortex-m4 -mthumb -ffunction-sections -fdata-sections
 
 ifeq ($(DEBUG), 1)
 	ARCHCPUFLAGS += -O0 -g3
@@ -67,7 +67,7 @@ INCLUDES += $(MICROROS_INCLUDES)
 VPATH += $(MICROROS_POSIX_FREERTOS_OBJECTS_VPATH) 
 VPATH += $(SRC_DIR)/
 VPATH += $(UROS_APP_FOLDER)/
-CFLAGS += -DFREERTOS_HEAP_SIZE=60000
+CFLAGS += -DFREERTOS_HEAP_SIZE=17000
 CROSS_COMPILE ?= $(TOPFOLDER)/toolchain/bin/arm-none-eabi-
 
 include $(CRAZYFLIE_BASE)/Makefile
