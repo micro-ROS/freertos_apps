@@ -161,7 +161,7 @@ FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c \
 Src/custom_memory_manager.c \
 Src/libatomic.c \
 Src/allocators.c \
-$(UROS_APP_FOLDER)/app.c
+$(wildcard $(UROS_APP_FOLDER)/*.c)
 
 # Removing heap4 manager while being polite with STM32CubeMX
 TMPVAR := $(C_SOURCES)
@@ -249,7 +249,8 @@ C_INCLUDES =  \
 -IFreeRTOS-Plus-POSIX/include/portable/empty_portable \
 -IFreeRTOS-Plus-POSIX/include/portable \
 -Iinclude \
--Iinclude/private
+-Iinclude/private \
+-I$(UROS_APP_FOLDER)
 
 MICROROS_INCLUDES += $(shell find $(UROS_DIR)/install -name 'include' | sed -E "s/(.*)/-I\1/")
 MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include
