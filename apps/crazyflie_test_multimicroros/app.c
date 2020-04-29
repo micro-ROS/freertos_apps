@@ -38,6 +38,8 @@ static bool sensor_data_ready;
 static int pitchid, rollid, yawid;
 static int Xid, Yid, Zid;
 
+// Note: please set APP_STACKSIZE = 100 and CFLAGS += -DFREERTOS_HEAP_SIZE=12100 in Makefile before build
+
 STATIC_MEM_TASK_ALLOC(microros_primary, 1000);
 STATIC_MEM_TASK_ALLOC(microros_secondary, 1000);
 
