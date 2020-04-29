@@ -42,6 +42,7 @@ static int Xid, Yid, Zid;
 
 STATIC_MEM_TASK_ALLOC(microros_primary, 1000);
 STATIC_MEM_TASK_ALLOC(microros_secondary, 1000);
+static bool created_primary = false;
 
 void appMain(){ 
     BaseType_t rc __attribute__((unused));
@@ -61,18 +62,16 @@ void appMain(){
         vTaskSuspend( NULL );
     }
 
-    bool created = false;
 
     sensor_topic.echoes.capacity = 2;
     sensor_topic.echoes.size = 2;
     sensor_topic.echoes.data = sensor_data;
 
-    STATIC_MEM_TASK_CREATE(microros_primary, microros_primary, "microROSprimary", &created, 3);
-    STATIC_MEM_TASK_CREATE(microros_secondary, microros_secondary, "microROSsecondary", &created, 3);
+    STATIC_MEM_TASK_CREATE(microros_primary, microros_primary, "microROSprimary", NULL, 3);
+    STATIC_MEM_TASK_CREATE(microros_secondary, microros_secondary, "microROSsecondary", NULL, 3);
 }
 
 void microros_primary(void * params){
-    bool * created = (bool *) params; 
     while(1){
 
         // ####################### RADIO INIT #######################
@@ -164,7 +163,7 @@ void microros_primary(void * params){
         DEBUG_PRINT("uROS Used Memory %d bytes\n", usedMemory);
         DEBUG_PRINT("uROS Absolute Used Memory %d bytes\n", absoluteUsedMemory);
 
-        *created = true;
+        created_primary = true;
         // ####################### MAIN LOOP #######################
 
         // Init messages 
@@ -218,8 +217,7 @@ clean1:
 }
 
 void microros_secondary(void * params){
-    bool * created = (bool *) params; 
-    while(!(*created)){
+    while(!created_primary){
         vTaskDelay(100);
     }
 
