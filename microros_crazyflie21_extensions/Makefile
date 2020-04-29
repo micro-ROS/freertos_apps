@@ -1,4 +1,4 @@
-DEBUG ?= 1
+DEBUG ?= 0
 
 PROJECTFOLDER = $(shell pwd)
 
