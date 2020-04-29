@@ -34,7 +34,7 @@ static struct crtpLinkOperations *link = NULL;
 
 bool uxr_init_serial_platform(struct uxrSerialPlatform* platform, int fd, uint8_t remote_addr, uint8_t local_addr)
 {
-    platform->radio_channel = fd;
+    platform->radio_channel = (fd != 0) ? fd : configblockGetRadioChannel();
     platform->default_radio_channel = configblockGetRadioChannel();
     platform->primary_channel = platform->radio_channel == platform->default_radio_channel;
     if(platform->primary_channel && !init_queue_primary){
