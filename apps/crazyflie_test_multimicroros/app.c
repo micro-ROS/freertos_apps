@@ -4,9 +4,8 @@
 #include "static_mem.h"
 
 #include <rcl/rcl.h>
+#include <sensor_msgs/msg/laser_echo.h>
 #include <geometry_msgs/msg/point32.h>
-#include "example_interfaces/srv/add_two_ints.h"
-#include <geometry_msgs/msg/twist.h>
 
 #include <rcutils/allocator.h>
 #include <rmw_uros/options.h>
@@ -32,8 +31,12 @@
 void microros_primary(void * params);
 void microros_secondary(void * params);
 
-static geometry_msgs__msg__Point32 sensor_data;
+float sensor_data[2];
+sensor_msgs__msg__LaserEcho sensor_topic;
 static bool sensor_data_ready;
+
+static int pitchid, rollid, yawid;
+static int Xid, Yid, Zid;
 
 STATIC_MEM_TASK_ALLOC(microros_primary, 1000);
 STATIC_MEM_TASK_ALLOC(microros_secondary, 1000);
@@ -58,6 +61,10 @@ void appMain(){
 
     bool created = false;
 
+    sensor_topic.echoes.capacity = 2;
+    sensor_topic.echoes.size = 2;
+    sensor_topic.echoes.data = sensor_data;
+
     STATIC_MEM_TASK_CREATE(microros_primary, microros_primary, "microROSprimary", &created, 3);
     STATIC_MEM_TASK_CREATE(microros_secondary, microros_secondary, "microROSsecondary", &created, 3);
 }
@@ -70,7 +77,7 @@ void microros_primary(void * params){
 
         int radio_connected = logGetVarId("radio", "isConnected");
         while(!logGetUint(radio_connected)) vTaskDelay(100);
-        DEBUG_PRINT("Radio connected\n");
+        // DEBUG_PRINT("Radio connected\n");
 
         // ####################### MICROROS INIT #######################
 
@@ -96,7 +103,6 @@ void microros_primary(void * params){
         rc_aux = rcl_init_options_fini(&init_options);
         RCCHECK(clean1)
 
-
         rcl_node_t node = rcl_get_zero_initialized_node();
         rcl_node_options_t node_ops = rcl_node_get_default_options();
 
@@ -104,23 +110,52 @@ void microros_primary(void * params){
         RCCHECK(clean1)
 
         // Create publisher 1
-        const char* drone_odom = "/drone/publisher";
+        const char* drone_sensors = "/drone/publisher";
 
         rcl_publisher_t pub_sensors        = rcl_get_zero_initialized_publisher();
-        const rosidl_message_type_support_t * pub_type_support_odom = ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32);
-        rcl_publisher_options_t pub_opt_odom = rcl_publisher_get_default_options();
-        pub_opt_odom.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
+        rcl_publisher_options_t pub_opt_sensors = rcl_publisher_get_default_options();
+        pub_opt_sensors.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
 
         rc = rcl_publisher_init(
             &pub_sensors,
             &node,
-            pub_type_support_odom,
-            drone_odom,
-            &pub_opt_odom);
+            ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, LaserEcho),
+            drone_sensors,
+            &pub_opt_sensors);
 
         if(rc != RCL_RET_OK){
             rc_aux = rcl_node_fini(&node);
         }
+        RCCHECK(clean1)
+
+        // Create publisher 2
+        const char* drone_odom = "/drone/odometry";
+
+        rcl_publisher_t pub_odom        = rcl_get_zero_initialized_publisher();
+        rcl_publisher_options_t pub_opt_odom = rcl_publisher_get_default_options();
+        pub_opt_odom.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
+
+        rc = rcl_publisher_init(
+            &pub_odom,
+            &node,
+            ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
+            drone_odom,
+            &pub_opt_odom);
+        RCCHECK(clean1)
+
+        // Create publisher 3
+        const char* drone_attitude = "/drone/attitude";
+
+        rcl_publisher_t pub_attitude        = rcl_get_zero_initialized_publisher();
+        rcl_publisher_options_t pub_opt_att = rcl_publisher_get_default_options();
+        pub_opt_att.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
+
+        rc = rcl_publisher_init(
+            &pub_attitude,
+            &node,
+            ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
+            drone_attitude,
+            &pub_opt_att);
         RCCHECK(clean1)
 
         DEBUG_PRINT("Free heap post uROS configuration: %d bytes\n", xPortGetFreeHeapSize());
@@ -130,13 +165,42 @@ void microros_primary(void * params){
         *created = true;
         // ####################### MAIN LOOP #######################
 
-        while(logGetUint(radio_connected)){
+        // Init messages 
+        geometry_msgs__msg__Point32 pose;
+        geometry_msgs__msg__Point32__init(&pose);
+        geometry_msgs__msg__Point32 odom;
+        geometry_msgs__msg__Point32__init(&odom);
+
+        //Get pitch, roll and yaw value
+        pitchid = logGetVarId("stateEstimate", "pitch");
+        rollid = logGetVarId("stateEstimate", "roll");
+        yawid = logGetVarId("stateEstimate", "yaw");
+
+        //Get X,Y and Z value
+        Xid = logGetVarId("stateEstimate", "x");
+        Yid = logGetVarId("stateEstimate", "y");
+        Zid = logGetVarId("stateEstimate", "z");
+
+        while(1){
 
             if(sensor_data_ready){
-                rc = rcl_publish( &pub_sensors, (const void *) &sensor_data, NULL);
+                rc = rcl_publish( &pub_sensors, (const void *) &sensor_topic, NULL);
                 sensor_data_ready = 0;
                 RCSOFTCHECK()
             }
+
+            pose.x     = logGetFloat(pitchid);
+            pose.y     = logGetFloat(rollid);
+            pose.z     = logGetFloat(yawid);
+            odom.x     = logGetFloat(Xid);
+            odom.y     = logGetFloat(Yid);
+            odom.z     = logGetFloat(Zid);
+
+            rc = rcl_publish( &pub_attitude, (const void *) &pose, NULL);
+            RCSOFTCHECK()
+
+            rc = rcl_publish( &pub_odom, (const void *) &odom, NULL);
+            RCSOFTCHECK()
 
             vTaskDelay(100/portTICK_RATE_MS);
         }
@@ -162,7 +226,7 @@ void microros_secondary(void * params){
 
         int radio_connected = logGetVarId("radio", "isConnected");
         while(!logGetUint(radio_connected)) vTaskDelay(100);
-        DEBUG_PRINT("Radio connected\n");
+        // DEBUG_PRINT("Radio connected\n");
 
         // ####################### MICROROS INIT #######################
 
@@ -185,7 +249,7 @@ void microros_secondary(void * params){
         context = rcl_get_zero_initialized_context();                                    
 
         rc = rcl_init(0, NULL, &init_options, &context); 
-        rc = rcl_init_options_fini(&init_options);
+        rc_aux = rcl_init_options_fini(&init_options);
         RCCHECK(clean2)
 
         rcl_node_t node = rcl_get_zero_initialized_node();
@@ -194,14 +258,13 @@ void microros_secondary(void * params){
         rc = rcl_node_init(&node, "crazyflie_node_2", "", &context, &node_ops);
         RCCHECK(clean2)
 
-        // Create publisher 2
-        const char * echo_topic_name = "/drone/subscriber";
+        // Create subscription 2
+        const char * echo_topic_name = "Float__Sequence";
 
         rcl_subscription_t sub_sensors      = rcl_get_zero_initialized_subscription();
-        const rosidl_message_type_support_t * sub_type_support = ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32);
+        const rosidl_message_type_support_t * sub_type_support = ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, LaserEcho);
         rcl_subscription_options_t subscription_ops = rcl_subscription_get_default_options();
         subscription_ops.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
-
 
         rc = rcl_subscription_init(
             &sub_sensors,
@@ -227,7 +290,7 @@ void microros_secondary(void * params){
 
         // ####################### MAIN LOOP #######################
 
-        while(logGetUint(radio_connected)){
+        while(1){
 
             rc = rcl_wait_set_clear(&wait_set);
             RCSOFTCHECK()
@@ -239,11 +302,17 @@ void microros_secondary(void * params){
             // RCSOFTCHECK()
 
             if (wait_set.subscriptions[0]){
-                geometry_msgs__msg__Point32 rcv;
+                sensor_msgs__msg__LaserEcho rcv;
+                float rcv_data[2];
+
+                rcv.echoes.capacity = 2;
+                rcv.echoes.size = 2;
+                rcv.echoes.data = rcv_data;
+
                 rc = rcl_take(&sub_sensors, &rcv, NULL, NULL);
 
                 if (rc == RCL_RET_OK) {
-                    memcpy(&sensor_data, &rcv, sizeof(geometry_msgs__msg__Point32));
+                    memcpy(&sensor_topic, &rcv, sizeof(sensor_msgs__msg__LaserEcho));
                     sensor_data_ready = 1;
                 }      
             }
