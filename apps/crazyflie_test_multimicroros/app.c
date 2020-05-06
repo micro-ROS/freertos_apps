@@ -5,6 +5,7 @@
 
 #include <rcl/rcl.h>
 #include <sensor_msgs/msg/laser_echo.h>
+#include <std_msgs/msg/float32.h>
 #include <geometry_msgs/msg/point32.h>
 
 #include <rcutils/allocator.h>
@@ -111,18 +112,16 @@ void microros_primary(void * params){
         RCCHECK(clean1)
 
         // Create publisher 1
-        const char* drone_sensors = "/drone/publisher";
-
-        rcl_publisher_t pub_sensors        = rcl_get_zero_initialized_publisher();
-        rcl_publisher_options_t pub_opt_sensors = rcl_publisher_get_default_options();
-        pub_opt_sensors.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
+        rcl_publisher_t pub_sensors_temp        = rcl_get_zero_initialized_publisher();
+        rcl_publisher_options_t pub_opt_sensors_temp = rcl_publisher_get_default_options();
+        pub_opt_sensors_temp.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
 
         rc = rcl_publisher_init(
-            &pub_sensors,
+            &pub_sensors_temp,
             &node,
-            ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, LaserEcho),
-            drone_sensors,
-            &pub_opt_sensors);
+            ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
+            "/weather_station/temperature",
+            &pub_opt_sensors_temp);
 
         if(rc != RCL_RET_OK){
             rc_aux = rcl_node_fini(&node);
@@ -130,8 +129,23 @@ void microros_primary(void * params){
         RCCHECK(clean1)
 
         // Create publisher 2
-        const char* drone_odom = "/drone/odometry";
+        rcl_publisher_t pub_sensors_hum        = rcl_get_zero_initialized_publisher();
+        rcl_publisher_options_t pub_opt_sensors_hum = rcl_publisher_get_default_options();
+        pub_opt_sensors_hum.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
 
+        rc = rcl_publisher_init(
+            &pub_sensors_hum,
+            &node,
+            ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
+            "/weather_station/humidity",
+            &pub_opt_sensors_hum);
+
+        if(rc != RCL_RET_OK){
+            rc_aux = rcl_node_fini(&node);
+        }
+        RCCHECK(clean1)
+
+        // Create publisher 3
         rcl_publisher_t pub_odom        = rcl_get_zero_initialized_publisher();
         rcl_publisher_options_t pub_opt_odom = rcl_publisher_get_default_options();
         pub_opt_odom.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
@@ -140,13 +154,11 @@ void microros_primary(void * params){
             &pub_odom,
             &node,
             ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
-            drone_odom,
+            "/drone/odometry",
             &pub_opt_odom);
         RCCHECK(clean1)
 
-        // Create publisher 3
-        const char* drone_attitude = "/drone/attitude";
-
+        // Create publisher 4
         rcl_publisher_t pub_attitude        = rcl_get_zero_initialized_publisher();
         rcl_publisher_options_t pub_opt_att = rcl_publisher_get_default_options();
         pub_opt_att.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
@@ -155,7 +167,7 @@ void microros_primary(void * params){
             &pub_attitude,
             &node,
             ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
-            drone_attitude,
+            "/drone/attitude",
             &pub_opt_att);
         RCCHECK(clean1)
 
@@ -185,9 +197,15 @@ void microros_primary(void * params){
         while(1){
 
             if(sensor_data_ready){
-                rc = rcl_publish( &pub_sensors, (const void *) &sensor_topic, NULL);
+                std_msgs__msg__Float32 aux_msg;
+
+                aux_msg.data = sensor_topic.echoes.data[0];
+                rc = rcl_publish( &pub_sensors_temp, (const void *) &aux_msg, NULL);
+
+                aux_msg.data = sensor_topic.echoes.data[1];
+                rc = rcl_publish( &pub_sensors_hum, (const void *) &aux_msg, NULL);
+
                 sensor_data_ready = 0;
-                RCSOFTCHECK()
             }
 
             pose.x     = logGetFloat(pitchid);
@@ -206,7 +224,6 @@ void microros_primary(void * params){
             vTaskDelay(100/portTICK_RATE_MS);
         }
 
-        rc = rcl_publisher_fini(&pub_sensors, &node);
         rc = rcl_node_fini(&node);
 clean1:     
         rc = rcl_shutdown(&context);
