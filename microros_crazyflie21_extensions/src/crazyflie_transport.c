@@ -77,7 +77,7 @@ size_t uxr_write_serial_data_platform(uxrSerialPlatform* platform, uint8_t* buf,
         vTaskDelay(10);
     }
     if(!platform->primary_channel){
-      vTaskDelay(10);
+      vTaskDelay(20);
       radiolinkSetChannel(platform->default_radio_channel);
     }
   }
