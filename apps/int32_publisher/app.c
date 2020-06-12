@@ -1,61 +1,72 @@
-#include <allocators.h>
+#include <stdio.h>
 
 #include <rcl/rcl.h>
-#include <rcl_action/rcl_action.h>
 #include <rcl/error_handling.h>
 #include <std_msgs/msg/int32.h>
-#include "example_interfaces/srv/add_two_ints.h"
 
-#include <rmw_uros/options.h>
+#include <rclc/rclc.h>
+#include <rclc/executor.h>
 
-#include <stdio.h>
-#include <unistd.h>
-
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);  vTaskDelete(NULL);;}}
+#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
-void appMain(void *argument)
-{
-  rcl_init_options_t options = rcl_get_zero_initialized_init_options();
+rcl_publisher_t publisher;
+std_msgs__msg__Int32 msg;
 
-  RCCHECK(rcl_init_options_init(&options, rcl_get_default_allocator()))
+void timer_callback(rcl_timer_t * timer, int64_t last_call_time)
+{	
+	UNUSED(last_call_time);
+	if (timer != NULL) {
+		RCSOFTCHECK(rcl_publish(&publisher, &msg, NULL));
+		msg.data++;
+	}
+}
 
-  // Optional RMW configuration 
-  rmw_init_options_t* rmw_options = rcl_init_options_get_rmw_init_options(&options);
-  RCCHECK(rmw_uros_options_set_client_key(0xBA5EBA11, rmw_options))
+void appMain(void * arg)
+{	
+	rcl_allocator_t allocator = rcl_get_default_allocator();
+	rclc_support_t support;
 
-  rcl_context_t context = rcl_get_zero_initialized_context();
-  RCCHECK(rcl_init(0, NULL, &options, &context))
+	// create init_options
+	RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
 
-  rcl_node_options_t node_ops = rcl_node_get_default_options();
+	// create node
+	rcl_node_t node = rcl_get_zero_initialized_node();
+	RCCHECK(rclc_node_init_default(&node, "freertos_int32_publisher", "", &support));
 
-  rcl_node_t node = rcl_get_zero_initialized_node();
-  RCCHECK(rcl_node_init(&node, "int32_publisher", "", &context, &node_ops))
+	// create publisher
+	RCCHECK(rclc_publisher_init_default(
+		&publisher,
+		&node,
+		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
+		"freertos_int32_publisher"));
 
-  rcl_publisher_options_t publisher_ops = rcl_publisher_get_default_options();
-  rcl_publisher_t publisher = rcl_get_zero_initialized_publisher();
-  RCCHECK(rcl_publisher_init(&publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32), "/int32_publisher", &publisher_ops))
+	// create timer,
+	rcl_timer_t timer = rcl_get_zero_initialized_timer();
+	const unsigned int timer_timeout = 1000;
+	RCCHECK(rclc_timer_init_default(
+		&timer,
+		&support,
+		RCL_MS_TO_NS(timer_timeout),
+		timer_callback));
 
-  std_msgs__msg__Int32 msg;
-  msg.data = 0;
-  
-  printf("Free heap post uROS configuration: %d bytes\n", xPortGetFreeHeapSize());
-  printf("uROS Used Memory %d bytes\n", usedMemory);
-  printf("uROS Absolute Used Memory %d bytes\n", absoluteUsedMemory);
+	// create executor
+	rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
+	RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
 
-  rcl_ret_t rc;
-  do {
-    rcl_ret_t rc = rcl_publish(&publisher, (const void*)&msg, NULL);
+	unsigned int rcl_wait_timeout = 1000;   // in ms
+	RCCHECK(rclc_executor_set_timeout(&executor, RCL_MS_TO_NS(rcl_wait_timeout)));
+	RCCHECK(rclc_executor_add_timer(&executor, &timer));
 
-    if (RCL_RET_OK == rc ) {
-        printf("Sent: '%i'\n", msg.data++);
-    }
+	msg.data = 0;
+	
+	while(1){
+    	rclc_executor_spin_some(&executor, 100);
+		usleep(100000);
+	}
 
-    usleep(10000);
-  } while (true );
-
-  RCCHECK(rcl_publisher_fini(&publisher, &node))
-  RCCHECK(rcl_node_fini(&node))
+	RCCHECK(rcl_publisher_fini(&publisher, &node))
+	RCCHECK(rcl_node_fini(&node))
 
   vTaskDelete(NULL);
 }
