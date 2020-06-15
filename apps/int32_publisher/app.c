@@ -61,12 +61,12 @@ void appMain(void * arg)
 	msg.data = 0;
 	
 	while(1){
-    	rclc_executor_spin_some(&executor, 100);
+		rclc_executor_spin_some(&executor, 100);
 		usleep(100000);
 	}
 
 	RCCHECK(rcl_publisher_fini(&publisher, &node))
 	RCCHECK(rcl_node_fini(&node))
 
-  vTaskDelete(NULL);
+  	vTaskDelete(NULL);
 }
