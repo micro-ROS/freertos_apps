@@ -267,13 +267,16 @@ libmicroros: colcon_compile
 	done ; \
 	ar rc libmicroros.a *.obj; mkdir -p $(BUILD_DIR); cp libmicroros.a $(BUILD_DIR); ranlib $(BUILD_DIR)/libmicroros.a; \
 	cd ..; rm -rf libmicroros;
-	
+
 
 #######################################
 # build the application
 #######################################
 # list of objects
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
+OBJECTS += $(BUILD_DIR)/libmicroros.a
+
+
 vpath %.c $(sort $(dir $(C_SOURCES)))
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
