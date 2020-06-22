@@ -15,6 +15,7 @@ static size_t dma_head = 0, dma_tail = 0;
 
 bool uxr_init_serial_platform(struct uxrSerialPlatform* platform, int fd, uint8_t remote_addr, uint8_t local_addr)
 {
+  switch ( fd ){
       case 3:
         platform->uart = &huart3;
         break;

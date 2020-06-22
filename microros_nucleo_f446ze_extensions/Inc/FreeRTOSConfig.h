@@ -153,6 +153,10 @@ standard names. */
 
 /* USER CODE BEGIN Defines */   	      
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
+#define configUSE_POSIX_ERRNO                   1
+#define configUSE_STATS_FORMATTING_FUNCTIONS    1
+#define configUSE_APPLICATION_TASK_TAG          1
+#define INCLUDE_xTaskGetHandle                  1
 /* USER CODE END Defines */ 
 
 #endif /* FREERTOS_CONFIG_H */

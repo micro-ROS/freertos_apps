@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _NUCLEO_F446ZE_SERIAL_TRANSPORT_H_
-#define _NUCLEO_F446ZE_SERIAL_TRANSPORT_H_
+#ifndef _STM32F446ZE_SERIAL_TRANSPORT_H_
+#define _STM32F446ZE_SERIAL_TRANSPORT_H_
 
 #ifdef __cplusplus
 extern "C"
