@@ -44,6 +44,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -147,6 +148,8 @@ int main(void)
     printf_uart = &huart3;
   }
 #endif
+// printf_uart = &huart3;
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -434,8 +437,9 @@ void StartDefaultTask(void *argument)
   attributes.name = "microROS_app";
   attributes.stack_size = 4*3000;
   attributes.priority = (osPriority_t) osPriorityNormal1;
-  osThreadNew(appMain, NULL, &attributes);
-
+  printf("Before app\n");
+  osThreadNew(appMain, NULL, &attributes); 
+  printf("After app\n");
   osDelay(500);
   char ptrTaskList[500];
   vTaskList(ptrTaskList);

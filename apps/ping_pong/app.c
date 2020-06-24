@@ -28,23 +28,24 @@ void * trigger_guard_condition(void *args){
 void appMain(void *argument)
 {
   //Init RCL options
+
   rcl_init_options_t options = rcl_get_zero_initialized_init_options();
   rcl_init_options_init(&options, rcl_get_default_allocator());
-  
+  // printf("1\n");
   // Init RCL context
   rcl_context_t context = rcl_get_zero_initialized_context();
   rcl_init(0, NULL, &options, &context);
-
+    // printf("2\n");
   // Create a node
   rcl_node_options_t node_ops = rcl_node_get_default_options();
   rcl_node_t node = rcl_get_zero_initialized_node();
   rcl_node_init(&node, "pingpong_node", "", &context, &node_ops);
-
+    // printf("3\n");
   // Create a reliable ping publisher
   rcl_publisher_options_t ping_publisher_ops = rcl_publisher_get_default_options();
   rcl_publisher_t ping_publisher = rcl_get_zero_initialized_publisher();
   rcl_publisher_init(&ping_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/ping", &ping_publisher_ops);
-
+    // printf("4\n");
   // Create a best effort pong publisher
   rcl_publisher_options_t pong_publisher_ops = rcl_publisher_get_default_options();
   pong_publisher_ops.qos.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;

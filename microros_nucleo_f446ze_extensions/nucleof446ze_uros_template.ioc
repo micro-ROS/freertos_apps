@@ -1,5 +1,6 @@
 #MicroXplorer Configuration settings - do not modify
 Mcu.Family=STM32F4
+NVIC.USART3_IRQn=true\:5\:0\:false\:false\:true\:true\:true\:true
 ProjectManager.MainLocation=Src
 RCC.MCOFreq_Value=72000000
 PH0-OSC_IN.Locked=true

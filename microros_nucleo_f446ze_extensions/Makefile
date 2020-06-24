@@ -88,6 +88,7 @@ FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c \
 Src/custom_memory_manager.c \
 Src/libatomic.c \
 Src/allocators.c \
+Src/FreeRTOS-openocd.c \
 $(wildcard $(UROS_APP_FOLDER)/*.c)
 
 # Removing heap4 manager while being polite with STM32CubeMX
@@ -221,7 +222,7 @@ LDSCRIPT = STM32F446ZETx_FLASH.ld
 # libraries
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections,--undefined=uxTopUsedPriority
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
