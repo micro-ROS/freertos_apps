@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "request": "launch",
+            "name": "Debug microROS",
+            "executable": "${workspaceRoot}/build/nucleof446ze_uros_template.elf",
+            "rtos": "FreeRTOS",
+            "device": "STM32F446ZE",
+            "armToolchainPath": "/home/alsaibie/uros_stm32_ws/firmware/toolchain/bin/",
+            "configFiles": [
+                "interface/stlink-v2-1.cfg",
+                "target/stm32f4x.cfg",
+            ],
+            "cwd": "${workspaceRoot}",
+            "svdFile": "./STM32F446.svd"
+        }
+    ]
+}

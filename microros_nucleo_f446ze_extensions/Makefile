@@ -20,7 +20,7 @@ TARGET = nucleof446ze_uros_template
 # building variables
 ######################################
 # debug build?
-DEBUG ?= 1
+DEBUG = 1
 # optimization
 ifeq ($(DEBUG), 1)
 	OPT = -O0
