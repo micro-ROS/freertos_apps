@@ -146,10 +146,12 @@ int main(void)
     printf_uart = &huart6;
   }else{
     printf_uart = &huart3;
+    printf("Hi\n");
+    // while(1);
   }
 #endif
-// printf_uart = &huart3;
-
+printf_uart = &huart3;
+    printf("Hi\n");
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -435,7 +437,7 @@ void StartDefaultTask(void *argument)
   osThreadAttr_t attributes;
   memset(&attributes, 0x0, sizeof(osThreadAttr_t));
   attributes.name = "microROS_app";
-  attributes.stack_size = 4*3000;
+  attributes.stack_size = 5*3000;
   attributes.priority = (osPriority_t) osPriorityNormal1;
   printf("Before app\n");
   osThreadNew(appMain, NULL, &attributes); 

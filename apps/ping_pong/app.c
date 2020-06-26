@@ -31,7 +31,7 @@ void appMain(void *argument)
 
   rcl_init_options_t options = rcl_get_zero_initialized_init_options();
   rcl_init_options_init(&options, rcl_get_default_allocator());
-  // printf("1\n");
+  printf("1\n");
   // Init RCL context
   rcl_context_t context = rcl_get_zero_initialized_context();
   rcl_init(0, NULL, &options, &context);
