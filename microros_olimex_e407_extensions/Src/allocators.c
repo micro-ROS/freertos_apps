@@ -25,11 +25,11 @@ void * __freertos_reallocate(void * pointer, size_t size, void * state){
   // printf("-- Realloc %d -> %d (prev: %d B)\n",getBlockSize(pointer),size, xPortGetFreeHeapSize());
   absoluteUsedMemory += size;
   usedMemory += size;
-  if (NULL != pointer){
+  if (NULL == pointer){
+    return pvPortMalloc(size);
+  } else {
     usedMemory -= getBlockSize(pointer);
     return pvPortRealloc(pointer,size);
-  } else {
-    return pvPortMalloc(size);
   }
 }
 
