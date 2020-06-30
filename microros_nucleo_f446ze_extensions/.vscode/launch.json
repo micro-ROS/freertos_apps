@@ -10,10 +10,10 @@
             "servertype": "openocd",
             "request": "launch",
             "name": "Debug microROS",
-            "executable": "${workspaceRoot}/build/nucleof446ze_uros_template.elf",
+            "executable": "${workspaceRoot}/build/micro-ROS.elf",
             "rtos": "FreeRTOS",
             "device": "STM32F446ZE",
-            "armToolchainPath": "/home/alsaibie/uros_stm32_ws/firmware/toolchain/bin/",
+            "armToolchainPath": "${workspaceRoot}/../../toolchain/bin/",
             "configFiles": [
                 "interface/stlink-v2-1.cfg",
                 "target/stm32f4x.cfg",
