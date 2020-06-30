@@ -13,7 +13,7 @@
 ######################################
 # target
 ######################################
-TARGET = nucleof446ze_uros_template
+TARGET = micro-ROS
 
 
 ######################################
@@ -80,11 +80,11 @@ Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
-FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c \
-FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c \
-FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c \
-FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c \
-FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c \
+lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c \
+lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c \
+lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c \
+lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c \
+lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c \
 Src/custom_memory_manager.c \
 Src/libatomic.c \
 Src/allocators.c \
@@ -165,26 +165,26 @@ C_INCLUDES =  \
 -IMiddlewares/Third_Party/FreeRTOS/Source/include \
 -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
 -IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
--IFreeRTOS-Plus-POSIX/include \
--IFreeRTOS-Plus-POSIX/include/portable/empty_portable \
--IFreeRTOS-Plus-POSIX/include/portable \
--Iinclude \
--Iinclude/private \
+-Ilib/FreeRTOS-Plus-POSIX/include \
+-Ilib/FreeRTOS-Plus-POSIX/include/portable/empty_portable \
+-Ilib/FreeRTOS-Plus-POSIX/include/portable \
+-Ilib/include \
+-Ilib/include/private \
 -I$(UROS_APP_FOLDER)
 
 MICROROS_INCLUDES += $(shell find $(UROS_DIR)/install -name 'include' | sed -E "s/(.*)/-I\1/")
-MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include
-MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include/FreeRTOS_POSIX
-MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include/private
-MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/FreeRTOS-Plus-POSIX/include
-MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/FreeRTOS-Plus-POSIX/include/portable
+MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/lib/include
+MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/lib/include/FreeRTOS_POSIX
+MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/lib/include/private
+MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/lib/FreeRTOS-Plus-POSIX/include
+MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/lib/FreeRTOS-Plus-POSIX/include/portable
 C_INCLUDES += $(MICROROS_INCLUDES)
 
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/FreeRTOS-Plus-POSIX/include 
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include 
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include/private 
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include/FreeRTOS_POSIX 
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include/FreeRTOS_POSIX/sys
+COLCON_INCLUDES += $(EXTENSIONS_DIR)/lib/FreeRTOS-Plus-POSIX/include 
+COLCON_INCLUDES += $(EXTENSIONS_DIR)/lib/include 
+COLCON_INCLUDES += $(EXTENSIONS_DIR)/lib/include/private 
+COLCON_INCLUDES += $(EXTENSIONS_DIR)/lib/include/FreeRTOS_POSIX 
+COLCON_INCLUDES += $(EXTENSIONS_DIR)/lib/include/FreeRTOS_POSIX/sys
 COLCON_INCLUDES += $(EXTENSIONS_DIR)/Inc
 COLCON_INCLUDES += $(EXTENSIONS_DIR)/Drivers/STM32F4xx_HAL_Driver/Inc
 COLCON_INCLUDES += $(EXTENSIONS_DIR)/Drivers/CMSIS/Device/ST/STM32F4xx/Include
