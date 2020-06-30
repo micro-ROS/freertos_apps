@@ -1,5 +1,3 @@
-#include <allocators.h>
-
 #include <rcl/rcl.h>
 #include <rcl_action/rcl_action.h>
 #include <rcl/error_handling.h>

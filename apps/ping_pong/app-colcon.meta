@@ -9,7 +9,6 @@
                 "-DRMW_UXRCE_MAX_SERVICES=0",
                 "-DRMW_UXRCE_MAX_CLIENTS=0",
                 "-DRMW_UXRCE_MAX_HISTORY=4",
-                "-DRMW_UXRCE_DEFAULT_SERIAL_DEVICE=3"
             ]
         }
     }
