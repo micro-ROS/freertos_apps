@@ -38,7 +38,7 @@ file(MAKE_DIRECTORY ${MICROROS_LIB_DIR})
 file(MAKE_DIRECTORY ${MICROROS_INCLUDE_DIR})
 
 add_library(microroslib STATIC IMPORTED GLOBAL)
-add_dependencies(microroslib microroslib_build idf::libatomix)
+add_dependencies(microroslib microroslib_build idf::libatomic)
 target_link_libraries(microroslib INTERFACE idf::libatomic)
 
 set_target_properties(microroslib PROPERTIES IMPORTED_LOCATION             ${MICROROS_LIB_DIR}/libmicroros.a)
