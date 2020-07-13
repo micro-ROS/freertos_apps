@@ -11,8 +11,6 @@
 static uint8_t dma_buffer[UART_DMA_BUFFER_SIZE];
 static size_t dma_head = 0, dma_tail = 0;
 
-// static uint8_t * crtp_buffer = (uint8_t *)0x10000000;
-
 bool uxr_init_serial_platform(struct uxrSerialPlatform* platform, int fd, uint8_t remote_addr, uint8_t local_addr)
 {
   switch ( fd ){
@@ -57,8 +55,6 @@ size_t uxr_write_serial_data_platform(uxrSerialPlatform* platform, uint8_t* buf,
 
 size_t uxr_read_serial_data_platform(uxrSerialPlatform* platform, uint8_t* buf, size_t len, int timeout, uint8_t* errcode)
 { 
-  osDelay(timeout);
-
   __disable_irq();
   dma_tail = UART_DMA_BUFFER_SIZE - __HAL_DMA_GET_COUNTER(platform->uart->hdmarx);
   __enable_irq();
