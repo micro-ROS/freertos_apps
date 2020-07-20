@@ -47,9 +47,8 @@ void appMain(void * arg)
 	RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscription_callback, ON_NEW_DATA));
 
         while(1){
-		printf("Spinning int32_subscriber...\r\n");
                 rclc_executor_spin_some(&executor, 100);
-                usleep(1000000);
+                usleep(100000);
         }
 
 
