@@ -108,7 +108,7 @@ void appMain(void * arg)
     uxr_init_session(&session, &transport.comm, 0xAAAABBBB);
     if(!uxr_create_session(&session))
     {
-        printf("Error creating uXRCE session!\n");
+        // printf("Error creating uXRCE session!\n");
         return 1;
     }
 
