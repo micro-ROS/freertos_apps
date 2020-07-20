@@ -11,7 +11,7 @@
 
 #define STRING_BUFFER_LEN 50
 
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc); return 1;}}
+#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc); vTaskDelete(NULL);}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
 rcl_publisher_t ping_publisher;
@@ -66,6 +66,8 @@ void pong_subscription_callback(const void * msgin)
 {
 	const std_msgs__msg__Header * msg = (const std_msgs__msg__Header *)msgin;
 
+	printf("REST Pong for seq %s (%d)\n", msg->frame_id.data, pong_count);
+
 	if(strcmp(outcoming_ping.frame_id.data, msg->frame_id.data) == 0) {
 		pong_count++;
 		printf("Pong for seq %s (%d)\n", msg->frame_id.data, pong_count);
@@ -90,18 +92,15 @@ void appMain(void *argument)
 		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/ping"));
 
 	// Create a best effort pong publisher
-	// TODO (pablogs9): RCLC best effort not implemented
-	RCCHECK(rclc_publisher_init_default(&pong_publisher, &node,
+	RCCHECK(rclc_publisher_init_best_effort(&pong_publisher, &node,
 		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/pong"));
 
 	// Create a best effort ping subscriber
-	// TODO (pablogs9): RCLC best effort not implemented
-	RCCHECK(rclc_subscription_init_default(&ping_subscriber, &node,
+	RCCHECK(rclc_subscription_init_best_effort(&ping_subscriber, &node,
 		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/ping"));
 
 	// Create a best effort  pong subscriber
-	// TODO (pablogs9): RCLC best effort not implemented
-	RCCHECK(rclc_subscription_init_default(&pong_subscriber, &node,
+	RCCHECK(rclc_subscription_init_best_effort(&pong_subscriber, &node,
 		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/pong"));
 
 
@@ -114,7 +113,7 @@ void appMain(void *argument)
 	rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
 	RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
 
-	unsigned int rcl_wait_timeout = 1000;   // in ms
+	unsigned int rcl_wait_timeout = 10;   // in ms
 	RCCHECK(rclc_executor_set_timeout(&executor, RCL_MS_TO_NS(rcl_wait_timeout)));
 	RCCHECK(rclc_executor_add_timer(&executor, &timer));
 	RCCHECK(rclc_executor_add_subscription(&executor, &ping_subscriber, &incoming_ping,
@@ -138,8 +137,8 @@ void appMain(void *argument)
 	device_id = rand();
 
 	while(1){
-		rclc_executor_spin_some(&executor, 100);
-		usleep(100000);
+		rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10));
+		usleep(10000);
 	}
 
 	// Free resources
