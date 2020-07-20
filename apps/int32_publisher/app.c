@@ -14,7 +14,7 @@ rcl_publisher_t publisher;
 std_msgs__msg__Int32 msg;
 
 void timer_callback(rcl_timer_t * timer, int64_t last_call_time)
-{	
+{
 	UNUSED(last_call_time);
 	if (timer != NULL) {
 		RCSOFTCHECK(rcl_publish(&publisher, &msg, NULL));
@@ -23,7 +23,7 @@ void timer_callback(rcl_timer_t * timer, int64_t last_call_time)
 }
 
 void appMain(void * arg)
-{	
+{
 	rcl_allocator_t allocator = rcl_get_default_allocator();
 	rclc_support_t support;
 
@@ -59,12 +59,13 @@ void appMain(void * arg)
 	RCCHECK(rclc_executor_add_timer(&executor, &timer));
 
 	msg.data = 0;
-	
+
 	while(1){
 		rclc_executor_spin_some(&executor, 100);
 		usleep(100000);
 	}
 
+	// free resources
 	RCCHECK(rcl_publisher_fini(&publisher, &node))
 	RCCHECK(rcl_node_fini(&node))
 

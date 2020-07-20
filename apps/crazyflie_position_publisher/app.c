@@ -28,11 +28,11 @@ rcl_publisher_t publisher_attitude;
 static int pitchid, rollid, yawid;
 static int Xid, Yid, Zid;
 
-float sign(float x){   
+float sign(float x){
     return (x >= 0) ? 1.0 : -1.0;
 }
 
-void appMain(){ 
+void appMain(){
     absoluteUsedMemory = 0;
     usedMemory = 0;
 
@@ -54,7 +54,7 @@ void appMain(){
     freeRTOS_allocator.zero_allocate = __crazyflie_zero_allocate;
 
     if (!rcutils_set_default_allocator(&freeRTOS_allocator)) {
-        DEBUG_PRINT("Error on default allocators (line %d)\n",__LINE__); 
+        DEBUG_PRINT("Error on default allocators (line %d)\n",__LINE__);
         vTaskSuspend( NULL );
     }
 
@@ -70,10 +70,12 @@ void appMain(){
 
 	// create publishers
     // TODO (pablogs9): these publishers must be best effort
-	RCCHECK(rclc_publisher_init_default(&publisher_odometry, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32), "/drone/odometry"));
-	RCCHECK(rclc_publisher_init_default(&publisher_attitude, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32), "/drone/attitude"));
+	RCCHECK(rclc_publisher_init_default(&publisher_odometry, &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32), "/drone/odometry"));
+	RCCHECK(rclc_publisher_init_default(&publisher_attitude, &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32), "/drone/attitude"));
 
-    // // Init messages 
+    // // Init messages
     geometry_msgs__msg__Point32 pose;
     geometry_msgs__msg__Point32__init(&pose);
     geometry_msgs__msg__Point32 odom;
@@ -104,13 +106,13 @@ void appMain(){
         RCSOFTCHECK(rcl_publish( &publisher_attitude, (const void *) &pose, NULL));
 
         RCSOFTCHECK(rcl_publish( &publisher_odometry, (const void *) &odom, NULL));
-        
+
         vTaskDelay(10/portTICK_RATE_MS);
 	}
 
 	RCCHECK(rcl_publisher_fini(&publisher_attitude, &node))
 	RCCHECK(rcl_publisher_fini(&publisher_odometry, &node))
 	RCCHECK(rcl_node_fini(&node))
-    
+
     vTaskSuspend( NULL );
 }

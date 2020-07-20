@@ -29,14 +29,14 @@ int pong_count;
 
 void ping_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
 {
-	(void) last_call_time;
+	UNUSED(last_call_time);
 
 	if (timer != NULL) {
 
 		seq_no = rand();
 		sprintf(outcoming_ping.frame_id.data, "%d_%d", seq_no, device_id);
 		outcoming_ping.frame_id.size = strlen(outcoming_ping.frame_id.data);
-		
+
 		// Fill the message timestamp
 		struct timespec ts;
 		clock_gettime(CLOCK_REALTIME, &ts);
@@ -46,7 +46,7 @@ void ping_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
 		// Reset the pong count and publish the ping message
 		pong_count = 0;
 		rcl_publish(&ping_publisher, (const void*)&outcoming_ping, NULL);
-		printf("Ping send seq %s\n", outcoming_ping.frame_id.data);  
+		printf("Ping send seq %s\n", outcoming_ping.frame_id.data);
 	}
 }
 
@@ -67,8 +67,8 @@ void pong_subscription_callback(const void * msgin)
 	const std_msgs__msg__Header * msg = (const std_msgs__msg__Header *)msgin;
 
 	if(strcmp(outcoming_ping.frame_id.data, msg->frame_id.data) == 0) {
-			pong_count++;
-			printf("Pong for seq %s (%d)\n", msg->frame_id.data, pong_count);
+		pong_count++;
+		printf("Pong for seq %s (%d)\n", msg->frame_id.data, pong_count);
 	}
 }
 
@@ -86,19 +86,23 @@ void appMain(void *argument)
 	RCCHECK(rclc_node_init_default(&node, "pingpong_node", "", &support));
 
 	// Create a reliable ping publisher
-	RCCHECK(rclc_publisher_init_default(&ping_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/ping"));
+	RCCHECK(rclc_publisher_init_default(&ping_publisher, &node,
+		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/ping"));
 
 	// Create a best effort pong publisher
 	// TODO (pablogs9): RCLC best effort not implemented
-	RCCHECK(rclc_publisher_init_default(&pong_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/pong"));
+	RCCHECK(rclc_publisher_init_default(&pong_publisher, &node,
+		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/pong"));
 
 	// Create a best effort ping subscriber
 	// TODO (pablogs9): RCLC best effort not implemented
-	RCCHECK(rclc_subscription_init_default(&ping_subscriber, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/ping"));
+	RCCHECK(rclc_subscription_init_default(&ping_subscriber, &node,
+		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/ping"));
 
 	// Create a best effort  pong subscriber
 	// TODO (pablogs9): RCLC best effort not implemented
-	RCCHECK(rclc_subscription_init_default(&pong_subscriber, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/pong"));
+	RCCHECK(rclc_subscription_init_default(&pong_subscriber, &node,
+		ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/pong"));
 
 
 	// Create a 3 seconds ping timer timer,
@@ -113,11 +117,12 @@ void appMain(void *argument)
 	unsigned int rcl_wait_timeout = 1000;   // in ms
 	RCCHECK(rclc_executor_set_timeout(&executor, RCL_MS_TO_NS(rcl_wait_timeout)));
 	RCCHECK(rclc_executor_add_timer(&executor, &timer));
-	RCCHECK(rclc_executor_add_subscription(&executor, &ping_subscriber, &incoming_ping, &ping_subscription_callback, ON_NEW_DATA));
-	RCCHECK(rclc_executor_add_subscription(&executor, &pong_subscriber, &incoming_pong, &pong_subscription_callback, ON_NEW_DATA));
+	RCCHECK(rclc_executor_add_subscription(&executor, &ping_subscriber, &incoming_ping,
+		&ping_subscription_callback, ON_NEW_DATA));
+	RCCHECK(rclc_executor_add_subscription(&executor, &pong_subscriber, &incoming_pong,
+		&pong_subscription_callback, ON_NEW_DATA));
 
 	// Create and allocate the pingpong messages
-
 	char outcoming_ping_buffer[STRING_BUFFER_LEN];
 	outcoming_ping.frame_id.data = outcoming_ping_buffer;
 	outcoming_ping.frame_id.capacity = STRING_BUFFER_LEN;
@@ -135,8 +140,9 @@ void appMain(void *argument)
 	while(1){
 		rclc_executor_spin_some(&executor, 100);
 		usleep(100000);
-	}	
-	
+	}
+
+	// Free resources
 	RCCHECK(rcl_publisher_fini(&ping_publisher, &node));
 	RCCHECK(rcl_publisher_fini(&pong_publisher, &node));
 	RCCHECK(rcl_subscription_fini(&ping_subscriber, &node));
