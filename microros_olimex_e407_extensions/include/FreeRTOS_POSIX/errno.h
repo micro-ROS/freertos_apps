@@ -212,7 +212,7 @@
 
 // TODO (Pablogs): Check where is the place to include this configuration
 
-extern int FreeRTOS_errno;
+static int FreeRTOS_errno;
 #define errno    FreeRTOS_errno
 /**@} */
 

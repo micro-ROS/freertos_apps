@@ -153,7 +153,7 @@ int main(void)
 
 #ifdef MICRO_XRCEDDS_UDP
   printf_uart = &huart3;
-#elif defined(MICRO_XRCEDDS_CUSTOM)
+#elif defined(MICRO_XRCEDDS_CUSTOM_SERIAL)
   if (!strcmp("3",RMW_UXRCE_DEFAULT_SERIAL_DEVICE)){
     printf_uart = &huart6;
   }else{
@@ -420,7 +420,7 @@ void initTaskFunction(void *argument)
   HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
   bool availableNetwork = false;
 
-#ifdef MICRO_XRCEDDS_CUSTOM
+#ifdef MICRO_XRCEDDS_CUSTOM_SERIAL
   availableNetwork = true;
 #elif defined(MICRO_XRCEDDS_UDP)
   printf("Ethernet Initialization\r\n");
