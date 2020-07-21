@@ -12,8 +12,8 @@
 
 static size_t crpt_index = 0;
 static size_t crpt_index_max = 0;
-// static uint8_t crtp_buffer[BUFFER_SIZE];
-static uint8_t * crtp_buffer = (uint8_t *)0x10000000;
+static uint8_t crtp_buffer[BUFFER_SIZE];
+// static uint8_t * crtp_buffer = (uint8_t *)0x10000000;
 
 bool uxr_init_serial_platform(struct uxrSerialPlatform* platform, int fd, uint8_t remote_addr, uint8_t local_addr)
 {
