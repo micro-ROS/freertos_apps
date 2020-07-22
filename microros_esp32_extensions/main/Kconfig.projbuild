@@ -1,0 +1,36 @@
+menu "MicroRos Transport Settings"
+
+menu "UART Settings (for serial transport)"
+
+config MICROROS_UART_TXD
+    int "UART TX pin"
+    range -1 33
+    default -1
+    help
+        Select Tx Down pin for uart connection or -1 for no change (Only used if serial transport is used for microros).
+
+config MICROROS_UART_RXD
+    int "UART RX pin"
+    range -1 33
+    default -1
+    help
+        Select Rx Down pin for uart connection or -1 for no change (Only used if serial transport is used for microros).
+
+config MICROROS_UART_RTS
+    int "UART RTS pin"
+    range -1 33
+    default -1
+    help
+        Select RTS Down pin for uart connection or -1 for no change (Only used if serial transport is used for microros).
+
+config MICROROS_UART_CTS
+    int "UART CTS pin"
+    range -1 33
+    default -1
+    help
+        Select CTS Down pin for uart connection or -1 for no change (Only used if serial transport is used for microros).
+
+endmenu
+
+
+endmenu
