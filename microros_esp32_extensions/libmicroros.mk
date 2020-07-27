@@ -36,6 +36,7 @@ colcon_compile: esp32_toolchain
 		--packages-ignore-regex=.*_cpp \
 		--metas $(UROS_DIR)/colcon.meta $(APP_META) \
 		--cmake-args \
+		"--no-warn-unused-cli" \
 		-DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=OFF \
 		-DTHIRDPARTY=ON \
 		-DBUILD_SHARED_LIBS=OFF \

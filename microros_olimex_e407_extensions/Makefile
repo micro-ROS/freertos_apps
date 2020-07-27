@@ -329,6 +329,7 @@ colcon_compile: arm_toolchain
 		--packages-ignore-regex=.*_cpp \
 		--metas $(UROS_DIR)/colcon.meta $(UROS_APP_FOLDER)/app-colcon.meta \
 		--cmake-args \
+		"--no-warn-unused-cli" \
 		-DCMAKE_POSITION_INDEPENDENT_CODE=OFF \
 		-DTHIRDPARTY=ON \
 		-DBUILD_SHARED_LIBS=OFF \

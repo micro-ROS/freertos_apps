@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "request": "launch",
+            "name": "Debug microROS",
+            "executable": "${workspaceRoot}/build/micro-ROS.elf",
+            "rtos": "FreeRTOS",
+            "device": "STM32F446ZE",
+            "armToolchainPath": "${workspaceRoot}/../../toolchain/bin/",
+            "configFiles": [
+                "interface/stlink-v2-1.cfg",
+                "target/stm32f4x.cfg",
+            ],
+            "cwd": "${workspaceRoot}",
+            "svdFile": "./STM32F446.svd"
+        }
+    ]
+}
