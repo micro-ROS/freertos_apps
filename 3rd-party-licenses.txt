@@ -1,5 +1,5 @@
 Third Party Licenses
 ====================
 
-This repository does not directly contain 3rd party source code. 
+This repository contains the project Lab Project FreeRTOS POSIX released under a MIT License: https://github.com/FreeRTOS/Lab-Project-FreeRTOS-POSIX
 
