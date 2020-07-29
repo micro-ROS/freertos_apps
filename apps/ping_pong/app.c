@@ -71,8 +71,6 @@ void pong_subscription_callback(const void * msgin)
 {
 	const std_msgs__msg__Header * msg = (const std_msgs__msg__Header *)msgin;
 
-	printf("REST Pong for seq %s (%d)\n", msg->frame_id.data, pong_count);
-
 	if(strcmp(outcoming_ping.frame_id.data, msg->frame_id.data) == 0) {
 		pong_count++;
 		printf("Pong for seq %s (%d)\n", msg->frame_id.data, pong_count);
