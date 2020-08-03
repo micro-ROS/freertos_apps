@@ -18,6 +18,8 @@ set(CMAKE_CXX_FLAGS_INIT "@CXXFLAGS@" CACHE STRING "" FORCE)
 
 set(idf_path "@IDF_PATH@")
 
+add_definitions(-DLWIP_IPV4 -DLWIP_IPV6)
+
 include_directories(
         "@BUILD_CONFIG_DIR@"
         ${idf_path}/components/newlib/platform_include
