@@ -1,0 +1,2009 @@
+ARM GAS  /tmp/cctJOaLa.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"FreeRTOS_POSIX_pthread.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.rodata.xDefaultThreadAttributes,"a"
+  18              		.align	2
+  21              	xDefaultThreadAttributes:
+  22 0000 0002     		.short	512
+  23 0002 0080     		.short	-32768
+  24              		.section	.text.prvExitThread,"ax",%progbits
+  25              		.align	1
+  26              		.arch armv7e-m
+  27              		.syntax unified
+  28              		.thumb
+  29              		.thumb_func
+  30              		.fpu fpv4-sp-d16
+  32              	prvExitThread:
+  33              	.LFB4:
+  34              		.file 1 "lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c"
+   1:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*
+   2:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * Amazon FreeRTOS POSIX V1.1.0
+   3:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+   4:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  *
+   5:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+   6:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * this software and associated documentation files (the "Software"), to deal in
+   7:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * the Software without restriction, including without limitation the rights to
+   8:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+   9:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * the Software, and to permit persons to whom the Software is furnished to do so,
+  10:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * subject to the following conditions:
+  11:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  *
+  12:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * The above copyright notice and this permission notice shall be included in all
+  13:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * copies or substantial portions of the Software.
+  14:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  *
+  15:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  16:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+  17:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+  18:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+  19:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  20:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  21:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  *
+  22:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * http://aws.amazon.com/freertos
+  23:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * http://www.FreeRTOS.org
+  24:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  */
+  25:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+  26:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /**
+ARM GAS  /tmp/cctJOaLa.s 			page 2
+
+
+  27:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * @file FreeRTOS_POSIX_pthread.c
+  28:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * @brief Implementation of thread functions in pthread.h
+  29:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  */
+  30:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+  31:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /* C standard library includes. */
+  32:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** #include <stddef.h>
+  33:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** #include <string.h>
+  34:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+  35:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /* FreeRTOS+POSIX includes. */
+  36:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** #include "FreeRTOS_POSIX.h"
+  37:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** #include "FreeRTOS_POSIX/errno.h"
+  38:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** #include "FreeRTOS_POSIX/pthread.h"
+  39:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+  40:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /**
+  41:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * @brief Thread attribute object.
+  42:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  */
+  43:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** typedef struct pthread_attr_internal
+  44:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+  45:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     uint16_t usStackSize;                /**< Stack size. */
+  46:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     uint16_t usSchedPriorityDetachState; /**< Schedule priority 15 bits (LSB) Detach state: 1 bits 
+  47:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** } pthread_attr_internal_t;
+  48:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+  49:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** #define pthreadDETACH_STATE_MASK      0x8000
+  50:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** #define pthreadSCHED_PRIORITY_MASK    0x7FFF
+  51:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** #define pthreadDETACH_STATE_SHIFT     15
+  52:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** #define pthreadGET_SCHED_PRIORITY( var )    ( ( var ) & ( pthreadSCHED_PRIORITY_MASK ) )
+  53:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** #define pthreadIS_JOINABLE( var )           ( ( ( var ) & ( pthreadDETACH_STATE_MASK ) ) == pthread
+  54:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+  55:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /**
+  56:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * @brief Thread object.
+  57:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  */
+  58:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** typedef struct pthread_internal
+  59:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+  60:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_attr_internal_t xAttr;        /**< Thread attributes. */
+  61:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     void * ( *pvStartRoutine )( void * ); /**< Application thread function. */
+  62:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     void * xTaskArg;                      /**< Arguments for application thread function. */
+  63:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     TaskHandle_t xTaskHandle;             /**< FreeRTOS task handle. */
+  64:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     StaticSemaphore_t xJoinBarrier;       /**< Synchronizes the two callers of pthread_join. */
+  65:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     StaticSemaphore_t xJoinMutex;         /**< Ensures that only one other thread may join this thr
+  66:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     void * xReturn;                       /**< Return value of pvStartRoutine. */
+  67:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** } pthread_internal_t;
+  68:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+  69:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /**
+  70:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * @brief Terminates the calling thread.
+  71:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  *
+  72:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * For joinable threads, this function waits for pthread_join. Otherwise,
+  73:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * it deletes the thread and frees up resources used by the thread.
+  74:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  *
+  75:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * @return This function does not return.
+  76:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  */
+  77:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** static void prvExitThread( void );
+  78:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+  79:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /**
+  80:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * @brief Wrapper function for the user's thread routine.
+  81:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  *
+  82:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * This function is executed as a FreeRTOS task function.
+  83:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * @param[in] pxArg A pointer to a pthread_internal_t.
+ARM GAS  /tmp/cctJOaLa.s 			page 3
+
+
+  84:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  *
+  85:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * @return nothing
+  86:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  */
+  87:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** static void prvRunThread( void * pxArg );
+  88:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+  89:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /**
+  90:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  * @brief Default pthread_attr_t.
+  91:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****  */
+  92:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** static const pthread_attr_internal_t xDefaultThreadAttributes =
+  93:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+  94:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     .usStackSize                = PTHREAD_STACK_MIN,
+  95:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     .usSchedPriorityDetachState = ( ( uint16_t ) tskIDLE_PRIORITY & pthreadSCHED_PRIORITY_MASK ) | 
+  96:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** };
+  97:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+  98:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+  99:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 100:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** static void prvExitThread( void )
+ 101:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+  35              		.loc 1 101 1
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 8
+  38              		@ frame_needed = 1, uses_anonymous_args = 0
+  39 0000 80B5     		push	{r7, lr}
+  40              	.LCFI0:
+  41              		.cfi_def_cfa_offset 8
+  42              		.cfi_offset 7, -8
+  43              		.cfi_offset 14, -4
+  44 0002 82B0     		sub	sp, sp, #8
+  45              	.LCFI1:
+  46              		.cfi_def_cfa_offset 16
+  47 0004 00AF     		add	r7, sp, #0
+  48              	.LCFI2:
+  49              		.cfi_def_cfa_register 7
+ 102:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_internal_t * pxThread = ( pthread_internal_t * ) pthread_self();
+  50              		.loc 1 102 62
+  51 0006 FFF7FEFF 		bl	pthread_self
+  52 000a 7860     		str	r0, [r7, #4]
+ 103:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 104:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* If this thread is joinable, wait for a call to pthread_join. */
+ 105:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( pthreadIS_JOINABLE( pxThread->xAttr.usSchedPriorityDetachState ) )
+  53              		.loc 1 105 9
+  54 000c 7B68     		ldr	r3, [r7, #4]
+  55 000e 5B88     		ldrh	r3, [r3, #2]
+  56 0010 1BB2     		sxth	r3, r3
+  57              		.loc 1 105 7
+  58 0012 002B     		cmp	r3, #0
+  59 0014 0BDA     		bge	.L2
+ 106:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 107:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         ( void ) xSemaphoreGive( ( SemaphoreHandle_t ) &pxThread->xJoinBarrier );
+  60              		.loc 1 107 18
+  61 0016 7B68     		ldr	r3, [r7, #4]
+  62 0018 03F11000 		add	r0, r3, #16
+  63 001c 0023     		movs	r3, #0
+  64 001e 0022     		movs	r2, #0
+  65 0020 0021     		movs	r1, #0
+  66 0022 FFF7FEFF 		bl	xQueueGenericSend
+ 108:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ARM GAS  /tmp/cctJOaLa.s 			page 4
+
+
+ 109:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Suspend until the call to pthread_join. The caller of pthread_join
+ 110:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****          * will perform cleanup. */
+ 111:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         vTaskSuspend( NULL );
+  67              		.loc 1 111 9
+  68 0026 0020     		movs	r0, #0
+  69 0028 FFF7FEFF 		bl	vTaskSuspend
+ 112:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 113:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     else
+ 114:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 115:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* For a detached thread, perform cleanup of thread object. */
+ 116:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         vPortFree( pxThread );
+ 117:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         vTaskDelete( NULL );
+ 118:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 119:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+  70              		.loc 1 119 1
+  71 002c 05E0     		b	.L4
+  72              	.L2:
+ 116:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         vTaskDelete( NULL );
+  73              		.loc 1 116 9
+  74 002e 7868     		ldr	r0, [r7, #4]
+  75 0030 FFF7FEFF 		bl	vPortFree
+ 117:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+  76              		.loc 1 117 9
+  77 0034 0020     		movs	r0, #0
+  78 0036 FFF7FEFF 		bl	vTaskDelete
+  79              	.L4:
+  80              		.loc 1 119 1
+  81 003a 00BF     		nop
+  82 003c 0837     		adds	r7, r7, #8
+  83              	.LCFI3:
+  84              		.cfi_def_cfa_offset 8
+  85 003e BD46     		mov	sp, r7
+  86              	.LCFI4:
+  87              		.cfi_def_cfa_register 13
+  88              		@ sp needed
+  89 0040 80BD     		pop	{r7, pc}
+  90              		.cfi_endproc
+  91              	.LFE4:
+  93              		.section	.text.prvRunThread,"ax",%progbits
+  94              		.align	1
+  95              		.syntax unified
+  96              		.thumb
+  97              		.thumb_func
+  98              		.fpu fpv4-sp-d16
+ 100              	prvRunThread:
+ 101              	.LFB5:
+ 120:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 121:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 122:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 123:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** static void prvRunThread( void * pxArg )
+ 124:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 102              		.loc 1 124 1
+ 103              		.cfi_startproc
+ 104              		@ args = 0, pretend = 0, frame = 16
+ 105              		@ frame_needed = 1, uses_anonymous_args = 0
+ 106 0000 80B5     		push	{r7, lr}
+ 107              	.LCFI5:
+ARM GAS  /tmp/cctJOaLa.s 			page 5
+
+
+ 108              		.cfi_def_cfa_offset 8
+ 109              		.cfi_offset 7, -8
+ 110              		.cfi_offset 14, -4
+ 111 0002 84B0     		sub	sp, sp, #16
+ 112              	.LCFI6:
+ 113              		.cfi_def_cfa_offset 24
+ 114 0004 00AF     		add	r7, sp, #0
+ 115              	.LCFI7:
+ 116              		.cfi_def_cfa_register 7
+ 117 0006 7860     		str	r0, [r7, #4]
+ 125:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_internal_t * pxThread = ( pthread_internal_t * ) pxArg;
+ 118              		.loc 1 125 26
+ 119 0008 7B68     		ldr	r3, [r7, #4]
+ 120 000a FB60     		str	r3, [r7, #12]
+ 126:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 127:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Run the thread routine. */
+ 128:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pxThread->xReturn = pxThread->pvStartRoutine( ( void * ) pxThread->xTaskArg );
+ 121              		.loc 1 128 33
+ 122 000c FB68     		ldr	r3, [r7, #12]
+ 123 000e 5B68     		ldr	r3, [r3, #4]
+ 124              		.loc 1 128 25
+ 125 0010 FA68     		ldr	r2, [r7, #12]
+ 126 0012 9268     		ldr	r2, [r2, #8]
+ 127 0014 1046     		mov	r0, r2
+ 128 0016 9847     		blx	r3
+ 129              	.LVL0:
+ 130 0018 0246     		mov	r2, r0
+ 131              		.loc 1 128 23
+ 132 001a FB68     		ldr	r3, [r7, #12]
+ 133 001c C3F8B020 		str	r2, [r3, #176]
+ 129:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 130:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Exit once finished. This function does not return. */
+ 131:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     prvExitThread();
+ 134              		.loc 1 131 5
+ 135 0020 FFF7FEFF 		bl	prvExitThread
+ 132:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 136              		.loc 1 132 1
+ 137 0024 00BF     		nop
+ 138 0026 1037     		adds	r7, r7, #16
+ 139              	.LCFI8:
+ 140              		.cfi_def_cfa_offset 8
+ 141 0028 BD46     		mov	sp, r7
+ 142              	.LCFI9:
+ 143              		.cfi_def_cfa_register 13
+ 144              		@ sp needed
+ 145 002a 80BD     		pop	{r7, pc}
+ 146              		.cfi_endproc
+ 147              	.LFE5:
+ 149              		.section	.text.pthread_attr_destroy,"ax",%progbits
+ 150              		.align	1
+ 151              		.global	pthread_attr_destroy
+ 152              		.syntax unified
+ 153              		.thumb
+ 154              		.thumb_func
+ 155              		.fpu fpv4-sp-d16
+ 157              	pthread_attr_destroy:
+ 158              	.LFB6:
+ARM GAS  /tmp/cctJOaLa.s 			page 6
+
+
+ 133:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 134:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 135:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 136:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_attr_destroy( pthread_attr_t * attr )
+ 137:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 159              		.loc 1 137 1
+ 160              		.cfi_startproc
+ 161              		@ args = 0, pretend = 0, frame = 8
+ 162              		@ frame_needed = 1, uses_anonymous_args = 0
+ 163              		@ link register save eliminated.
+ 164 0000 80B4     		push	{r7}
+ 165              	.LCFI10:
+ 166              		.cfi_def_cfa_offset 4
+ 167              		.cfi_offset 7, -4
+ 168 0002 83B0     		sub	sp, sp, #12
+ 169              	.LCFI11:
+ 170              		.cfi_def_cfa_offset 16
+ 171 0004 00AF     		add	r7, sp, #0
+ 172              	.LCFI12:
+ 173              		.cfi_def_cfa_register 7
+ 174 0006 7860     		str	r0, [r7, #4]
+ 138:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     ( void ) attr;
+ 139:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 140:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return 0;
+ 175              		.loc 1 140 12
+ 176 0008 0023     		movs	r3, #0
+ 141:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 177              		.loc 1 141 1
+ 178 000a 1846     		mov	r0, r3
+ 179 000c 0C37     		adds	r7, r7, #12
+ 180              	.LCFI13:
+ 181              		.cfi_def_cfa_offset 4
+ 182 000e BD46     		mov	sp, r7
+ 183              	.LCFI14:
+ 184              		.cfi_def_cfa_register 13
+ 185              		@ sp needed
+ 186 0010 5DF8047B 		ldr	r7, [sp], #4
+ 187              	.LCFI15:
+ 188              		.cfi_restore 7
+ 189              		.cfi_def_cfa_offset 0
+ 190 0014 7047     		bx	lr
+ 191              		.cfi_endproc
+ 192              	.LFE6:
+ 194              		.section	.text.pthread_attr_getdetachstate,"ax",%progbits
+ 195              		.align	1
+ 196              		.global	pthread_attr_getdetachstate
+ 197              		.syntax unified
+ 198              		.thumb
+ 199              		.thumb_func
+ 200              		.fpu fpv4-sp-d16
+ 202              	pthread_attr_getdetachstate:
+ 203              	.LFB7:
+ 142:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 143:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 144:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 145:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_attr_getdetachstate( const pthread_attr_t * attr,
+ 146:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                                  int * detachstate )
+ARM GAS  /tmp/cctJOaLa.s 			page 7
+
+
+ 147:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 204              		.loc 1 147 1
+ 205              		.cfi_startproc
+ 206              		@ args = 0, pretend = 0, frame = 16
+ 207              		@ frame_needed = 1, uses_anonymous_args = 0
+ 208              		@ link register save eliminated.
+ 209 0000 80B4     		push	{r7}
+ 210              	.LCFI16:
+ 211              		.cfi_def_cfa_offset 4
+ 212              		.cfi_offset 7, -4
+ 213 0002 85B0     		sub	sp, sp, #20
+ 214              	.LCFI17:
+ 215              		.cfi_def_cfa_offset 24
+ 216 0004 00AF     		add	r7, sp, #0
+ 217              	.LCFI18:
+ 218              		.cfi_def_cfa_register 7
+ 219 0006 7860     		str	r0, [r7, #4]
+ 220 0008 3960     		str	r1, [r7]
+ 148:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_attr_internal_t * pxAttr = ( pthread_attr_internal_t * ) ( attr );
+ 221              		.loc 1 148 31
+ 222 000a 7B68     		ldr	r3, [r7, #4]
+ 223 000c FB60     		str	r3, [r7, #12]
+ 149:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 150:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( pthreadIS_JOINABLE( pxAttr->usSchedPriorityDetachState ) )
+ 224              		.loc 1 150 9
+ 225 000e FB68     		ldr	r3, [r7, #12]
+ 226 0010 5B88     		ldrh	r3, [r3, #2]
+ 227 0012 1BB2     		sxth	r3, r3
+ 228              		.loc 1 150 7
+ 229 0014 002B     		cmp	r3, #0
+ 230 0016 03DA     		bge	.L9
+ 151:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 152:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         *detachstate = PTHREAD_CREATE_JOINABLE;
+ 231              		.loc 1 152 22
+ 232 0018 3B68     		ldr	r3, [r7]
+ 233 001a 0122     		movs	r2, #1
+ 234 001c 1A60     		str	r2, [r3]
+ 235 001e 02E0     		b	.L10
+ 236              	.L9:
+ 153:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 154:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     else
+ 155:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 156:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         *detachstate = PTHREAD_CREATE_DETACHED;
+ 237              		.loc 1 156 22
+ 238 0020 3B68     		ldr	r3, [r7]
+ 239 0022 0022     		movs	r2, #0
+ 240 0024 1A60     		str	r2, [r3]
+ 241              	.L10:
+ 157:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 158:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 159:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return 0;
+ 242              		.loc 1 159 12
+ 243 0026 0023     		movs	r3, #0
+ 160:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 244              		.loc 1 160 1
+ 245 0028 1846     		mov	r0, r3
+ 246 002a 1437     		adds	r7, r7, #20
+ARM GAS  /tmp/cctJOaLa.s 			page 8
+
+
+ 247              	.LCFI19:
+ 248              		.cfi_def_cfa_offset 4
+ 249 002c BD46     		mov	sp, r7
+ 250              	.LCFI20:
+ 251              		.cfi_def_cfa_register 13
+ 252              		@ sp needed
+ 253 002e 5DF8047B 		ldr	r7, [sp], #4
+ 254              	.LCFI21:
+ 255              		.cfi_restore 7
+ 256              		.cfi_def_cfa_offset 0
+ 257 0032 7047     		bx	lr
+ 258              		.cfi_endproc
+ 259              	.LFE7:
+ 261              		.section	.text.pthread_attr_getschedparam,"ax",%progbits
+ 262              		.align	1
+ 263              		.global	pthread_attr_getschedparam
+ 264              		.syntax unified
+ 265              		.thumb
+ 266              		.thumb_func
+ 267              		.fpu fpv4-sp-d16
+ 269              	pthread_attr_getschedparam:
+ 270              	.LFB8:
+ 161:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 162:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 163:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 164:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_attr_getschedparam( const pthread_attr_t * attr,
+ 165:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                                 struct sched_param * param )
+ 166:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 271              		.loc 1 166 1
+ 272              		.cfi_startproc
+ 273              		@ args = 0, pretend = 0, frame = 16
+ 274              		@ frame_needed = 1, uses_anonymous_args = 0
+ 275              		@ link register save eliminated.
+ 276 0000 80B4     		push	{r7}
+ 277              	.LCFI22:
+ 278              		.cfi_def_cfa_offset 4
+ 279              		.cfi_offset 7, -4
+ 280 0002 85B0     		sub	sp, sp, #20
+ 281              	.LCFI23:
+ 282              		.cfi_def_cfa_offset 24
+ 283 0004 00AF     		add	r7, sp, #0
+ 284              	.LCFI24:
+ 285              		.cfi_def_cfa_register 7
+ 286 0006 7860     		str	r0, [r7, #4]
+ 287 0008 3960     		str	r1, [r7]
+ 167:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_attr_internal_t * pxAttr = ( pthread_attr_internal_t * ) ( attr );
+ 288              		.loc 1 167 31
+ 289 000a 7B68     		ldr	r3, [r7, #4]
+ 290 000c FB60     		str	r3, [r7, #12]
+ 168:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 169:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     param->sched_priority = ( int ) ( pthreadGET_SCHED_PRIORITY( pxAttr->usSchedPriorityDetachState
+ 291              		.loc 1 169 39
+ 292 000e FB68     		ldr	r3, [r7, #12]
+ 293 0010 5B88     		ldrh	r3, [r3, #2]
+ 294              		.loc 1 169 29
+ 295 0012 C3F30E02 		ubfx	r2, r3, #0, #15
+ 296              		.loc 1 169 27
+ARM GAS  /tmp/cctJOaLa.s 			page 9
+
+
+ 297 0016 3B68     		ldr	r3, [r7]
+ 298 0018 1A60     		str	r2, [r3]
+ 170:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 171:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return 0;
+ 299              		.loc 1 171 12
+ 300 001a 0023     		movs	r3, #0
+ 172:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 301              		.loc 1 172 1
+ 302 001c 1846     		mov	r0, r3
+ 303 001e 1437     		adds	r7, r7, #20
+ 304              	.LCFI25:
+ 305              		.cfi_def_cfa_offset 4
+ 306 0020 BD46     		mov	sp, r7
+ 307              	.LCFI26:
+ 308              		.cfi_def_cfa_register 13
+ 309              		@ sp needed
+ 310 0022 5DF8047B 		ldr	r7, [sp], #4
+ 311              	.LCFI27:
+ 312              		.cfi_restore 7
+ 313              		.cfi_def_cfa_offset 0
+ 314 0026 7047     		bx	lr
+ 315              		.cfi_endproc
+ 316              	.LFE8:
+ 318              		.section	.text.pthread_attr_getstacksize,"ax",%progbits
+ 319              		.align	1
+ 320              		.global	pthread_attr_getstacksize
+ 321              		.syntax unified
+ 322              		.thumb
+ 323              		.thumb_func
+ 324              		.fpu fpv4-sp-d16
+ 326              	pthread_attr_getstacksize:
+ 327              	.LFB9:
+ 173:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 174:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 175:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 176:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_attr_getstacksize( const pthread_attr_t * attr,
+ 177:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                                size_t * stacksize )
+ 178:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 328              		.loc 1 178 1
+ 329              		.cfi_startproc
+ 330              		@ args = 0, pretend = 0, frame = 16
+ 331              		@ frame_needed = 1, uses_anonymous_args = 0
+ 332              		@ link register save eliminated.
+ 333 0000 80B4     		push	{r7}
+ 334              	.LCFI28:
+ 335              		.cfi_def_cfa_offset 4
+ 336              		.cfi_offset 7, -4
+ 337 0002 85B0     		sub	sp, sp, #20
+ 338              	.LCFI29:
+ 339              		.cfi_def_cfa_offset 24
+ 340 0004 00AF     		add	r7, sp, #0
+ 341              	.LCFI30:
+ 342              		.cfi_def_cfa_register 7
+ 343 0006 7860     		str	r0, [r7, #4]
+ 344 0008 3960     		str	r1, [r7]
+ 179:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_attr_internal_t * pxAttr = ( pthread_attr_internal_t * ) ( attr );
+ 345              		.loc 1 179 31
+ARM GAS  /tmp/cctJOaLa.s 			page 10
+
+
+ 346 000a 7B68     		ldr	r3, [r7, #4]
+ 347 000c FB60     		str	r3, [r7, #12]
+ 180:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 181:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     *stacksize = ( size_t ) pxAttr->usStackSize;
+ 348              		.loc 1 181 35
+ 349 000e FB68     		ldr	r3, [r7, #12]
+ 350 0010 1B88     		ldrh	r3, [r3]
+ 351              		.loc 1 181 18
+ 352 0012 1A46     		mov	r2, r3
+ 353              		.loc 1 181 16
+ 354 0014 3B68     		ldr	r3, [r7]
+ 355 0016 1A60     		str	r2, [r3]
+ 182:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 183:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return 0;
+ 356              		.loc 1 183 12
+ 357 0018 0023     		movs	r3, #0
+ 184:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 358              		.loc 1 184 1
+ 359 001a 1846     		mov	r0, r3
+ 360 001c 1437     		adds	r7, r7, #20
+ 361              	.LCFI31:
+ 362              		.cfi_def_cfa_offset 4
+ 363 001e BD46     		mov	sp, r7
+ 364              	.LCFI32:
+ 365              		.cfi_def_cfa_register 13
+ 366              		@ sp needed
+ 367 0020 5DF8047B 		ldr	r7, [sp], #4
+ 368              	.LCFI33:
+ 369              		.cfi_restore 7
+ 370              		.cfi_def_cfa_offset 0
+ 371 0024 7047     		bx	lr
+ 372              		.cfi_endproc
+ 373              	.LFE9:
+ 375              		.section	.text.pthread_attr_init,"ax",%progbits
+ 376              		.align	1
+ 377              		.global	pthread_attr_init
+ 378              		.syntax unified
+ 379              		.thumb
+ 380              		.thumb_func
+ 381              		.fpu fpv4-sp-d16
+ 383              	pthread_attr_init:
+ 384              	.LFB10:
+ 185:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 186:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 187:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 188:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_attr_init( pthread_attr_t * attr )
+ 189:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 385              		.loc 1 189 1
+ 386              		.cfi_startproc
+ 387              		@ args = 0, pretend = 0, frame = 8
+ 388              		@ frame_needed = 1, uses_anonymous_args = 0
+ 389              		@ link register save eliminated.
+ 390 0000 80B4     		push	{r7}
+ 391              	.LCFI34:
+ 392              		.cfi_def_cfa_offset 4
+ 393              		.cfi_offset 7, -4
+ 394 0002 83B0     		sub	sp, sp, #12
+ARM GAS  /tmp/cctJOaLa.s 			page 11
+
+
+ 395              	.LCFI35:
+ 396              		.cfi_def_cfa_offset 16
+ 397 0004 00AF     		add	r7, sp, #0
+ 398              	.LCFI36:
+ 399              		.cfi_def_cfa_register 7
+ 400 0006 7860     		str	r0, [r7, #4]
+ 190:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Copy the default values into the new thread attributes object. */
+ 191:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     *( ( pthread_attr_internal_t * ) ( attr ) ) = xDefaultThreadAttributes;
+ 401              		.loc 1 191 49
+ 402 0008 7B68     		ldr	r3, [r7, #4]
+ 403 000a 054A     		ldr	r2, .L18
+ 404 000c 1068     		ldr	r0, [r2]
+ 405 000e 1860     		str	r0, [r3]	@ unaligned
+ 192:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 193:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return 0;
+ 406              		.loc 1 193 12
+ 407 0010 0023     		movs	r3, #0
+ 194:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 408              		.loc 1 194 1
+ 409 0012 1846     		mov	r0, r3
+ 410 0014 0C37     		adds	r7, r7, #12
+ 411              	.LCFI37:
+ 412              		.cfi_def_cfa_offset 4
+ 413 0016 BD46     		mov	sp, r7
+ 414              	.LCFI38:
+ 415              		.cfi_def_cfa_register 13
+ 416              		@ sp needed
+ 417 0018 5DF8047B 		ldr	r7, [sp], #4
+ 418              	.LCFI39:
+ 419              		.cfi_restore 7
+ 420              		.cfi_def_cfa_offset 0
+ 421 001c 7047     		bx	lr
+ 422              	.L19:
+ 423 001e 00BF     		.align	2
+ 424              	.L18:
+ 425 0020 00000000 		.word	xDefaultThreadAttributes
+ 426              		.cfi_endproc
+ 427              	.LFE10:
+ 429              		.section	.text.pthread_attr_setdetachstate,"ax",%progbits
+ 430              		.align	1
+ 431              		.global	pthread_attr_setdetachstate
+ 432              		.syntax unified
+ 433              		.thumb
+ 434              		.thumb_func
+ 435              		.fpu fpv4-sp-d16
+ 437              	pthread_attr_setdetachstate:
+ 438              	.LFB11:
+ 195:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 196:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 197:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 198:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_attr_setdetachstate( pthread_attr_t * attr,
+ 199:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                                  int detachstate )
+ 200:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 439              		.loc 1 200 1
+ 440              		.cfi_startproc
+ 441              		@ args = 0, pretend = 0, frame = 16
+ 442              		@ frame_needed = 1, uses_anonymous_args = 0
+ARM GAS  /tmp/cctJOaLa.s 			page 12
+
+
+ 443              		@ link register save eliminated.
+ 444 0000 80B4     		push	{r7}
+ 445              	.LCFI40:
+ 446              		.cfi_def_cfa_offset 4
+ 447              		.cfi_offset 7, -4
+ 448 0002 85B0     		sub	sp, sp, #20
+ 449              	.LCFI41:
+ 450              		.cfi_def_cfa_offset 24
+ 451 0004 00AF     		add	r7, sp, #0
+ 452              	.LCFI42:
+ 453              		.cfi_def_cfa_register 7
+ 454 0006 7860     		str	r0, [r7, #4]
+ 455 0008 3960     		str	r1, [r7]
+ 201:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     int iStatus = 0;
+ 456              		.loc 1 201 9
+ 457 000a 0023     		movs	r3, #0
+ 458 000c FB60     		str	r3, [r7, #12]
+ 202:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_attr_internal_t * pxAttr = ( pthread_attr_internal_t * ) ( attr );
+ 459              		.loc 1 202 31
+ 460 000e 7B68     		ldr	r3, [r7, #4]
+ 461 0010 BB60     		str	r3, [r7, #8]
+ 203:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 204:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( ( detachstate != PTHREAD_CREATE_DETACHED ) && ( detachstate != PTHREAD_CREATE_JOINABLE ) )
+ 462              		.loc 1 204 7
+ 463 0012 3B68     		ldr	r3, [r7]
+ 464 0014 002B     		cmp	r3, #0
+ 465 0016 05D0     		beq	.L21
+ 466              		.loc 1 204 52 discriminator 1
+ 467 0018 3B68     		ldr	r3, [r7]
+ 468 001a 012B     		cmp	r3, #1
+ 469 001c 02D0     		beq	.L21
+ 205:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 206:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         iStatus = EINVAL;
+ 470              		.loc 1 206 17
+ 471 001e 1623     		movs	r3, #22
+ 472 0020 FB60     		str	r3, [r7, #12]
+ 473 0022 12E0     		b	.L22
+ 474              	.L21:
+ 207:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 208:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     else
+ 209:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 210:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* clear and then set msb bit to detachstate) */
+ 211:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         pxAttr->usSchedPriorityDetachState &= ~pthreadDETACH_STATE_MASK;
+ 475              		.loc 1 211 44
+ 476 0024 BB68     		ldr	r3, [r7, #8]
+ 477 0026 5B88     		ldrh	r3, [r3, #2]
+ 478 0028 C3F30E03 		ubfx	r3, r3, #0, #15
+ 479 002c 9AB2     		uxth	r2, r3
+ 480 002e BB68     		ldr	r3, [r7, #8]
+ 481 0030 5A80     		strh	r2, [r3, #2]	@ movhi
+ 212:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         pxAttr->usSchedPriorityDetachState |= ( ( uint16_t ) detachstate << pthreadDETACH_STATE_SHI
+ 482              		.loc 1 212 44
+ 483 0032 BB68     		ldr	r3, [r7, #8]
+ 484 0034 5B88     		ldrh	r3, [r3, #2]
+ 485 0036 1AB2     		sxth	r2, r3
+ 486              		.loc 1 212 49
+ 487 0038 3B68     		ldr	r3, [r7]
+ARM GAS  /tmp/cctJOaLa.s 			page 13
+
+
+ 488 003a 9BB2     		uxth	r3, r3
+ 489              		.loc 1 212 74
+ 490 003c DB03     		lsls	r3, r3, #15
+ 491              		.loc 1 212 44
+ 492 003e 1BB2     		sxth	r3, r3
+ 493 0040 1343     		orrs	r3, r3, r2
+ 494 0042 1BB2     		sxth	r3, r3
+ 495 0044 9AB2     		uxth	r2, r3
+ 496 0046 BB68     		ldr	r3, [r7, #8]
+ 497 0048 5A80     		strh	r2, [r3, #2]	@ movhi
+ 498              	.L22:
+ 213:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 214:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 215:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return iStatus;
+ 499              		.loc 1 215 12
+ 500 004a FB68     		ldr	r3, [r7, #12]
+ 216:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 501              		.loc 1 216 1
+ 502 004c 1846     		mov	r0, r3
+ 503 004e 1437     		adds	r7, r7, #20
+ 504              	.LCFI43:
+ 505              		.cfi_def_cfa_offset 4
+ 506 0050 BD46     		mov	sp, r7
+ 507              	.LCFI44:
+ 508              		.cfi_def_cfa_register 13
+ 509              		@ sp needed
+ 510 0052 5DF8047B 		ldr	r7, [sp], #4
+ 511              	.LCFI45:
+ 512              		.cfi_restore 7
+ 513              		.cfi_def_cfa_offset 0
+ 514 0056 7047     		bx	lr
+ 515              		.cfi_endproc
+ 516              	.LFE11:
+ 518              		.section	.text.pthread_attr_setschedparam,"ax",%progbits
+ 519              		.align	1
+ 520              		.global	pthread_attr_setschedparam
+ 521              		.syntax unified
+ 522              		.thumb
+ 523              		.thumb_func
+ 524              		.fpu fpv4-sp-d16
+ 526              	pthread_attr_setschedparam:
+ 527              	.LFB12:
+ 217:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 218:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 219:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 220:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_attr_setschedparam( pthread_attr_t * attr,
+ 221:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                                 const struct sched_param * param )
+ 222:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 528              		.loc 1 222 1
+ 529              		.cfi_startproc
+ 530              		@ args = 0, pretend = 0, frame = 16
+ 531              		@ frame_needed = 1, uses_anonymous_args = 0
+ 532 0000 90B5     		push	{r4, r7, lr}
+ 533              	.LCFI46:
+ 534              		.cfi_def_cfa_offset 12
+ 535              		.cfi_offset 4, -12
+ 536              		.cfi_offset 7, -8
+ARM GAS  /tmp/cctJOaLa.s 			page 14
+
+
+ 537              		.cfi_offset 14, -4
+ 538 0002 85B0     		sub	sp, sp, #20
+ 539              	.LCFI47:
+ 540              		.cfi_def_cfa_offset 32
+ 541 0004 00AF     		add	r7, sp, #0
+ 542              	.LCFI48:
+ 543              		.cfi_def_cfa_register 7
+ 544 0006 7860     		str	r0, [r7, #4]
+ 545 0008 3960     		str	r1, [r7]
+ 223:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     int iStatus = 0;
+ 546              		.loc 1 223 9
+ 547 000a 0023     		movs	r3, #0
+ 548 000c FB60     		str	r3, [r7, #12]
+ 224:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_attr_internal_t * pxAttr = ( pthread_attr_internal_t * ) ( attr );
+ 549              		.loc 1 224 31
+ 550 000e 7B68     		ldr	r3, [r7, #4]
+ 551 0010 BB60     		str	r3, [r7, #8]
+ 225:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 226:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Check for NULL param. */
+ 227:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( param == NULL )
+ 552              		.loc 1 227 7
+ 553 0012 3B68     		ldr	r3, [r7]
+ 554 0014 002B     		cmp	r3, #0
+ 555 0016 01D1     		bne	.L25
+ 228:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 229:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         iStatus = EINVAL;
+ 556              		.loc 1 229 17
+ 557 0018 1623     		movs	r3, #22
+ 558 001a FB60     		str	r3, [r7, #12]
+ 559              	.L25:
+ 230:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 231:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 232:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Ensure that param.sched_priority is valid. */
+ 233:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( ( iStatus == 0 ) &&
+ 560              		.loc 1 233 7
+ 561 001c FB68     		ldr	r3, [r7, #12]
+ 562 001e 002B     		cmp	r3, #0
+ 563 0020 0DD1     		bne	.L26
+ 234:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         ( ( param->sched_priority > sched_get_priority_max( SCHED_OTHER ) ) ||
+ 564              		.loc 1 234 18 discriminator 1
+ 565 0022 3B68     		ldr	r3, [r7]
+ 566 0024 1C68     		ldr	r4, [r3]
+ 567              		.loc 1 234 37 discriminator 1
+ 568 0026 0020     		movs	r0, #0
+ 569 0028 FFF7FEFF 		bl	sched_get_priority_max
+ 570 002c 0346     		mov	r3, r0
+ 233:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         ( ( param->sched_priority > sched_get_priority_max( SCHED_OTHER ) ) ||
+ 571              		.loc 1 233 26 discriminator 1
+ 572 002e 9C42     		cmp	r4, r3
+ 573 0030 03DC     		bgt	.L27
+ 235:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****           ( param->sched_priority < 0 ) ) )
+ 574              		.loc 1 235 18
+ 575 0032 3B68     		ldr	r3, [r7]
+ 576 0034 1B68     		ldr	r3, [r3]
+ 234:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         ( ( param->sched_priority > sched_get_priority_max( SCHED_OTHER ) ) ||
+ 577              		.loc 1 234 77
+ 578 0036 002B     		cmp	r3, #0
+ARM GAS  /tmp/cctJOaLa.s 			page 15
+
+
+ 579 0038 01DA     		bge	.L26
+ 580              	.L27:
+ 236:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 237:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         iStatus = ENOTSUP;
+ 581              		.loc 1 237 17
+ 582 003a 8623     		movs	r3, #134
+ 583 003c FB60     		str	r3, [r7, #12]
+ 584              	.L26:
+ 238:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 239:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 240:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Set the sched_param. */
+ 241:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( iStatus == 0 )
+ 585              		.loc 1 241 7
+ 586 003e FB68     		ldr	r3, [r7, #12]
+ 587 0040 002B     		cmp	r3, #0
+ 588 0042 11D1     		bne	.L28
+ 242:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 243:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* clear and then set  15 LSB to schedule priority) */
+ 244:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         pxAttr->usSchedPriorityDetachState &= ~pthreadSCHED_PRIORITY_MASK;
+ 589              		.loc 1 244 44
+ 590 0044 BB68     		ldr	r3, [r7, #8]
+ 591 0046 5B88     		ldrh	r3, [r3, #2]
+ 592 0048 23F4FF43 		bic	r3, r3, #32640
+ 593 004c 23F07F03 		bic	r3, r3, #127
+ 594 0050 9AB2     		uxth	r2, r3
+ 595 0052 BB68     		ldr	r3, [r7, #8]
+ 596 0054 5A80     		strh	r2, [r3, #2]	@ movhi
+ 245:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         pxAttr->usSchedPriorityDetachState |= ( ( uint16_t ) param->sched_priority );
+ 597              		.loc 1 245 44
+ 598 0056 BB68     		ldr	r3, [r7, #8]
+ 599 0058 5A88     		ldrh	r2, [r3, #2]
+ 600              		.loc 1 245 67
+ 601 005a 3B68     		ldr	r3, [r7]
+ 602 005c 1B68     		ldr	r3, [r3]
+ 603              		.loc 1 245 49
+ 604 005e 9BB2     		uxth	r3, r3
+ 605              		.loc 1 245 44
+ 606 0060 1343     		orrs	r3, r3, r2
+ 607 0062 9AB2     		uxth	r2, r3
+ 608 0064 BB68     		ldr	r3, [r7, #8]
+ 609 0066 5A80     		strh	r2, [r3, #2]	@ movhi
+ 610              	.L28:
+ 246:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 247:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 248:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return iStatus;
+ 611              		.loc 1 248 12
+ 612 0068 FB68     		ldr	r3, [r7, #12]
+ 249:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 613              		.loc 1 249 1
+ 614 006a 1846     		mov	r0, r3
+ 615 006c 1437     		adds	r7, r7, #20
+ 616              	.LCFI49:
+ 617              		.cfi_def_cfa_offset 12
+ 618 006e BD46     		mov	sp, r7
+ 619              	.LCFI50:
+ 620              		.cfi_def_cfa_register 13
+ 621              		@ sp needed
+ARM GAS  /tmp/cctJOaLa.s 			page 16
+
+
+ 622 0070 90BD     		pop	{r4, r7, pc}
+ 623              		.cfi_endproc
+ 624              	.LFE12:
+ 626              		.section	.text.pthread_attr_setschedpolicy,"ax",%progbits
+ 627              		.align	1
+ 628              		.global	pthread_attr_setschedpolicy
+ 629              		.syntax unified
+ 630              		.thumb
+ 631              		.thumb_func
+ 632              		.fpu fpv4-sp-d16
+ 634              	pthread_attr_setschedpolicy:
+ 635              	.LFB13:
+ 250:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 251:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 252:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 253:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_attr_setschedpolicy( pthread_attr_t * attr,
+ 254:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                                  int policy )
+ 255:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 636              		.loc 1 255 1
+ 637              		.cfi_startproc
+ 638              		@ args = 0, pretend = 0, frame = 8
+ 639              		@ frame_needed = 1, uses_anonymous_args = 0
+ 640              		@ link register save eliminated.
+ 641 0000 80B4     		push	{r7}
+ 642              	.LCFI51:
+ 643              		.cfi_def_cfa_offset 4
+ 644              		.cfi_offset 7, -4
+ 645 0002 83B0     		sub	sp, sp, #12
+ 646              	.LCFI52:
+ 647              		.cfi_def_cfa_offset 16
+ 648 0004 00AF     		add	r7, sp, #0
+ 649              	.LCFI53:
+ 650              		.cfi_def_cfa_register 7
+ 651 0006 7860     		str	r0, [r7, #4]
+ 652 0008 3960     		str	r1, [r7]
+ 256:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Silence warnings about unused parameters. */
+ 257:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     ( void ) attr;
+ 258:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     ( void ) policy;
+ 259:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 260:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return 0;
+ 653              		.loc 1 260 12
+ 654 000a 0023     		movs	r3, #0
+ 261:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 655              		.loc 1 261 1
+ 656 000c 1846     		mov	r0, r3
+ 657 000e 0C37     		adds	r7, r7, #12
+ 658              	.LCFI54:
+ 659              		.cfi_def_cfa_offset 4
+ 660 0010 BD46     		mov	sp, r7
+ 661              	.LCFI55:
+ 662              		.cfi_def_cfa_register 13
+ 663              		@ sp needed
+ 664 0012 5DF8047B 		ldr	r7, [sp], #4
+ 665              	.LCFI56:
+ 666              		.cfi_restore 7
+ 667              		.cfi_def_cfa_offset 0
+ 668 0016 7047     		bx	lr
+ARM GAS  /tmp/cctJOaLa.s 			page 17
+
+
+ 669              		.cfi_endproc
+ 670              	.LFE13:
+ 672              		.section	.text.pthread_attr_setstacksize,"ax",%progbits
+ 673              		.align	1
+ 674              		.global	pthread_attr_setstacksize
+ 675              		.syntax unified
+ 676              		.thumb
+ 677              		.thumb_func
+ 678              		.fpu fpv4-sp-d16
+ 680              	pthread_attr_setstacksize:
+ 681              	.LFB14:
+ 262:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 263:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 264:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 265:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_attr_setstacksize( pthread_attr_t * attr,
+ 266:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                                size_t stacksize )
+ 267:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 682              		.loc 1 267 1
+ 683              		.cfi_startproc
+ 684              		@ args = 0, pretend = 0, frame = 16
+ 685              		@ frame_needed = 1, uses_anonymous_args = 0
+ 686              		@ link register save eliminated.
+ 687 0000 80B4     		push	{r7}
+ 688              	.LCFI57:
+ 689              		.cfi_def_cfa_offset 4
+ 690              		.cfi_offset 7, -4
+ 691 0002 85B0     		sub	sp, sp, #20
+ 692              	.LCFI58:
+ 693              		.cfi_def_cfa_offset 24
+ 694 0004 00AF     		add	r7, sp, #0
+ 695              	.LCFI59:
+ 696              		.cfi_def_cfa_register 7
+ 697 0006 7860     		str	r0, [r7, #4]
+ 698 0008 3960     		str	r1, [r7]
+ 268:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     int iStatus = 0;
+ 699              		.loc 1 268 9
+ 700 000a 0023     		movs	r3, #0
+ 701 000c FB60     		str	r3, [r7, #12]
+ 269:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_attr_internal_t * pxAttr = ( pthread_attr_internal_t * ) ( attr );
+ 702              		.loc 1 269 31
+ 703 000e 7B68     		ldr	r3, [r7, #4]
+ 704 0010 BB60     		str	r3, [r7, #8]
+ 270:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 271:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( stacksize < PTHREAD_STACK_MIN )
+ 705              		.loc 1 271 7
+ 706 0012 3B68     		ldr	r3, [r7]
+ 707 0014 B3F5007F 		cmp	r3, #512
+ 708 0018 02D2     		bcs	.L33
+ 272:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 273:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         iStatus = EINVAL;
+ 709              		.loc 1 273 17
+ 710 001a 1623     		movs	r3, #22
+ 711 001c FB60     		str	r3, [r7, #12]
+ 712 001e 03E0     		b	.L34
+ 713              	.L33:
+ 274:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 275:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     else
+ARM GAS  /tmp/cctJOaLa.s 			page 18
+
+
+ 276:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 277:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         pxAttr->usStackSize = ( uint16_t ) stacksize;
+ 714              		.loc 1 277 31
+ 715 0020 3B68     		ldr	r3, [r7]
+ 716 0022 9AB2     		uxth	r2, r3
+ 717              		.loc 1 277 29
+ 718 0024 BB68     		ldr	r3, [r7, #8]
+ 719 0026 1A80     		strh	r2, [r3]	@ movhi
+ 720              	.L34:
+ 278:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 279:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 280:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return iStatus;
+ 721              		.loc 1 280 12
+ 722 0028 FB68     		ldr	r3, [r7, #12]
+ 281:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 723              		.loc 1 281 1
+ 724 002a 1846     		mov	r0, r3
+ 725 002c 1437     		adds	r7, r7, #20
+ 726              	.LCFI60:
+ 727              		.cfi_def_cfa_offset 4
+ 728 002e BD46     		mov	sp, r7
+ 729              	.LCFI61:
+ 730              		.cfi_def_cfa_register 13
+ 731              		@ sp needed
+ 732 0030 5DF8047B 		ldr	r7, [sp], #4
+ 733              	.LCFI62:
+ 734              		.cfi_restore 7
+ 735              		.cfi_def_cfa_offset 0
+ 736 0034 7047     		bx	lr
+ 737              		.cfi_endproc
+ 738              	.LFE14:
+ 740              		.section	.rodata
+ 741              		.align	2
+ 742              	.LC0:
+ 743 0000 70746872 		.ascii	"pthread\000"
+ 743      65616400 
+ 744              		.section	.text.pthread_create,"ax",%progbits
+ 745              		.align	1
+ 746              		.global	pthread_create
+ 747              		.syntax unified
+ 748              		.thumb
+ 749              		.thumb_func
+ 750              		.fpu fpv4-sp-d16
+ 752              	pthread_create:
+ 753              	.LFB15:
+ 282:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 283:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 284:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 285:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_create( pthread_t * thread,
+ 286:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                     const pthread_attr_t * attr,
+ 287:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                     void *( *startroutine )( void * ),
+ 288:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                     void * arg )
+ 289:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 754              		.loc 1 289 1
+ 755              		.cfi_startproc
+ 756              		@ args = 0, pretend = 0, frame = 32
+ 757              		@ frame_needed = 1, uses_anonymous_args = 0
+ARM GAS  /tmp/cctJOaLa.s 			page 19
+
+
+ 758 0000 80B5     		push	{r7, lr}
+ 759              	.LCFI63:
+ 760              		.cfi_def_cfa_offset 8
+ 761              		.cfi_offset 7, -8
+ 762              		.cfi_offset 14, -4
+ 763 0002 8AB0     		sub	sp, sp, #40
+ 764              	.LCFI64:
+ 765              		.cfi_def_cfa_offset 48
+ 766 0004 02AF     		add	r7, sp, #8
+ 767              	.LCFI65:
+ 768              		.cfi_def_cfa 7, 40
+ 769 0006 F860     		str	r0, [r7, #12]
+ 770 0008 B960     		str	r1, [r7, #8]
+ 771 000a 7A60     		str	r2, [r7, #4]
+ 772 000c 3B60     		str	r3, [r7]
+ 290:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     int iStatus = 0;
+ 773              		.loc 1 290 9
+ 774 000e 0023     		movs	r3, #0
+ 775 0010 FB61     		str	r3, [r7, #28]
+ 291:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_internal_t * pxThread = NULL;
+ 776              		.loc 1 291 26
+ 777 0012 0023     		movs	r3, #0
+ 778 0014 BB61     		str	r3, [r7, #24]
+ 292:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     struct sched_param xSchedParam = { .sched_priority = tskIDLE_PRIORITY };
+ 779              		.loc 1 292 24
+ 780 0016 0023     		movs	r3, #0
+ 781 0018 7B61     		str	r3, [r7, #20]
+ 293:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 294:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Allocate memory for new thread object. */
+ 295:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pxThread = ( pthread_internal_t * ) pvPortMalloc( sizeof( pthread_internal_t ) );
+ 782              		.loc 1 295 41
+ 783 001a B420     		movs	r0, #180
+ 784 001c FFF7FEFF 		bl	pvPortMalloc
+ 785 0020 B861     		str	r0, [r7, #24]
+ 296:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 297:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( pxThread == NULL )
+ 786              		.loc 1 297 7
+ 787 0022 BB69     		ldr	r3, [r7, #24]
+ 788 0024 002B     		cmp	r3, #0
+ 789 0026 01D1     		bne	.L37
+ 298:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 299:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* No memory. */
+ 300:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         iStatus = EAGAIN;
+ 790              		.loc 1 300 17
+ 791 0028 0B23     		movs	r3, #11
+ 792 002a FB61     		str	r3, [r7, #28]
+ 793              	.L37:
+ 301:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 302:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 303:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( iStatus == 0 )
+ 794              		.loc 1 303 7
+ 795 002c FB69     		ldr	r3, [r7, #28]
+ 796 002e 002B     		cmp	r3, #0
+ 797 0030 2CD1     		bne	.L38
+ 304:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 305:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* No attributes given, use default attributes. */
+ 306:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         if( attr == NULL )
+ARM GAS  /tmp/cctJOaLa.s 			page 20
+
+
+ 798              		.loc 1 306 11
+ 799 0032 BB68     		ldr	r3, [r7, #8]
+ 800 0034 002B     		cmp	r3, #0
+ 801 0036 04D1     		bne	.L39
+ 307:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         {
+ 308:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             pxThread->xAttr = xDefaultThreadAttributes;
+ 802              		.loc 1 308 29
+ 803 0038 BB69     		ldr	r3, [r7, #24]
+ 804 003a 2B4A     		ldr	r2, .L45
+ 805 003c 1268     		ldr	r2, [r2]
+ 806 003e 1A60     		str	r2, [r3]
+ 807 0040 03E0     		b	.L40
+ 808              	.L39:
+ 309:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         }
+ 310:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Otherwise, use provided attributes. */
+ 311:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         else
+ 312:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         {
+ 313:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             pxThread->xAttr = *( ( pthread_attr_internal_t * ) ( attr ) );
+ 809              		.loc 1 313 29
+ 810 0042 BB69     		ldr	r3, [r7, #24]
+ 811 0044 BA68     		ldr	r2, [r7, #8]
+ 812 0046 1068     		ldr	r0, [r2]	@ unaligned
+ 813 0048 1860     		str	r0, [r3]
+ 814              	.L40:
+ 314:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         }
+ 315:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 316:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Get priority from attributes */
+ 317:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         xSchedParam.sched_priority = ( int ) pthreadGET_SCHED_PRIORITY( pxThread->xAttr.usSchedPrio
+ 815              		.loc 1 317 46
+ 816 004a BB69     		ldr	r3, [r7, #24]
+ 817 004c 5B88     		ldrh	r3, [r3, #2]
+ 818              		.loc 1 317 38
+ 819 004e C3F30E03 		ubfx	r3, r3, #0, #15
+ 820              		.loc 1 317 36
+ 821 0052 7B61     		str	r3, [r7, #20]
+ 318:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 319:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Set argument and start routine. */
+ 320:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         pxThread->xTaskArg = arg;
+ 822              		.loc 1 320 28
+ 823 0054 BB69     		ldr	r3, [r7, #24]
+ 824 0056 3A68     		ldr	r2, [r7]
+ 825 0058 9A60     		str	r2, [r3, #8]
+ 321:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         pxThread->pvStartRoutine = startroutine;
+ 826              		.loc 1 321 34
+ 827 005a BB69     		ldr	r3, [r7, #24]
+ 828 005c 7A68     		ldr	r2, [r7, #4]
+ 829 005e 5A60     		str	r2, [r3, #4]
+ 322:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 323:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* If this thread is joinable, create the synchronization mechanisms for
+ 324:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****          * pthread_join. */
+ 325:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 326:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         if( pthreadIS_JOINABLE( pxThread->xAttr.usSchedPriorityDetachState ) )
+ 830              		.loc 1 326 13
+ 831 0060 BB69     		ldr	r3, [r7, #24]
+ 832 0062 5B88     		ldrh	r3, [r3, #2]
+ 833 0064 1BB2     		sxth	r3, r3
+ 834              		.loc 1 326 11
+ARM GAS  /tmp/cctJOaLa.s 			page 21
+
+
+ 835 0066 002B     		cmp	r3, #0
+ 836 0068 10DA     		bge	.L38
+ 327:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         {
+ 328:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             /* These calls will not fail when their arguments aren't NULL. */
+ 329:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             ( void ) xSemaphoreCreateMutexStatic( &pxThread->xJoinMutex );
+ 837              		.loc 1 329 22
+ 838 006a BB69     		ldr	r3, [r7, #24]
+ 839 006c 6033     		adds	r3, r3, #96
+ 840 006e 1946     		mov	r1, r3
+ 841 0070 0120     		movs	r0, #1
+ 842 0072 FFF7FEFF 		bl	xQueueCreateMutexStatic
+ 330:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             ( void ) xSemaphoreCreateBinaryStatic( &pxThread->xJoinBarrier );
+ 843              		.loc 1 330 22
+ 844 0076 BB69     		ldr	r3, [r7, #24]
+ 845 0078 03F11002 		add	r2, r3, #16
+ 846 007c 0323     		movs	r3, #3
+ 847 007e 0093     		str	r3, [sp]
+ 848 0080 1346     		mov	r3, r2
+ 849 0082 0022     		movs	r2, #0
+ 850 0084 0021     		movs	r1, #0
+ 851 0086 0120     		movs	r0, #1
+ 852 0088 FFF7FEFF 		bl	xQueueGenericCreateStatic
+ 853              	.L38:
+ 331:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         }
+ 332:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 333:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 334:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( iStatus == 0 )
+ 854              		.loc 1 334 7
+ 855 008c FB69     		ldr	r3, [r7, #28]
+ 856 008e 002B     		cmp	r3, #0
+ 857 0090 25D1     		bne	.L41
+ 335:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 336:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Suspend all tasks to create a critical section. This ensures that
+ 337:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****          * the new thread doesn't exit before a tag is assigned. */
+ 338:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         vTaskSuspendAll();
+ 858              		.loc 1 338 9
+ 859 0092 FFF7FEFF 		bl	vTaskSuspendAll
+ 339:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 340:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Create the FreeRTOS task that will run the pthread. */
+ 341:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         if( xTaskCreate( prvRunThread,
+ 342:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                          posixconfigPTHREAD_TASK_NAME,
+ 343:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                          ( uint16_t ) ( pxThread->xAttr.usStackSize / sizeof( StackType_t ) ),
+ 860              		.loc 1 343 56
+ 861 0096 BB69     		ldr	r3, [r7, #24]
+ 862 0098 1B88     		ldrh	r3, [r3]
+ 341:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                          posixconfigPTHREAD_TASK_NAME,
+ 863              		.loc 1 341 13
+ 864 009a 9B08     		lsrs	r3, r3, #2
+ 865 009c 9AB2     		uxth	r2, r3
+ 344:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                          ( void * ) pxThread,
+ 345:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                          xSchedParam.sched_priority,
+ 866              		.loc 1 345 37
+ 867 009e 7B69     		ldr	r3, [r7, #20]
+ 341:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                          posixconfigPTHREAD_TASK_NAME,
+ 868              		.loc 1 341 13
+ 869 00a0 1946     		mov	r1, r3
+ 870 00a2 BB69     		ldr	r3, [r7, #24]
+ARM GAS  /tmp/cctJOaLa.s 			page 22
+
+
+ 871 00a4 0C33     		adds	r3, r3, #12
+ 872 00a6 0193     		str	r3, [sp, #4]
+ 873 00a8 0091     		str	r1, [sp]
+ 874 00aa BB69     		ldr	r3, [r7, #24]
+ 875 00ac 0F49     		ldr	r1, .L45+4
+ 876 00ae 1048     		ldr	r0, .L45+8
+ 877 00b0 FFF7FEFF 		bl	xTaskCreate
+ 878 00b4 0346     		mov	r3, r0
+ 341:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                          posixconfigPTHREAD_TASK_NAME,
+ 879              		.loc 1 341 11
+ 880 00b6 012B     		cmp	r3, #1
+ 881 00b8 05D0     		beq	.L42
+ 346:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                          &pxThread->xTaskHandle ) != pdPASS )
+ 347:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         {
+ 348:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             /* Task creation failed, no memory. */
+ 349:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             vPortFree( pxThread );
+ 882              		.loc 1 349 13
+ 883 00ba B869     		ldr	r0, [r7, #24]
+ 884 00bc FFF7FEFF 		bl	vPortFree
+ 350:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             iStatus = EAGAIN;
+ 885              		.loc 1 350 21
+ 886 00c0 0B23     		movs	r3, #11
+ 887 00c2 FB61     		str	r3, [r7, #28]
+ 888 00c4 09E0     		b	.L43
+ 889              	.L42:
+ 351:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         }
+ 352:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         else
+ 353:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         {
+ 354:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             /* Store the pointer to the thread object in the task tag. */
+ 355:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             vTaskSetApplicationTaskTag( pxThread->xTaskHandle, ( TaskHookFunction_t ) pxThread );
+ 890              		.loc 1 355 13
+ 891 00c6 BB69     		ldr	r3, [r7, #24]
+ 892 00c8 DB68     		ldr	r3, [r3, #12]
+ 893 00ca BA69     		ldr	r2, [r7, #24]
+ 894 00cc 1146     		mov	r1, r2
+ 895 00ce 1846     		mov	r0, r3
+ 896 00d0 FFF7FEFF 		bl	vTaskSetApplicationTaskTag
+ 356:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 357:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             /* Set the thread object for the user. */
+ 358:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             *thread = ( pthread_t ) pxThread;
+ 897              		.loc 1 358 21
+ 898 00d4 FB68     		ldr	r3, [r7, #12]
+ 899 00d6 BA69     		ldr	r2, [r7, #24]
+ 900 00d8 1A60     		str	r2, [r3]
+ 901              	.L43:
+ 359:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         }
+ 360:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 361:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* End the critical section. */
+ 362:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         xTaskResumeAll();
+ 902              		.loc 1 362 9
+ 903 00da FFF7FEFF 		bl	xTaskResumeAll
+ 904              	.L41:
+ 363:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 364:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 365:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return iStatus;
+ 905              		.loc 1 365 12
+ 906 00de FB69     		ldr	r3, [r7, #28]
+ARM GAS  /tmp/cctJOaLa.s 			page 23
+
+
+ 366:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 907              		.loc 1 366 1
+ 908 00e0 1846     		mov	r0, r3
+ 909 00e2 2037     		adds	r7, r7, #32
+ 910              	.LCFI66:
+ 911              		.cfi_def_cfa_offset 8
+ 912 00e4 BD46     		mov	sp, r7
+ 913              	.LCFI67:
+ 914              		.cfi_def_cfa_register 13
+ 915              		@ sp needed
+ 916 00e6 80BD     		pop	{r7, pc}
+ 917              	.L46:
+ 918              		.align	2
+ 919              	.L45:
+ 920 00e8 00000000 		.word	xDefaultThreadAttributes
+ 921 00ec 00000000 		.word	.LC0
+ 922 00f0 00000000 		.word	prvRunThread
+ 923              		.cfi_endproc
+ 924              	.LFE15:
+ 926              		.section	.text.pthread_getschedparam,"ax",%progbits
+ 927              		.align	1
+ 928              		.global	pthread_getschedparam
+ 929              		.syntax unified
+ 930              		.thumb
+ 931              		.thumb_func
+ 932              		.fpu fpv4-sp-d16
+ 934              	pthread_getschedparam:
+ 935              	.LFB16:
+ 367:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 368:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 369:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 370:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_getschedparam( pthread_t thread,
+ 371:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                            int * policy,
+ 372:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                            struct sched_param * param )
+ 373:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 936              		.loc 1 373 1
+ 937              		.cfi_startproc
+ 938              		@ args = 0, pretend = 0, frame = 24
+ 939              		@ frame_needed = 1, uses_anonymous_args = 0
+ 940              		@ link register save eliminated.
+ 941 0000 80B4     		push	{r7}
+ 942              	.LCFI68:
+ 943              		.cfi_def_cfa_offset 4
+ 944              		.cfi_offset 7, -4
+ 945 0002 87B0     		sub	sp, sp, #28
+ 946              	.LCFI69:
+ 947              		.cfi_def_cfa_offset 32
+ 948 0004 00AF     		add	r7, sp, #0
+ 949              	.LCFI70:
+ 950              		.cfi_def_cfa_register 7
+ 951 0006 F860     		str	r0, [r7, #12]
+ 952 0008 B960     		str	r1, [r7, #8]
+ 953 000a 7A60     		str	r2, [r7, #4]
+ 374:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     int iStatus = 0;
+ 954              		.loc 1 374 9
+ 955 000c 0023     		movs	r3, #0
+ 956 000e 7B61     		str	r3, [r7, #20]
+ARM GAS  /tmp/cctJOaLa.s 			page 24
+
+
+ 375:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_internal_t * pxThread = ( pthread_internal_t * ) thread;
+ 957              		.loc 1 375 26
+ 958 0010 FB68     		ldr	r3, [r7, #12]
+ 959 0012 3B61     		str	r3, [r7, #16]
+ 376:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 377:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     *policy = SCHED_OTHER;
+ 960              		.loc 1 377 13
+ 961 0014 BB68     		ldr	r3, [r7, #8]
+ 962 0016 0022     		movs	r2, #0
+ 963 0018 1A60     		str	r2, [r3]
+ 378:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     param->sched_priority = ( int ) pthreadGET_SCHED_PRIORITY( pxThread->xAttr.usSchedPriorityDetac
+ 964              		.loc 1 378 37
+ 965 001a 3B69     		ldr	r3, [r7, #16]
+ 966 001c 5B88     		ldrh	r3, [r3, #2]
+ 967              		.loc 1 378 29
+ 968 001e C3F30E02 		ubfx	r2, r3, #0, #15
+ 969              		.loc 1 378 27
+ 970 0022 7B68     		ldr	r3, [r7, #4]
+ 971 0024 1A60     		str	r2, [r3]
+ 379:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 380:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return iStatus;
+ 972              		.loc 1 380 12
+ 973 0026 7B69     		ldr	r3, [r7, #20]
+ 381:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 974              		.loc 1 381 1
+ 975 0028 1846     		mov	r0, r3
+ 976 002a 1C37     		adds	r7, r7, #28
+ 977              	.LCFI71:
+ 978              		.cfi_def_cfa_offset 4
+ 979 002c BD46     		mov	sp, r7
+ 980              	.LCFI72:
+ 981              		.cfi_def_cfa_register 13
+ 982              		@ sp needed
+ 983 002e 5DF8047B 		ldr	r7, [sp], #4
+ 984              	.LCFI73:
+ 985              		.cfi_restore 7
+ 986              		.cfi_def_cfa_offset 0
+ 987 0032 7047     		bx	lr
+ 988              		.cfi_endproc
+ 989              	.LFE16:
+ 991              		.section	.text.pthread_equal,"ax",%progbits
+ 992              		.align	1
+ 993              		.global	pthread_equal
+ 994              		.syntax unified
+ 995              		.thumb
+ 996              		.thumb_func
+ 997              		.fpu fpv4-sp-d16
+ 999              	pthread_equal:
+ 1000              	.LFB17:
+ 382:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 383:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 384:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 385:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_equal( pthread_t t1,
+ 386:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                    pthread_t t2 )
+ 387:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 1001              		.loc 1 387 1
+ 1002              		.cfi_startproc
+ARM GAS  /tmp/cctJOaLa.s 			page 25
+
+
+ 1003              		@ args = 0, pretend = 0, frame = 8
+ 1004              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1005              		@ link register save eliminated.
+ 1006 0000 80B4     		push	{r7}
+ 1007              	.LCFI74:
+ 1008              		.cfi_def_cfa_offset 4
+ 1009              		.cfi_offset 7, -4
+ 1010 0002 83B0     		sub	sp, sp, #12
+ 1011              	.LCFI75:
+ 1012              		.cfi_def_cfa_offset 16
+ 1013 0004 00AF     		add	r7, sp, #0
+ 1014              	.LCFI76:
+ 1015              		.cfi_def_cfa_register 7
+ 1016 0006 7860     		str	r0, [r7, #4]
+ 1017 0008 3960     		str	r1, [r7]
+ 388:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return t1 == t2;
+ 1018              		.loc 1 388 15
+ 1019 000a 7A68     		ldr	r2, [r7, #4]
+ 1020 000c 3B68     		ldr	r3, [r7]
+ 1021 000e 9A42     		cmp	r2, r3
+ 1022 0010 0CBF     		ite	eq
+ 1023 0012 0123     		moveq	r3, #1
+ 1024 0014 0023     		movne	r3, #0
+ 1025 0016 DBB2     		uxtb	r3, r3
+ 389:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 1026              		.loc 1 389 1
+ 1027 0018 1846     		mov	r0, r3
+ 1028 001a 0C37     		adds	r7, r7, #12
+ 1029              	.LCFI77:
+ 1030              		.cfi_def_cfa_offset 4
+ 1031 001c BD46     		mov	sp, r7
+ 1032              	.LCFI78:
+ 1033              		.cfi_def_cfa_register 13
+ 1034              		@ sp needed
+ 1035 001e 5DF8047B 		ldr	r7, [sp], #4
+ 1036              	.LCFI79:
+ 1037              		.cfi_restore 7
+ 1038              		.cfi_def_cfa_offset 0
+ 1039 0022 7047     		bx	lr
+ 1040              		.cfi_endproc
+ 1041              	.LFE17:
+ 1043              		.section	.text.pthread_exit,"ax",%progbits
+ 1044              		.align	1
+ 1045              		.global	pthread_exit
+ 1046              		.syntax unified
+ 1047              		.thumb
+ 1048              		.thumb_func
+ 1049              		.fpu fpv4-sp-d16
+ 1051              	pthread_exit:
+ 1052              	.LFB18:
+ 390:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 391:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 392:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 393:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** void pthread_exit( void * value_ptr )
+ 394:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 1053              		.loc 1 394 1
+ 1054              		.cfi_startproc
+ARM GAS  /tmp/cctJOaLa.s 			page 26
+
+
+ 1055              		@ args = 0, pretend = 0, frame = 16
+ 1056              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1057 0000 80B5     		push	{r7, lr}
+ 1058              	.LCFI80:
+ 1059              		.cfi_def_cfa_offset 8
+ 1060              		.cfi_offset 7, -8
+ 1061              		.cfi_offset 14, -4
+ 1062 0002 84B0     		sub	sp, sp, #16
+ 1063              	.LCFI81:
+ 1064              		.cfi_def_cfa_offset 24
+ 1065 0004 00AF     		add	r7, sp, #0
+ 1066              	.LCFI82:
+ 1067              		.cfi_def_cfa_register 7
+ 1068 0006 7860     		str	r0, [r7, #4]
+ 395:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_internal_t * pxThread = ( pthread_internal_t * ) pthread_self();
+ 1069              		.loc 1 395 62
+ 1070 0008 FFF7FEFF 		bl	pthread_self
+ 1071 000c F860     		str	r0, [r7, #12]
+ 396:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 397:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Set the return value. */
+ 398:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pxThread->xReturn = value_ptr;
+ 1072              		.loc 1 398 23
+ 1073 000e FB68     		ldr	r3, [r7, #12]
+ 1074 0010 7A68     		ldr	r2, [r7, #4]
+ 1075 0012 C3F8B020 		str	r2, [r3, #176]
+ 399:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 400:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Exit this thread. */
+ 401:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     prvExitThread();
+ 1076              		.loc 1 401 5
+ 1077 0016 FFF7FEFF 		bl	prvExitThread
+ 402:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 1078              		.loc 1 402 1
+ 1079 001a 00BF     		nop
+ 1080 001c 1037     		adds	r7, r7, #16
+ 1081              	.LCFI83:
+ 1082              		.cfi_def_cfa_offset 8
+ 1083 001e BD46     		mov	sp, r7
+ 1084              	.LCFI84:
+ 1085              		.cfi_def_cfa_register 13
+ 1086              		@ sp needed
+ 1087 0020 80BD     		pop	{r7, pc}
+ 1088              		.cfi_endproc
+ 1089              	.LFE18:
+ 1091              		.section	.text.pthread_join,"ax",%progbits
+ 1092              		.align	1
+ 1093              		.global	pthread_join
+ 1094              		.syntax unified
+ 1095              		.thumb
+ 1096              		.thumb_func
+ 1097              		.fpu fpv4-sp-d16
+ 1099              	pthread_join:
+ 1100              	.LFB19:
+ 403:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 404:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 405:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 406:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_join( pthread_t pthread,
+ 407:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                   void ** retval )
+ARM GAS  /tmp/cctJOaLa.s 			page 27
+
+
+ 408:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 1101              		.loc 1 408 1
+ 1102              		.cfi_startproc
+ 1103              		@ args = 0, pretend = 0, frame = 16
+ 1104              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1105 0000 80B5     		push	{r7, lr}
+ 1106              	.LCFI85:
+ 1107              		.cfi_def_cfa_offset 8
+ 1108              		.cfi_offset 7, -8
+ 1109              		.cfi_offset 14, -4
+ 1110 0002 84B0     		sub	sp, sp, #16
+ 1111              	.LCFI86:
+ 1112              		.cfi_def_cfa_offset 24
+ 1113 0004 00AF     		add	r7, sp, #0
+ 1114              	.LCFI87:
+ 1115              		.cfi_def_cfa_register 7
+ 1116 0006 7860     		str	r0, [r7, #4]
+ 1117 0008 3960     		str	r1, [r7]
+ 409:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     int iStatus = 0;
+ 1118              		.loc 1 409 9
+ 1119 000a 0023     		movs	r3, #0
+ 1120 000c FB60     		str	r3, [r7, #12]
+ 410:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_internal_t * pxThread = ( pthread_internal_t * ) pthread;
+ 1121              		.loc 1 410 26
+ 1122 000e 7B68     		ldr	r3, [r7, #4]
+ 1123 0010 BB60     		str	r3, [r7, #8]
+ 411:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 412:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Make sure pthread is joinable. Otherwise, this function would block
+ 413:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****      * forever waiting for an unjoinable thread. */
+ 414:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( !pthreadIS_JOINABLE( pxThread->xAttr.usSchedPriorityDetachState ) )
+ 1124              		.loc 1 414 10
+ 1125 0012 BB68     		ldr	r3, [r7, #8]
+ 1126 0014 5B88     		ldrh	r3, [r3, #2]
+ 1127              		.loc 1 414 9
+ 1128 0016 1BB2     		sxth	r3, r3
+ 1129              		.loc 1 414 7
+ 1130 0018 002B     		cmp	r3, #0
+ 1131 001a 01DB     		blt	.L53
+ 415:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 416:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         iStatus = EDEADLK;
+ 1132              		.loc 1 416 17
+ 1133 001c 2D23     		movs	r3, #45
+ 1134 001e FB60     		str	r3, [r7, #12]
+ 1135              	.L53:
+ 417:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 418:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 419:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Only one thread may attempt to join another. Lock the join mutex
+ 420:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****      * to prevent other threads from calling pthread_join on the same thread. */
+ 421:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( iStatus == 0 )
+ 1136              		.loc 1 421 7
+ 1137 0020 FB68     		ldr	r3, [r7, #12]
+ 1138 0022 002B     		cmp	r3, #0
+ 1139 0024 0AD1     		bne	.L54
+ 422:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 423:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         if( xSemaphoreTake( ( SemaphoreHandle_t ) &pxThread->xJoinMutex, 0 ) != pdPASS )
+ 1140              		.loc 1 423 13
+ 1141 0026 BB68     		ldr	r3, [r7, #8]
+ARM GAS  /tmp/cctJOaLa.s 			page 28
+
+
+ 1142 0028 6033     		adds	r3, r3, #96
+ 1143 002a 0021     		movs	r1, #0
+ 1144 002c 1846     		mov	r0, r3
+ 1145 002e FFF7FEFF 		bl	xQueueSemaphoreTake
+ 1146 0032 0346     		mov	r3, r0
+ 1147              		.loc 1 423 11
+ 1148 0034 012B     		cmp	r3, #1
+ 1149 0036 01D0     		beq	.L54
+ 424:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         {
+ 425:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             /* Another thread has already joined the requested thread, which would
+ 426:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****              * cause this thread to wait forever. */
+ 427:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             iStatus = EDEADLK;
+ 1150              		.loc 1 427 21
+ 1151 0038 2D23     		movs	r3, #45
+ 1152 003a FB60     		str	r3, [r7, #12]
+ 1153              	.L54:
+ 428:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         }
+ 429:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 430:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 431:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Attempting to join the calling thread would cause a deadlock. */
+ 432:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( iStatus == 0 )
+ 1154              		.loc 1 432 7
+ 1155 003c FB68     		ldr	r3, [r7, #12]
+ 1156 003e 002B     		cmp	r3, #0
+ 1157 0040 0BD1     		bne	.L55
+ 433:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 434:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         if( pthread_equal( pthread_self(), pthread ) != 0 )
+ 1158              		.loc 1 434 13
+ 1159 0042 FFF7FEFF 		bl	pthread_self
+ 1160 0046 0346     		mov	r3, r0
+ 1161 0048 7968     		ldr	r1, [r7, #4]
+ 1162 004a 1846     		mov	r0, r3
+ 1163 004c FFF7FEFF 		bl	pthread_equal
+ 1164 0050 0346     		mov	r3, r0
+ 1165              		.loc 1 434 11
+ 1166 0052 002B     		cmp	r3, #0
+ 1167 0054 01D0     		beq	.L55
+ 435:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         {
+ 436:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             iStatus = EDEADLK;
+ 1168              		.loc 1 436 21
+ 1169 0056 2D23     		movs	r3, #45
+ 1170 0058 FB60     		str	r3, [r7, #12]
+ 1171              	.L55:
+ 437:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         }
+ 438:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 439:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 440:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( iStatus == 0 )
+ 1172              		.loc 1 440 7
+ 1173 005a FB68     		ldr	r3, [r7, #12]
+ 1174 005c 002B     		cmp	r3, #0
+ 1175 005e 34D1     		bne	.L56
+ 441:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 442:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Wait for the joining thread to finish. Because this call waits forever,
+ 443:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****          * it should never fail. */
+ 444:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         ( void ) xSemaphoreTake( ( SemaphoreHandle_t ) &pxThread->xJoinBarrier, portMAX_DELAY );
+ 1176              		.loc 1 444 18
+ 1177 0060 BB68     		ldr	r3, [r7, #8]
+ARM GAS  /tmp/cctJOaLa.s 			page 29
+
+
+ 1178 0062 1033     		adds	r3, r3, #16
+ 1179 0064 4FF0FF31 		mov	r1, #-1
+ 1180 0068 1846     		mov	r0, r3
+ 1181 006a FFF7FEFF 		bl	xQueueSemaphoreTake
+ 445:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 446:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Create a critical section to clean up the joined thread. */
+ 447:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         vTaskSuspendAll();
+ 1182              		.loc 1 447 9
+ 1183 006e FFF7FEFF 		bl	vTaskSuspendAll
+ 448:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 449:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Release xJoinBarrier and delete it. */
+ 450:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         ( void ) xSemaphoreGive( ( SemaphoreHandle_t ) &pxThread->xJoinBarrier );
+ 1184              		.loc 1 450 18
+ 1185 0072 BB68     		ldr	r3, [r7, #8]
+ 1186 0074 03F11000 		add	r0, r3, #16
+ 1187 0078 0023     		movs	r3, #0
+ 1188 007a 0022     		movs	r2, #0
+ 1189 007c 0021     		movs	r1, #0
+ 1190 007e FFF7FEFF 		bl	xQueueGenericSend
+ 451:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         vSemaphoreDelete( ( SemaphoreHandle_t ) &pxThread->xJoinBarrier );
+ 1191              		.loc 1 451 9
+ 1192 0082 BB68     		ldr	r3, [r7, #8]
+ 1193 0084 1033     		adds	r3, r3, #16
+ 1194 0086 1846     		mov	r0, r3
+ 1195 0088 FFF7FEFF 		bl	vQueueDelete
+ 452:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 453:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Release xJoinMutex and delete it. */
+ 454:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         ( void ) xSemaphoreGive( ( SemaphoreHandle_t ) &pxThread->xJoinMutex );
+ 1196              		.loc 1 454 18
+ 1197 008c BB68     		ldr	r3, [r7, #8]
+ 1198 008e 03F16000 		add	r0, r3, #96
+ 1199 0092 0023     		movs	r3, #0
+ 1200 0094 0022     		movs	r2, #0
+ 1201 0096 0021     		movs	r1, #0
+ 1202 0098 FFF7FEFF 		bl	xQueueGenericSend
+ 455:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         vSemaphoreDelete( ( SemaphoreHandle_t ) &pxThread->xJoinMutex );
+ 1203              		.loc 1 455 9
+ 1204 009c BB68     		ldr	r3, [r7, #8]
+ 1205 009e 6033     		adds	r3, r3, #96
+ 1206 00a0 1846     		mov	r0, r3
+ 1207 00a2 FFF7FEFF 		bl	vQueueDelete
+ 456:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 457:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Delete the FreeRTOS task that ran the thread. */
+ 458:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         vTaskDelete( pxThread->xTaskHandle );
+ 1208              		.loc 1 458 9
+ 1209 00a6 BB68     		ldr	r3, [r7, #8]
+ 1210 00a8 DB68     		ldr	r3, [r3, #12]
+ 1211 00aa 1846     		mov	r0, r3
+ 1212 00ac FFF7FEFF 		bl	vTaskDelete
+ 459:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 460:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Set the return value. */
+ 461:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         if( retval != NULL )
+ 1213              		.loc 1 461 11
+ 1214 00b0 3B68     		ldr	r3, [r7]
+ 1215 00b2 002B     		cmp	r3, #0
+ 1216 00b4 04D0     		beq	.L57
+ 462:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         {
+ARM GAS  /tmp/cctJOaLa.s 			page 30
+
+
+ 463:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****             *retval = pxThread->xReturn;
+ 1217              		.loc 1 463 31
+ 1218 00b6 BB68     		ldr	r3, [r7, #8]
+ 1219 00b8 D3F8B020 		ldr	r2, [r3, #176]
+ 1220              		.loc 1 463 21
+ 1221 00bc 3B68     		ldr	r3, [r7]
+ 1222 00be 1A60     		str	r2, [r3]
+ 1223              	.L57:
+ 464:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         }
+ 465:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 466:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Free the thread object. */
+ 467:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         vPortFree( pxThread );
+ 1224              		.loc 1 467 9
+ 1225 00c0 B868     		ldr	r0, [r7, #8]
+ 1226 00c2 FFF7FEFF 		bl	vPortFree
+ 468:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 469:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* End the critical section. */
+ 470:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         xTaskResumeAll();
+ 1227              		.loc 1 470 9
+ 1228 00c6 FFF7FEFF 		bl	xTaskResumeAll
+ 1229              	.L56:
+ 471:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 472:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 473:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return iStatus;
+ 1230              		.loc 1 473 12
+ 1231 00ca FB68     		ldr	r3, [r7, #12]
+ 474:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 1232              		.loc 1 474 1
+ 1233 00cc 1846     		mov	r0, r3
+ 1234 00ce 1037     		adds	r7, r7, #16
+ 1235              	.LCFI88:
+ 1236              		.cfi_def_cfa_offset 8
+ 1237 00d0 BD46     		mov	sp, r7
+ 1238              	.LCFI89:
+ 1239              		.cfi_def_cfa_register 13
+ 1240              		@ sp needed
+ 1241 00d2 80BD     		pop	{r7, pc}
+ 1242              		.cfi_endproc
+ 1243              	.LFE19:
+ 1245              		.section	.text.pthread_self,"ax",%progbits
+ 1246              		.align	1
+ 1247              		.global	pthread_self
+ 1248              		.syntax unified
+ 1249              		.thumb
+ 1250              		.thumb_func
+ 1251              		.fpu fpv4-sp-d16
+ 1253              	pthread_self:
+ 1254              	.LFB20:
+ 475:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 476:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 477:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 478:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** pthread_t pthread_self( void )
+ 479:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 1255              		.loc 1 479 1
+ 1256              		.cfi_startproc
+ 1257              		@ args = 0, pretend = 0, frame = 0
+ 1258              		@ frame_needed = 1, uses_anonymous_args = 0
+ARM GAS  /tmp/cctJOaLa.s 			page 31
+
+
+ 1259 0000 80B5     		push	{r7, lr}
+ 1260              	.LCFI90:
+ 1261              		.cfi_def_cfa_offset 8
+ 1262              		.cfi_offset 7, -8
+ 1263              		.cfi_offset 14, -4
+ 1264 0002 00AF     		add	r7, sp, #0
+ 1265              	.LCFI91:
+ 1266              		.cfi_def_cfa_register 7
+ 480:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Return a reference to this pthread object, which is stored in the
+ 481:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****      * FreeRTOS task tag. */
+ 482:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return ( pthread_t ) xTaskGetApplicationTaskTag( NULL );
+ 1267              		.loc 1 482 26
+ 1268 0004 0020     		movs	r0, #0
+ 1269 0006 FFF7FEFF 		bl	xTaskGetApplicationTaskTag
+ 1270 000a 0346     		mov	r3, r0
+ 483:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 1271              		.loc 1 483 1
+ 1272 000c 1846     		mov	r0, r3
+ 1273 000e 80BD     		pop	{r7, pc}
+ 1274              		.cfi_endproc
+ 1275              	.LFE20:
+ 1277              		.section	.text.pthread_setschedparam,"ax",%progbits
+ 1278              		.align	1
+ 1279              		.global	pthread_setschedparam
+ 1280              		.syntax unified
+ 1281              		.thumb
+ 1282              		.thumb_func
+ 1283              		.fpu fpv4-sp-d16
+ 1285              	pthread_setschedparam:
+ 1286              	.LFB21:
+ 484:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 485:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** /*-----------------------------------------------------------*/
+ 486:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 487:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** int pthread_setschedparam( pthread_t thread,
+ 488:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                            int policy,
+ 489:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****                            const struct sched_param * param )
+ 490:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** {
+ 1287              		.loc 1 490 1
+ 1288              		.cfi_startproc
+ 1289              		@ args = 0, pretend = 0, frame = 24
+ 1290              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1291 0000 80B5     		push	{r7, lr}
+ 1292              	.LCFI92:
+ 1293              		.cfi_def_cfa_offset 8
+ 1294              		.cfi_offset 7, -8
+ 1295              		.cfi_offset 14, -4
+ 1296 0002 86B0     		sub	sp, sp, #24
+ 1297              	.LCFI93:
+ 1298              		.cfi_def_cfa_offset 32
+ 1299 0004 00AF     		add	r7, sp, #0
+ 1300              	.LCFI94:
+ 1301              		.cfi_def_cfa_register 7
+ 1302 0006 F860     		str	r0, [r7, #12]
+ 1303 0008 B960     		str	r1, [r7, #8]
+ 1304 000a 7A60     		str	r2, [r7, #4]
+ 491:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     int iStatus = 0;
+ 1305              		.loc 1 491 9
+ARM GAS  /tmp/cctJOaLa.s 			page 32
+
+
+ 1306 000c 0023     		movs	r3, #0
+ 1307 000e 7B61     		str	r3, [r7, #20]
+ 492:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 493:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     pthread_internal_t * pxThread = ( pthread_internal_t * ) thread;
+ 1308              		.loc 1 493 26
+ 1309 0010 FB68     		ldr	r3, [r7, #12]
+ 1310 0012 3B61     		str	r3, [r7, #16]
+ 494:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 495:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Silence compiler warnings about unused parameters. */
+ 496:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     ( void ) policy;
+ 497:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 498:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     /* Copy the given sched_param. */
+ 499:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     iStatus = pthread_attr_setschedparam( ( pthread_attr_t * ) &pxThread->xAttr, param );
+ 1311              		.loc 1 499 64
+ 1312 0014 3B69     		ldr	r3, [r7, #16]
+ 1313              		.loc 1 499 15
+ 1314 0016 7968     		ldr	r1, [r7, #4]
+ 1315 0018 1846     		mov	r0, r3
+ 1316 001a FFF7FEFF 		bl	pthread_attr_setschedparam
+ 1317 001e 7861     		str	r0, [r7, #20]
+ 500:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 501:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     if( iStatus == 0 )
+ 1318              		.loc 1 501 7
+ 1319 0020 7B69     		ldr	r3, [r7, #20]
+ 1320 0022 002B     		cmp	r3, #0
+ 1321 0024 07D1     		bne	.L62
+ 502:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     {
+ 503:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         /* Change the priority of the FreeRTOS task. */
+ 504:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****         vTaskPrioritySet( pxThread->xTaskHandle, param->sched_priority );
+ 1322              		.loc 1 504 9
+ 1323 0026 3B69     		ldr	r3, [r7, #16]
+ 1324 0028 DA68     		ldr	r2, [r3, #12]
+ 1325              		.loc 1 504 55
+ 1326 002a 7B68     		ldr	r3, [r7, #4]
+ 1327 002c 1B68     		ldr	r3, [r3]
+ 1328              		.loc 1 504 9
+ 1329 002e 1946     		mov	r1, r3
+ 1330 0030 1046     		mov	r0, r2
+ 1331 0032 FFF7FEFF 		bl	vTaskPrioritySet
+ 1332              	.L62:
+ 505:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     }
+ 506:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** 
+ 507:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c ****     return iStatus;
+ 1333              		.loc 1 507 12
+ 1334 0036 7B69     		ldr	r3, [r7, #20]
+ 508:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c **** }
+ 1335              		.loc 1 508 1
+ 1336 0038 1846     		mov	r0, r3
+ 1337 003a 1837     		adds	r7, r7, #24
+ 1338              	.LCFI95:
+ 1339              		.cfi_def_cfa_offset 8
+ 1340 003c BD46     		mov	sp, r7
+ 1341              	.LCFI96:
+ 1342              		.cfi_def_cfa_register 13
+ 1343              		@ sp needed
+ 1344 003e 80BD     		pop	{r7, pc}
+ 1345              		.cfi_endproc
+ARM GAS  /tmp/cctJOaLa.s 			page 33
+
+
+ 1346              	.LFE21:
+ 1348              		.text
+ 1349              	.Letext0:
+ 1350              		.file 2 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/lib/gcc/arm-none-eabi/8.3.1/include/std
+ 1351              		.file 3 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/machine/_default_
+ 1352              		.file 4 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_types.h"
+ 1353              		.file 5 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/reent.h"
+ 1354              		.file 6 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/lock.h"
+ 1355              		.file 7 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_stdint.h"
+ 1356              		.file 8 "Inc/FreeRTOSConfig.h"
+ 1357              		.file 9 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h"
+ 1358              		.file 10 "Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h"
+ 1359              		.file 11 "Middlewares/Third_Party/FreeRTOS/Source/include/task.h"
+ 1360              		.file 12 "Middlewares/Third_Party/FreeRTOS/Source/include/queue.h"
+ 1361              		.file 13 "Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h"
+ 1362              		.file 14 "lib/FreeRTOS-Plus-POSIX/include/FreeRTOS_POSIX_types.h"
+ 1363              		.file 15 "lib/include/FreeRTOS_POSIX/sys/types.h"
+ 1364              		.file 16 "lib/include/FreeRTOS_POSIX/errno.h"
+ 1365              		.file 17 "lib/include/FreeRTOS_POSIX/sched.h"
+ARM GAS  /tmp/cctJOaLa.s 			page 34
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 FreeRTOS_POSIX_pthread.c
+     /tmp/cctJOaLa.s:18     .rodata.xDefaultThreadAttributes:0000000000000000 $d
+     /tmp/cctJOaLa.s:21     .rodata.xDefaultThreadAttributes:0000000000000000 xDefaultThreadAttributes
+     /tmp/cctJOaLa.s:25     .text.prvExitThread:0000000000000000 $t
+     /tmp/cctJOaLa.s:32     .text.prvExitThread:0000000000000000 prvExitThread
+     /tmp/cctJOaLa.s:1253   .text.pthread_self:0000000000000000 pthread_self
+     /tmp/cctJOaLa.s:94     .text.prvRunThread:0000000000000000 $t
+     /tmp/cctJOaLa.s:100    .text.prvRunThread:0000000000000000 prvRunThread
+     /tmp/cctJOaLa.s:150    .text.pthread_attr_destroy:0000000000000000 $t
+     /tmp/cctJOaLa.s:157    .text.pthread_attr_destroy:0000000000000000 pthread_attr_destroy
+     /tmp/cctJOaLa.s:195    .text.pthread_attr_getdetachstate:0000000000000000 $t
+     /tmp/cctJOaLa.s:202    .text.pthread_attr_getdetachstate:0000000000000000 pthread_attr_getdetachstate
+     /tmp/cctJOaLa.s:262    .text.pthread_attr_getschedparam:0000000000000000 $t
+     /tmp/cctJOaLa.s:269    .text.pthread_attr_getschedparam:0000000000000000 pthread_attr_getschedparam
+     /tmp/cctJOaLa.s:319    .text.pthread_attr_getstacksize:0000000000000000 $t
+     /tmp/cctJOaLa.s:326    .text.pthread_attr_getstacksize:0000000000000000 pthread_attr_getstacksize
+     /tmp/cctJOaLa.s:376    .text.pthread_attr_init:0000000000000000 $t
+     /tmp/cctJOaLa.s:383    .text.pthread_attr_init:0000000000000000 pthread_attr_init
+     /tmp/cctJOaLa.s:425    .text.pthread_attr_init:0000000000000020 $d
+     /tmp/cctJOaLa.s:430    .text.pthread_attr_setdetachstate:0000000000000000 $t
+     /tmp/cctJOaLa.s:437    .text.pthread_attr_setdetachstate:0000000000000000 pthread_attr_setdetachstate
+     /tmp/cctJOaLa.s:519    .text.pthread_attr_setschedparam:0000000000000000 $t
+     /tmp/cctJOaLa.s:526    .text.pthread_attr_setschedparam:0000000000000000 pthread_attr_setschedparam
+     /tmp/cctJOaLa.s:627    .text.pthread_attr_setschedpolicy:0000000000000000 $t
+     /tmp/cctJOaLa.s:634    .text.pthread_attr_setschedpolicy:0000000000000000 pthread_attr_setschedpolicy
+     /tmp/cctJOaLa.s:673    .text.pthread_attr_setstacksize:0000000000000000 $t
+     /tmp/cctJOaLa.s:680    .text.pthread_attr_setstacksize:0000000000000000 pthread_attr_setstacksize
+     /tmp/cctJOaLa.s:741    .rodata:0000000000000000 $d
+     /tmp/cctJOaLa.s:745    .text.pthread_create:0000000000000000 $t
+     /tmp/cctJOaLa.s:752    .text.pthread_create:0000000000000000 pthread_create
+     /tmp/cctJOaLa.s:920    .text.pthread_create:00000000000000e8 $d
+     /tmp/cctJOaLa.s:927    .text.pthread_getschedparam:0000000000000000 $t
+     /tmp/cctJOaLa.s:934    .text.pthread_getschedparam:0000000000000000 pthread_getschedparam
+     /tmp/cctJOaLa.s:992    .text.pthread_equal:0000000000000000 $t
+     /tmp/cctJOaLa.s:999    .text.pthread_equal:0000000000000000 pthread_equal
+     /tmp/cctJOaLa.s:1044   .text.pthread_exit:0000000000000000 $t
+     /tmp/cctJOaLa.s:1051   .text.pthread_exit:0000000000000000 pthread_exit
+     /tmp/cctJOaLa.s:1092   .text.pthread_join:0000000000000000 $t
+     /tmp/cctJOaLa.s:1099   .text.pthread_join:0000000000000000 pthread_join
+     /tmp/cctJOaLa.s:1246   .text.pthread_self:0000000000000000 $t
+     /tmp/cctJOaLa.s:1278   .text.pthread_setschedparam:0000000000000000 $t
+     /tmp/cctJOaLa.s:1285   .text.pthread_setschedparam:0000000000000000 pthread_setschedparam
+
+UNDEFINED SYMBOLS
+xQueueGenericSend
+vTaskSuspend
+vPortFree
+vTaskDelete
+sched_get_priority_max
+pvPortMalloc
+xQueueCreateMutexStatic
+xQueueGenericCreateStatic
+vTaskSuspendAll
+xTaskCreate
+vTaskSetApplicationTaskTag
+xTaskResumeAll
+ARM GAS  /tmp/cctJOaLa.s 			page 35
+
+
+xQueueSemaphoreTake
+vQueueDelete
+xTaskGetApplicationTaskTag
+vTaskPrioritySet

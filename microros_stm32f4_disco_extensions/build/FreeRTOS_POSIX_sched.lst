@@ -1,0 +1,251 @@
+ARM GAS  /tmp/ccnRkAVa.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"FreeRTOS_POSIX_sched.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.sched_get_priority_max,"ax",%progbits
+  18              		.align	1
+  19              		.global	sched_get_priority_max
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	sched_get_priority_max:
+  27              	.LFB4:
+  28              		.file 1 "lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c"
+   1:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** /*
+   2:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * Amazon FreeRTOS POSIX V1.1.0
+   3:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+   4:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  *
+   5:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+   6:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * this software and associated documentation files (the "Software"), to deal in
+   7:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * the Software without restriction, including without limitation the rights to
+   8:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+   9:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * the Software, and to permit persons to whom the Software is furnished to do so,
+  10:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * subject to the following conditions:
+  11:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  *
+  12:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * The above copyright notice and this permission notice shall be included in all
+  13:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * copies or substantial portions of the Software.
+  14:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  *
+  15:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  16:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+  17:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+  18:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+  19:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  20:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  21:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  *
+  22:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * http://aws.amazon.com/freertos
+  23:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * http://www.FreeRTOS.org
+  24:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  */
+  25:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** 
+  26:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** /**
+  27:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * @file FreeRTOS_POSIX_sched.c
+  28:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  * @brief Implementation of scheduler functions in sched.h
+  29:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****  */
+  30:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** 
+ARM GAS  /tmp/ccnRkAVa.s 			page 2
+
+
+  31:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** /* FreeRTOS+POSIX includes. */
+  32:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** #include "FreeRTOS_POSIX.h"
+  33:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** #include "FreeRTOS_POSIX/sched.h"
+  34:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** 
+  35:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** /*-----------------------------------------------------------*/
+  36:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** 
+  37:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** int sched_get_priority_max( int policy )
+  38:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** {
+  29              		.loc 1 38 1
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 8
+  32              		@ frame_needed = 1, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34 0000 80B4     		push	{r7}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 4
+  37              		.cfi_offset 7, -4
+  38 0002 83B0     		sub	sp, sp, #12
+  39              	.LCFI1:
+  40              		.cfi_def_cfa_offset 16
+  41 0004 00AF     		add	r7, sp, #0
+  42              	.LCFI2:
+  43              		.cfi_def_cfa_register 7
+  44 0006 7860     		str	r0, [r7, #4]
+  39:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****     /* Silence warnings about unused parameters. */
+  40:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****     ( void ) policy;
+  41:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** 
+  42:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****     return configMAX_PRIORITIES - 1;
+  45              		.loc 1 42 12
+  46 0008 3723     		movs	r3, #55
+  43:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** }
+  47              		.loc 1 43 1
+  48 000a 1846     		mov	r0, r3
+  49 000c 0C37     		adds	r7, r7, #12
+  50              	.LCFI3:
+  51              		.cfi_def_cfa_offset 4
+  52 000e BD46     		mov	sp, r7
+  53              	.LCFI4:
+  54              		.cfi_def_cfa_register 13
+  55              		@ sp needed
+  56 0010 5DF8047B 		ldr	r7, [sp], #4
+  57              	.LCFI5:
+  58              		.cfi_restore 7
+  59              		.cfi_def_cfa_offset 0
+  60 0014 7047     		bx	lr
+  61              		.cfi_endproc
+  62              	.LFE4:
+  64              		.section	.text.sched_get_priority_min,"ax",%progbits
+  65              		.align	1
+  66              		.global	sched_get_priority_min
+  67              		.syntax unified
+  68              		.thumb
+  69              		.thumb_func
+  70              		.fpu fpv4-sp-d16
+  72              	sched_get_priority_min:
+  73              	.LFB5:
+  44:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** 
+ARM GAS  /tmp/ccnRkAVa.s 			page 3
+
+
+  45:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** /*-----------------------------------------------------------*/
+  46:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** 
+  47:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** int sched_get_priority_min( int policy )
+  48:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** {
+  74              		.loc 1 48 1
+  75              		.cfi_startproc
+  76              		@ args = 0, pretend = 0, frame = 8
+  77              		@ frame_needed = 1, uses_anonymous_args = 0
+  78              		@ link register save eliminated.
+  79 0000 80B4     		push	{r7}
+  80              	.LCFI6:
+  81              		.cfi_def_cfa_offset 4
+  82              		.cfi_offset 7, -4
+  83 0002 83B0     		sub	sp, sp, #12
+  84              	.LCFI7:
+  85              		.cfi_def_cfa_offset 16
+  86 0004 00AF     		add	r7, sp, #0
+  87              	.LCFI8:
+  88              		.cfi_def_cfa_register 7
+  89 0006 7860     		str	r0, [r7, #4]
+  49:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****     /* Silence warnings about unused parameters. */
+  50:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****     ( void ) policy;
+  51:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** 
+  52:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****     return tskIDLE_PRIORITY;
+  90              		.loc 1 52 12
+  91 0008 0023     		movs	r3, #0
+  53:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** }
+  92              		.loc 1 53 1
+  93 000a 1846     		mov	r0, r3
+  94 000c 0C37     		adds	r7, r7, #12
+  95              	.LCFI9:
+  96              		.cfi_def_cfa_offset 4
+  97 000e BD46     		mov	sp, r7
+  98              	.LCFI10:
+  99              		.cfi_def_cfa_register 13
+ 100              		@ sp needed
+ 101 0010 5DF8047B 		ldr	r7, [sp], #4
+ 102              	.LCFI11:
+ 103              		.cfi_restore 7
+ 104              		.cfi_def_cfa_offset 0
+ 105 0014 7047     		bx	lr
+ 106              		.cfi_endproc
+ 107              	.LFE5:
+ 109              		.section	.text.sched_yield,"ax",%progbits
+ 110              		.align	1
+ 111              		.global	sched_yield
+ 112              		.syntax unified
+ 113              		.thumb
+ 114              		.thumb_func
+ 115              		.fpu fpv4-sp-d16
+ 117              	sched_yield:
+ 118              	.LFB6:
+  54:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** 
+  55:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** /*-----------------------------------------------------------*/
+  56:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** 
+  57:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** int sched_yield( void )
+  58:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** {
+ARM GAS  /tmp/ccnRkAVa.s 			page 4
+
+
+ 119              		.loc 1 58 1
+ 120              		.cfi_startproc
+ 121              		@ args = 0, pretend = 0, frame = 0
+ 122              		@ frame_needed = 1, uses_anonymous_args = 0
+ 123              		@ link register save eliminated.
+ 124 0000 80B4     		push	{r7}
+ 125              	.LCFI12:
+ 126              		.cfi_def_cfa_offset 4
+ 127              		.cfi_offset 7, -4
+ 128 0002 00AF     		add	r7, sp, #0
+ 129              	.LCFI13:
+ 130              		.cfi_def_cfa_register 7
+  59:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****     taskYIELD();
+ 131              		.loc 1 59 5
+ 132 0004 064B     		ldr	r3, .L7
+ 133 0006 4FF08052 		mov	r2, #268435456
+ 134 000a 1A60     		str	r2, [r3]
+ 135              		.syntax unified
+ 136              	@ 59 "lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c" 1
+ 137 000c BFF34F8F 		dsb
+ 138              	@ 0 "" 2
+ 139              	@ 59 "lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c" 1
+ 140 0010 BFF36F8F 		isb
+ 141              	@ 0 "" 2
+  60:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** 
+  61:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c ****     return 0;
+ 142              		.loc 1 61 12
+ 143              		.thumb
+ 144              		.syntax unified
+ 145 0014 0023     		movs	r3, #0
+  62:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c **** }
+ 146              		.loc 1 62 1
+ 147 0016 1846     		mov	r0, r3
+ 148 0018 BD46     		mov	sp, r7
+ 149              	.LCFI14:
+ 150              		.cfi_def_cfa_register 13
+ 151              		@ sp needed
+ 152 001a 5DF8047B 		ldr	r7, [sp], #4
+ 153              	.LCFI15:
+ 154              		.cfi_restore 7
+ 155              		.cfi_def_cfa_offset 0
+ 156 001e 7047     		bx	lr
+ 157              	.L8:
+ 158              		.align	2
+ 159              	.L7:
+ 160 0020 04ED00E0 		.word	-536810236
+ 161              		.cfi_endproc
+ 162              	.LFE6:
+ 164              		.text
+ 165              	.Letext0:
+ 166              		.file 2 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/machine/_default_
+ 167              		.file 3 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_stdint.h"
+ 168              		.file 4 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h"
+ 169              		.file 5 "Inc/FreeRTOSConfig.h"
+ARM GAS  /tmp/ccnRkAVa.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 FreeRTOS_POSIX_sched.c
+     /tmp/ccnRkAVa.s:18     .text.sched_get_priority_max:0000000000000000 $t
+     /tmp/ccnRkAVa.s:26     .text.sched_get_priority_max:0000000000000000 sched_get_priority_max
+     /tmp/ccnRkAVa.s:65     .text.sched_get_priority_min:0000000000000000 $t
+     /tmp/ccnRkAVa.s:72     .text.sched_get_priority_min:0000000000000000 sched_get_priority_min
+     /tmp/ccnRkAVa.s:110    .text.sched_yield:0000000000000000 $t
+     /tmp/ccnRkAVa.s:117    .text.sched_yield:0000000000000000 sched_yield
+     /tmp/ccnRkAVa.s:160    .text.sched_yield:0000000000000020 $d
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,1955 @@
+ARM GAS  /tmp/cciFAXod.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"custom_memory_manager.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.bss.ucHeap,"aw",%nobits
+  18              		.align	2
+  21              	ucHeap:
+  22 0000 00000000 		.space	50000
+  22      00000000 
+  22      00000000 
+  22      00000000 
+  22      00000000 
+  23              		.section	.rodata.xHeapStructSize,"a"
+  24              		.align	2
+  27              	xHeapStructSize:
+  28 0000 08000000 		.word	8
+  29              		.section	.bss.xStart,"aw",%nobits
+  30              		.align	2
+  33              	xStart:
+  34 0000 00000000 		.space	8
+  34      00000000 
+  35              		.section	.bss.pxEnd,"aw",%nobits
+  36              		.align	2
+  39              	pxEnd:
+  40 0000 00000000 		.space	4
+  41              		.section	.bss.xFreeBytesRemaining,"aw",%nobits
+  42              		.align	2
+  45              	xFreeBytesRemaining:
+  46 0000 00000000 		.space	4
+  47              		.section	.bss.xMinimumEverFreeBytesRemaining,"aw",%nobits
+  48              		.align	2
+  51              	xMinimumEverFreeBytesRemaining:
+  52 0000 00000000 		.space	4
+  53              		.section	.bss.xBlockAllocatedBit,"aw",%nobits
+  54              		.align	2
+  57              	xBlockAllocatedBit:
+  58 0000 00000000 		.space	4
+  59              		.section	.text.pvPortMalloc,"ax",%progbits
+  60              		.align	1
+  61              		.global	pvPortMalloc
+  62              		.arch armv7e-m
+  63              		.syntax unified
+  64              		.thumb
+  65              		.thumb_func
+  66              		.fpu fpv4-sp-d16
+ARM GAS  /tmp/cciFAXod.s 			page 2
+
+
+  68              	pvPortMalloc:
+  69              	.LFB4:
+  70              		.file 1 "Src/custom_memory_manager.c"
+   1:Src/custom_memory_manager.c **** /*
+   2:Src/custom_memory_manager.c ****  * A custom implementation of pvPortMalloc() and vPortFree() with realloc and
+   3:Src/custom_memory_manager.c ****  * calloc features based on FreeRTOS heap4.c.
+   4:Src/custom_memory_manager.c ****  */
+   5:Src/custom_memory_manager.c **** 
+   6:Src/custom_memory_manager.c **** #include <stdlib.h>
+   7:Src/custom_memory_manager.c **** 
+   8:Src/custom_memory_manager.c **** /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
+   9:Src/custom_memory_manager.c **** all the API functions to use the MPU wrappers.  That should only be done when
+  10:Src/custom_memory_manager.c **** task.h is included from an application file. */
+  11:Src/custom_memory_manager.c **** #define MPU_WRAPPERS_INCLUDED_FROM_API_FILE
+  12:Src/custom_memory_manager.c **** 
+  13:Src/custom_memory_manager.c **** #include "FreeRTOS.h"
+  14:Src/custom_memory_manager.c **** #include "task.h"
+  15:Src/custom_memory_manager.c **** 
+  16:Src/custom_memory_manager.c **** #undef MPU_WRAPPERS_INCLUDED_FROM_API_FILE
+  17:Src/custom_memory_manager.c **** 
+  18:Src/custom_memory_manager.c **** #if (configSUPPORT_DYNAMIC_ALLOCATION == 0)
+  19:Src/custom_memory_manager.c **** #error This file must not be used if configSUPPORT_DYNAMIC_ALLOCATION is 0
+  20:Src/custom_memory_manager.c **** #endif
+  21:Src/custom_memory_manager.c **** 
+  22:Src/custom_memory_manager.c **** /* Block sizes must not get too small. */
+  23:Src/custom_memory_manager.c **** #define heapMINIMUM_BLOCK_SIZE ((size_t)(xHeapStructSize << 1))
+  24:Src/custom_memory_manager.c **** 
+  25:Src/custom_memory_manager.c **** /* Assumes 8bit bytes! */
+  26:Src/custom_memory_manager.c **** #define heapBITS_PER_BYTE ((size_t)8)
+  27:Src/custom_memory_manager.c **** 
+  28:Src/custom_memory_manager.c **** /* Allocate the memory for the heap. */
+  29:Src/custom_memory_manager.c **** #if (configAPPLICATION_ALLOCATED_HEAP == 1)
+  30:Src/custom_memory_manager.c **** /* The application writer has already defined the array used for the RTOS
+  31:Src/custom_memory_manager.c **** heap - probably so it can be placed in a special segment or address. */
+  32:Src/custom_memory_manager.c **** extern uint8_t ucHeap[configTOTAL_HEAP_SIZE];
+  33:Src/custom_memory_manager.c **** #else
+  34:Src/custom_memory_manager.c **** static uint8_t ucHeap[configTOTAL_HEAP_SIZE];
+  35:Src/custom_memory_manager.c **** #endif /* configAPPLICATION_ALLOCATED_HEAP */
+  36:Src/custom_memory_manager.c **** 
+  37:Src/custom_memory_manager.c **** /* Define the linked list structure.  This is used to link free blocks in order
+  38:Src/custom_memory_manager.c **** of their memory address. */
+  39:Src/custom_memory_manager.c **** typedef struct A_BLOCK_LINK {
+  40:Src/custom_memory_manager.c ****   struct A_BLOCK_LINK *pxNextFreeBlock; /*<< The next free block in the list. */
+  41:Src/custom_memory_manager.c ****   size_t xBlockSize;                    /*<< The size of the free block. */
+  42:Src/custom_memory_manager.c **** } BlockLink_t;
+  43:Src/custom_memory_manager.c **** 
+  44:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+  45:Src/custom_memory_manager.c **** 
+  46:Src/custom_memory_manager.c **** /*
+  47:Src/custom_memory_manager.c ****  * Inserts a block of memory that is being freed into the correct position in
+  48:Src/custom_memory_manager.c ****  * the list of free memory blocks.  The block being freed will be merged with
+  49:Src/custom_memory_manager.c ****  * the block in front it and/or the block behind it if the memory blocks are
+  50:Src/custom_memory_manager.c ****  * adjacent to each other.
+  51:Src/custom_memory_manager.c ****  */
+  52:Src/custom_memory_manager.c **** static void prvInsertBlockIntoFreeList(BlockLink_t *pxBlockToInsert);
+  53:Src/custom_memory_manager.c **** 
+  54:Src/custom_memory_manager.c **** /*
+ARM GAS  /tmp/cciFAXod.s 			page 3
+
+
+  55:Src/custom_memory_manager.c ****  * Called automatically to setup the required heap structures the first time
+  56:Src/custom_memory_manager.c ****  * pvPortMalloc() is called.
+  57:Src/custom_memory_manager.c ****  */
+  58:Src/custom_memory_manager.c **** static void prvHeapInit(void);
+  59:Src/custom_memory_manager.c **** 
+  60:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+  61:Src/custom_memory_manager.c **** 
+  62:Src/custom_memory_manager.c **** /* The size of the structure placed at the beginning of each allocated memory
+  63:Src/custom_memory_manager.c **** block must by correctly byte aligned. */
+  64:Src/custom_memory_manager.c **** static const size_t xHeapStructSize =
+  65:Src/custom_memory_manager.c ****     (sizeof(BlockLink_t) + ((size_t)(portBYTE_ALIGNMENT - 1))) &
+  66:Src/custom_memory_manager.c ****     ~((size_t)portBYTE_ALIGNMENT_MASK);
+  67:Src/custom_memory_manager.c **** 
+  68:Src/custom_memory_manager.c **** /* Create a couple of list links to mark the start and end of the list. */
+  69:Src/custom_memory_manager.c **** static BlockLink_t xStart, *pxEnd = NULL;
+  70:Src/custom_memory_manager.c **** 
+  71:Src/custom_memory_manager.c **** /* Keeps track of the number of free bytes remaining, but says nothing about
+  72:Src/custom_memory_manager.c **** fragmentation. */
+  73:Src/custom_memory_manager.c **** static size_t xFreeBytesRemaining = 0U;
+  74:Src/custom_memory_manager.c **** static size_t xMinimumEverFreeBytesRemaining = 0U;
+  75:Src/custom_memory_manager.c **** 
+  76:Src/custom_memory_manager.c **** /* Gets set to the top bit of an size_t type.  When this bit in the xBlockSize
+  77:Src/custom_memory_manager.c **** member of an BlockLink_t structure is set then the block belongs to the
+  78:Src/custom_memory_manager.c **** application.  When the bit is free the block is still part of the free heap
+  79:Src/custom_memory_manager.c **** space. */
+  80:Src/custom_memory_manager.c **** static size_t xBlockAllocatedBit = 0;
+  81:Src/custom_memory_manager.c **** 
+  82:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+  83:Src/custom_memory_manager.c **** 
+  84:Src/custom_memory_manager.c **** void *pvPortMalloc(size_t xWantedSize) {
+  71              		.loc 1 84 40
+  72              		.cfi_startproc
+  73              		@ args = 0, pretend = 0, frame = 40
+  74              		@ frame_needed = 1, uses_anonymous_args = 0
+  75 0000 80B5     		push	{r7, lr}
+  76              	.LCFI0:
+  77              		.cfi_def_cfa_offset 8
+  78              		.cfi_offset 7, -8
+  79              		.cfi_offset 14, -4
+  80 0002 8AB0     		sub	sp, sp, #40
+  81              	.LCFI1:
+  82              		.cfi_def_cfa_offset 48
+  83 0004 00AF     		add	r7, sp, #0
+  84              	.LCFI2:
+  85              		.cfi_def_cfa_register 7
+  86 0006 7860     		str	r0, [r7, #4]
+  85:Src/custom_memory_manager.c ****   BlockLink_t *pxBlock, *pxPreviousBlock, *pxNewBlockLink;
+  86:Src/custom_memory_manager.c ****   void *pvReturn = NULL;
+  87              		.loc 1 86 9
+  88 0008 0023     		movs	r3, #0
+  89 000a FB61     		str	r3, [r7, #28]
+  87:Src/custom_memory_manager.c **** 
+  88:Src/custom_memory_manager.c ****   vTaskSuspendAll();
+  90              		.loc 1 88 3
+  91 000c FFF7FEFF 		bl	vTaskSuspendAll
+  89:Src/custom_memory_manager.c ****   {
+  90:Src/custom_memory_manager.c ****     /* If this is the first call to malloc then the heap will require
+ARM GAS  /tmp/cciFAXod.s 			page 4
+
+
+  91:Src/custom_memory_manager.c ****     initialisation to setup the list of free blocks. */
+  92:Src/custom_memory_manager.c ****     if (pxEnd == NULL) {
+  92              		.loc 1 92 15
+  93 0010 574B     		ldr	r3, .L16
+  94 0012 1B68     		ldr	r3, [r3]
+  95              		.loc 1 92 8
+  96 0014 002B     		cmp	r3, #0
+  97 0016 01D1     		bne	.L2
+  93:Src/custom_memory_manager.c ****       prvHeapInit();
+  98              		.loc 1 93 7
+  99 0018 FFF7FEFF 		bl	prvHeapInit
+ 100              	.L2:
+  94:Src/custom_memory_manager.c ****     } else {
+  95:Src/custom_memory_manager.c ****       mtCOVERAGE_TEST_MARKER();
+  96:Src/custom_memory_manager.c ****     }
+  97:Src/custom_memory_manager.c **** 
+  98:Src/custom_memory_manager.c ****     /* Check the requested block size is not so large that the top bit is
+  99:Src/custom_memory_manager.c ****     set.  The top bit of the block size member of the BlockLink_t structure
+ 100:Src/custom_memory_manager.c ****     is used to determine who owns the block - the application or the
+ 101:Src/custom_memory_manager.c ****     kernel, so it must be free. */
+ 102:Src/custom_memory_manager.c ****     if ((xWantedSize & xBlockAllocatedBit) == 0) {
+ 101              		.loc 1 102 22
+ 102 001c 554B     		ldr	r3, .L16+4
+ 103 001e 1A68     		ldr	r2, [r3]
+ 104 0020 7B68     		ldr	r3, [r7, #4]
+ 105 0022 1340     		ands	r3, r3, r2
+ 106              		.loc 1 102 8
+ 107 0024 002B     		cmp	r3, #0
+ 108 0026 40F08C80 		bne	.L3
+ 103:Src/custom_memory_manager.c ****       /* The wanted size is increased so it can contain a BlockLink_t
+ 104:Src/custom_memory_manager.c ****       structure in addition to the requested amount of bytes. */
+ 105:Src/custom_memory_manager.c ****       if (xWantedSize > 0) {
+ 109              		.loc 1 105 10
+ 110 002a 7B68     		ldr	r3, [r7, #4]
+ 111 002c 002B     		cmp	r3, #0
+ 112 002e 1CD0     		beq	.L4
+ 106:Src/custom_memory_manager.c ****         xWantedSize += xHeapStructSize;
+ 113              		.loc 1 106 21
+ 114 0030 0822     		movs	r2, #8
+ 115 0032 7B68     		ldr	r3, [r7, #4]
+ 116 0034 1344     		add	r3, r3, r2
+ 117 0036 7B60     		str	r3, [r7, #4]
+ 107:Src/custom_memory_manager.c **** 
+ 108:Src/custom_memory_manager.c ****         /* Ensure that blocks are always aligned to the required number
+ 109:Src/custom_memory_manager.c ****         of bytes. */
+ 110:Src/custom_memory_manager.c ****         if ((xWantedSize & portBYTE_ALIGNMENT_MASK) != 0x00) {
+ 118              		.loc 1 110 26
+ 119 0038 7B68     		ldr	r3, [r7, #4]
+ 120 003a 03F00703 		and	r3, r3, #7
+ 121              		.loc 1 110 12
+ 122 003e 002B     		cmp	r3, #0
+ 123 0040 13D0     		beq	.L4
+ 111:Src/custom_memory_manager.c ****           /* Byte alignment required. */
+ 112:Src/custom_memory_manager.c ****           xWantedSize +=
+ 124              		.loc 1 112 23
+ 125 0042 7B68     		ldr	r3, [r7, #4]
+ 126 0044 23F00703 		bic	r3, r3, #7
+ARM GAS  /tmp/cciFAXod.s 			page 5
+
+
+ 127 0048 0833     		adds	r3, r3, #8
+ 128 004a 7B60     		str	r3, [r7, #4]
+ 113:Src/custom_memory_manager.c ****               (portBYTE_ALIGNMENT - (xWantedSize & portBYTE_ALIGNMENT_MASK));
+ 114:Src/custom_memory_manager.c ****           configASSERT((xWantedSize & portBYTE_ALIGNMENT_MASK) == 0);
+ 129              		.loc 1 114 11
+ 130 004c 7B68     		ldr	r3, [r7, #4]
+ 131 004e 03F00703 		and	r3, r3, #7
+ 132 0052 002B     		cmp	r3, #0
+ 133 0054 09D0     		beq	.L4
+ 134              	.LBB12:
+ 135              	.LBB13:
+ 136              		.file 2 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h"
+   1:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*
+   2:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * FreeRTOS Kernel V10.2.1
+   3:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * Copyright (C) 2019 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+   4:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+   5:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+   6:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * this software and associated documentation files (the "Software"), to deal in
+   7:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * the Software without restriction, including without limitation the rights to
+   8:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+   9:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * the Software, and to permit persons to whom the Software is furnished to do so,
+  10:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * subject to the following conditions:
+  11:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  12:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * The above copyright notice and this permission notice shall be included in all
+  13:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * copies or substantial portions of the Software.
+  14:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  15:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  16:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+  17:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+  18:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+  19:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  20:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  21:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  22:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * http://www.FreeRTOS.org
+  23:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * http://aws.amazon.com/freertos
+  24:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  25:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * 1 tab == 4 spaces!
+  26:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  */
+  27:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  28:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  29:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifndef PORTMACRO_H
+  30:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define PORTMACRO_H
+  31:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  32:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifdef __cplusplus
+  33:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** extern "C" {
+  34:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+  35:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  36:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------
+  37:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * Port specific definitions.
+  38:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  39:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * The settings in this file configure FreeRTOS correctly for the
+  40:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * given hardware and compiler.
+  41:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *
+  42:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  * These settings should not be altered.
+  43:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  *-----------------------------------------------------------
+  44:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h ****  */
+  45:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ARM GAS  /tmp/cciFAXod.s 			page 6
+
+
+  46:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Type definitions. */
+  47:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portCHAR		char
+  48:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portFLOAT		float
+  49:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portDOUBLE		double
+  50:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portLONG		long
+  51:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portSHORT		short
+  52:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portSTACK_TYPE	uint32_t
+  53:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portBASE_TYPE	long
+  54:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  55:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** typedef portSTACK_TYPE StackType_t;
+  56:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** typedef long BaseType_t;
+  57:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** typedef unsigned long UBaseType_t;
+  58:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  59:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #if( configUSE_16_BIT_TICKS == 1 )
+  60:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	typedef uint16_t TickType_t;
+  61:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portMAX_DELAY ( TickType_t ) 0xffff
+  62:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #else
+  63:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	typedef uint32_t TickType_t;
+  64:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portMAX_DELAY ( TickType_t ) 0xffffffffUL
+  65:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  66:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* 32-bit tick type on a 32-bit architecture, so reads of the tick count do
+  67:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	not need to be guarded with a critical section. */
+  68:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portTICK_TYPE_IS_ATOMIC 1
+  69:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+  70:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+  71:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  72:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Architecture specifics. */
+  73:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portSTACK_GROWTH			( -1 )
+  74:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )
+  75:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portBYTE_ALIGNMENT			8
+  76:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+  77:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  78:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Scheduler utilities. */
+  79:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portYIELD() 															\
+  80:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {																				\
+  81:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Set a PendSV to request a context switch. */								\
+  82:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	portNVIC_INT_CTRL_REG = portNVIC_PENDSVSET_BIT;								\
+  83:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 																				\
+  84:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Barriers are normally not required but do ensure the code is completely	\
+  85:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	within the specified behaviour for the architecture. */						\
+  86:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	__asm volatile( "dsb" ::: "memory" );										\
+  87:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	__asm volatile( "isb" );													\
+  88:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** }
+  89:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  90:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portNVIC_INT_CTRL_REG		( * ( ( volatile uint32_t * ) 0xe000ed04 ) )
+  91:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portNVIC_PENDSVSET_BIT		( 1UL << 28UL )
+  92:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portEND_SWITCHING_ISR( xSwitchRequired ) if( xSwitchRequired != pdFALSE ) portYIELD()
+  93:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
+  94:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+  95:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+  96:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Critical section management. */
+  97:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** extern void vPortEnterCritical( void );
+  98:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** extern void vPortExitCritical( void );
+  99:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portSET_INTERRUPT_MASK_FROM_ISR()		ulPortRaiseBASEPRI()
+ 100:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portCLEAR_INTERRUPT_MASK_FROM_ISR(x)	vPortSetBASEPRI(x)
+ 101:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portDISABLE_INTERRUPTS()				vPortRaiseBASEPRI()
+ 102:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portENABLE_INTERRUPTS()					vPortSetBASEPRI(0)
+ARM GAS  /tmp/cciFAXod.s 			page 7
+
+
+ 103:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portENTER_CRITICAL()					vPortEnterCritical()
+ 104:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portEXIT_CRITICAL()						vPortExitCritical()
+ 105:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 106:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+ 107:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 108:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Task function macros as described on the FreeRTOS.org WEB site.  These are
+ 109:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** not necessary for to use this port.  They are defined so the common demo files
+ 110:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** (which build with all the ports) will build. */
+ 111:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portTASK_FUNCTION_PROTO( vFunction, pvParameters ) void vFunction( void *pvParameters )
+ 112:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portTASK_FUNCTION( vFunction, pvParameters ) void vFunction( void *pvParameters )
+ 113:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+ 114:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 115:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Tickless idle/low power functionality. */
+ 116:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifndef portSUPPRESS_TICKS_AND_SLEEP
+ 117:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	extern void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime );
+ 118:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portSUPPRESS_TICKS_AND_SLEEP( xExpectedIdleTime ) vPortSuppressTicksAndSleep( xExpectedIdl
+ 119:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+ 120:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+ 121:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 122:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* Architecture specific optimisations. */
+ 123:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifndef configUSE_PORT_OPTIMISED_TASK_SELECTION
+ 124:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
+ 125:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+ 126:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 127:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
+ 128:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 129:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Generic helper function. */
+ 130:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	__attribute__( ( always_inline ) ) static inline uint8_t ucPortCountLeadingZeros( uint32_t ulBitma
+ 131:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	{
+ 132:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	uint8_t ucReturn;
+ 133:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 134:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 		__asm volatile ( "clz %0, %1" : "=r" ( ucReturn ) : "r" ( ulBitmap ) : "memory" );
+ 135:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 		return ucReturn;
+ 136:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	}
+ 137:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 138:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Check the configuration. */
+ 139:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#if( configMAX_PRIORITIES > 32 )
+ 140:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 		#error configUSE_PORT_OPTIMISED_TASK_SELECTION can only be set to 1 when configMAX_PRIORITIES is 
+ 141:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#endif
+ 142:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 143:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Store/clear the ready priorities in a bit map. */
+ 144:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL 
+ 145:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL 
+ 146:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 147:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/*-----------------------------------------------------------*/
+ 148:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 149:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31UL - ( ui
+ 150:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 151:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif /* configUSE_PORT_OPTIMISED_TASK_SELECTION */
+ 152:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 153:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+ 154:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 155:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifdef configASSERT
+ 156:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	void vPortValidateInterruptPriority( void );
+ 157:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() 	vPortValidateInterruptPriority()
+ 158:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+ 159:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ARM GAS  /tmp/cciFAXod.s 			page 8
+
+
+ 160:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /* portNOP() is not required by this port. */
+ 161:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portNOP()
+ 162:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 163:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #define portINLINE	__inline
+ 164:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 165:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #ifndef portFORCE_INLINE
+ 166:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	#define portFORCE_INLINE inline __attribute__(( always_inline))
+ 167:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** #endif
+ 168:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 169:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** portFORCE_INLINE static BaseType_t xPortIsInsideInterrupt( void )
+ 170:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 171:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** uint32_t ulCurrentInterrupt;
+ 172:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** BaseType_t xReturn;
+ 173:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 174:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	/* Obtain the number of the currently executing interrupt. */
+ 175:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	__asm volatile( "mrs %0, ipsr" : "=r"( ulCurrentInterrupt ) :: "memory" );
+ 176:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 177:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	if( ulCurrentInterrupt == 0 )
+ 178:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	{
+ 179:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 		xReturn = pdFALSE;
+ 180:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	}
+ 181:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	else
+ 182:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	{
+ 183:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 		xReturn = pdTRUE;
+ 184:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	}
+ 185:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 186:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	return xReturn;
+ 187:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** }
+ 188:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 189:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** /*-----------------------------------------------------------*/
+ 190:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** portFORCE_INLINE static void vPortRaiseBASEPRI( void )
+ 192:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** {
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** uint32_t ulNewBASEPRI;
+ 194:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 
+ 195:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h **** 	__asm volatile
+ 137              		.loc 2 195 2 discriminator 1
+ 138              		.syntax unified
+ 139              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 140 0056 4FF05003 			mov r3, #80												
+ 141 005a 83F31188 		msr basepri, r3											
+ 142 005e BFF36F8F 		isb														
+ 143 0062 BFF34F8F 		dsb														
+ 144              	
+ 145              	@ 0 "" 2
+ 146              		.thumb
+ 147              		.syntax unified
+ 148 0066 7B61     		str	r3, [r7, #20]
+ 149              	.L5:
+ 150              	.LBE13:
+ 151              	.LBE12:
+ 152              		.loc 1 114 11 discriminator 1
+ 153 0068 FEE7     		b	.L5
+ 154              	.L4:
+ 115:Src/custom_memory_manager.c ****         } else {
+ 116:Src/custom_memory_manager.c ****           mtCOVERAGE_TEST_MARKER();
+ 117:Src/custom_memory_manager.c ****         }
+ARM GAS  /tmp/cciFAXod.s 			page 9
+
+
+ 118:Src/custom_memory_manager.c ****       } else {
+ 119:Src/custom_memory_manager.c ****         mtCOVERAGE_TEST_MARKER();
+ 120:Src/custom_memory_manager.c ****       }
+ 121:Src/custom_memory_manager.c **** 
+ 122:Src/custom_memory_manager.c ****       if ((xWantedSize > 0) && (xWantedSize <= xFreeBytesRemaining)) {
+ 155              		.loc 1 122 10
+ 156 006a 7B68     		ldr	r3, [r7, #4]
+ 157 006c 002B     		cmp	r3, #0
+ 158 006e 68D0     		beq	.L3
+ 159              		.loc 1 122 45 discriminator 1
+ 160 0070 414B     		ldr	r3, .L16+8
+ 161 0072 1B68     		ldr	r3, [r3]
+ 162              		.loc 1 122 29 discriminator 1
+ 163 0074 7A68     		ldr	r2, [r7, #4]
+ 164 0076 9A42     		cmp	r2, r3
+ 165 0078 63D8     		bhi	.L3
+ 123:Src/custom_memory_manager.c ****         /* Traverse the list from the start	(lowest address) block until
+ 124:Src/custom_memory_manager.c ****         one	of adequate size is found. */
+ 125:Src/custom_memory_manager.c ****         pxPreviousBlock = &xStart;
+ 166              		.loc 1 125 25
+ 167 007a 404B     		ldr	r3, .L16+12
+ 168 007c 3B62     		str	r3, [r7, #32]
+ 126:Src/custom_memory_manager.c ****         pxBlock = xStart.pxNextFreeBlock;
+ 169              		.loc 1 126 17
+ 170 007e 3F4B     		ldr	r3, .L16+12
+ 171 0080 1B68     		ldr	r3, [r3]
+ 172 0082 7B62     		str	r3, [r7, #36]
+ 127:Src/custom_memory_manager.c ****         while ((pxBlock->xBlockSize < xWantedSize) &&
+ 173              		.loc 1 127 15
+ 174 0084 04E0     		b	.L6
+ 175              	.L8:
+ 128:Src/custom_memory_manager.c ****                (pxBlock->pxNextFreeBlock != NULL)) {
+ 129:Src/custom_memory_manager.c ****           pxPreviousBlock = pxBlock;
+ 176              		.loc 1 129 27
+ 177 0086 7B6A     		ldr	r3, [r7, #36]
+ 178 0088 3B62     		str	r3, [r7, #32]
+ 130:Src/custom_memory_manager.c ****           pxBlock = pxBlock->pxNextFreeBlock;
+ 179              		.loc 1 130 19
+ 180 008a 7B6A     		ldr	r3, [r7, #36]
+ 181 008c 1B68     		ldr	r3, [r3]
+ 182 008e 7B62     		str	r3, [r7, #36]
+ 183              	.L6:
+ 127:Src/custom_memory_manager.c ****         while ((pxBlock->xBlockSize < xWantedSize) &&
+ 184              		.loc 1 127 24
+ 185 0090 7B6A     		ldr	r3, [r7, #36]
+ 186 0092 5B68     		ldr	r3, [r3, #4]
+ 127:Src/custom_memory_manager.c ****         while ((pxBlock->xBlockSize < xWantedSize) &&
+ 187              		.loc 1 127 15
+ 188 0094 7A68     		ldr	r2, [r7, #4]
+ 189 0096 9A42     		cmp	r2, r3
+ 190 0098 03D9     		bls	.L7
+ 128:Src/custom_memory_manager.c ****                (pxBlock->pxNextFreeBlock != NULL)) {
+ 191              		.loc 1 128 24 discriminator 1
+ 192 009a 7B6A     		ldr	r3, [r7, #36]
+ 193 009c 1B68     		ldr	r3, [r3]
+ 127:Src/custom_memory_manager.c ****         while ((pxBlock->xBlockSize < xWantedSize) &&
+ 194              		.loc 1 127 52 discriminator 1
+ARM GAS  /tmp/cciFAXod.s 			page 10
+
+
+ 195 009e 002B     		cmp	r3, #0
+ 196 00a0 F1D1     		bne	.L8
+ 197              	.L7:
+ 131:Src/custom_memory_manager.c ****         }
+ 132:Src/custom_memory_manager.c **** 
+ 133:Src/custom_memory_manager.c ****         /* If the end marker was reached then a block of adequate size
+ 134:Src/custom_memory_manager.c ****         was	not found. */
+ 135:Src/custom_memory_manager.c ****         if (pxBlock != pxEnd) {
+ 198              		.loc 1 135 21
+ 199 00a2 334B     		ldr	r3, .L16
+ 200 00a4 1B68     		ldr	r3, [r3]
+ 201              		.loc 1 135 12
+ 202 00a6 7A6A     		ldr	r2, [r7, #36]
+ 203 00a8 9A42     		cmp	r2, r3
+ 204 00aa 4AD0     		beq	.L3
+ 136:Src/custom_memory_manager.c ****           /* Return the memory space pointed to - jumping over the
+ 137:Src/custom_memory_manager.c ****           BlockLink_t structure at its start. */
+ 138:Src/custom_memory_manager.c ****           pvReturn = (void *)(((uint8_t *)pxPreviousBlock->pxNextFreeBlock) +
+ 205              		.loc 1 138 58
+ 206 00ac 3B6A     		ldr	r3, [r7, #32]
+ 207 00ae 1B68     		ldr	r3, [r3]
+ 208              		.loc 1 138 22
+ 209 00b0 0822     		movs	r2, #8
+ 210              		.loc 1 138 20
+ 211 00b2 1344     		add	r3, r3, r2
+ 212 00b4 FB61     		str	r3, [r7, #28]
+ 139:Src/custom_memory_manager.c ****                               xHeapStructSize);
+ 140:Src/custom_memory_manager.c **** 
+ 141:Src/custom_memory_manager.c ****           /* This block is being returned for use so must be taken out
+ 142:Src/custom_memory_manager.c ****           of the list of free blocks. */
+ 143:Src/custom_memory_manager.c ****           pxPreviousBlock->pxNextFreeBlock = pxBlock->pxNextFreeBlock;
+ 213              		.loc 1 143 53
+ 214 00b6 7B6A     		ldr	r3, [r7, #36]
+ 215 00b8 1A68     		ldr	r2, [r3]
+ 216              		.loc 1 143 44
+ 217 00ba 3B6A     		ldr	r3, [r7, #32]
+ 218 00bc 1A60     		str	r2, [r3]
+ 144:Src/custom_memory_manager.c **** 
+ 145:Src/custom_memory_manager.c ****           /* If the block is larger than required it can be split into
+ 146:Src/custom_memory_manager.c ****           two. */
+ 147:Src/custom_memory_manager.c ****           if ((pxBlock->xBlockSize - xWantedSize) > heapMINIMUM_BLOCK_SIZE) {
+ 219              		.loc 1 147 23
+ 220 00be 7B6A     		ldr	r3, [r7, #36]
+ 221 00c0 5A68     		ldr	r2, [r3, #4]
+ 222              		.loc 1 147 36
+ 223 00c2 7B68     		ldr	r3, [r7, #4]
+ 224 00c4 D21A     		subs	r2, r2, r3
+ 225              		.loc 1 147 53
+ 226 00c6 0823     		movs	r3, #8
+ 227 00c8 5B00     		lsls	r3, r3, #1
+ 228              		.loc 1 147 14
+ 229 00ca 9A42     		cmp	r2, r3
+ 230 00cc 1ED9     		bls	.L9
+ 148:Src/custom_memory_manager.c ****             /* This block is to be split into two.  Create a new
+ 149:Src/custom_memory_manager.c ****             block following the number of bytes requested. The void
+ 150:Src/custom_memory_manager.c ****             cast is used to prevent byte alignment warnings from the
+ 151:Src/custom_memory_manager.c ****             compiler. */
+ARM GAS  /tmp/cciFAXod.s 			page 11
+
+
+ 152:Src/custom_memory_manager.c ****             pxNewBlockLink = (void *)(((uint8_t *)pxBlock) + xWantedSize);
+ 231              		.loc 1 152 28
+ 232 00ce 7A6A     		ldr	r2, [r7, #36]
+ 233 00d0 7B68     		ldr	r3, [r7, #4]
+ 234 00d2 1344     		add	r3, r3, r2
+ 235 00d4 BB61     		str	r3, [r7, #24]
+ 153:Src/custom_memory_manager.c ****             configASSERT((((size_t)pxNewBlockLink) & portBYTE_ALIGNMENT_MASK) ==
+ 236              		.loc 1 153 13
+ 237 00d6 BB69     		ldr	r3, [r7, #24]
+ 238 00d8 03F00703 		and	r3, r3, #7
+ 239 00dc 002B     		cmp	r3, #0
+ 240 00de 09D0     		beq	.L10
+ 241              	.LBB14:
+ 242              	.LBB15:
+ 243              		.loc 2 195 2 discriminator 1
+ 244              		.syntax unified
+ 245              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 246 00e0 4FF05003 			mov r3, #80												
+ 247 00e4 83F31188 		msr basepri, r3											
+ 248 00e8 BFF36F8F 		isb														
+ 249 00ec BFF34F8F 		dsb														
+ 250              	
+ 251              	@ 0 "" 2
+ 252              		.thumb
+ 253              		.syntax unified
+ 254 00f0 3B61     		str	r3, [r7, #16]
+ 255              	.L11:
+ 256              	.LBE15:
+ 257              	.LBE14:
+ 258              		.loc 1 153 13 discriminator 3
+ 259 00f2 FEE7     		b	.L11
+ 260              	.L10:
+ 154:Src/custom_memory_manager.c ****                          0);
+ 155:Src/custom_memory_manager.c **** 
+ 156:Src/custom_memory_manager.c ****             /* Calculate the sizes of two blocks split from the
+ 157:Src/custom_memory_manager.c ****             single block. */
+ 158:Src/custom_memory_manager.c ****             pxNewBlockLink->xBlockSize = pxBlock->xBlockSize - xWantedSize;
+ 261              		.loc 1 158 49
+ 262 00f4 7B6A     		ldr	r3, [r7, #36]
+ 263 00f6 5A68     		ldr	r2, [r3, #4]
+ 264              		.loc 1 158 62
+ 265 00f8 7B68     		ldr	r3, [r7, #4]
+ 266 00fa D21A     		subs	r2, r2, r3
+ 267              		.loc 1 158 40
+ 268 00fc BB69     		ldr	r3, [r7, #24]
+ 269 00fe 5A60     		str	r2, [r3, #4]
+ 159:Src/custom_memory_manager.c ****             pxBlock->xBlockSize = xWantedSize;
+ 270              		.loc 1 159 33
+ 271 0100 7B6A     		ldr	r3, [r7, #36]
+ 272 0102 7A68     		ldr	r2, [r7, #4]
+ 273 0104 5A60     		str	r2, [r3, #4]
+ 160:Src/custom_memory_manager.c **** 
+ 161:Src/custom_memory_manager.c ****             /* Insert the new block into the list of free blocks. */
+ 162:Src/custom_memory_manager.c ****             prvInsertBlockIntoFreeList(pxNewBlockLink);
+ 274              		.loc 1 162 13
+ 275 0106 B869     		ldr	r0, [r7, #24]
+ 276 0108 FFF7FEFF 		bl	prvInsertBlockIntoFreeList
+ARM GAS  /tmp/cciFAXod.s 			page 12
+
+
+ 277              	.L9:
+ 163:Src/custom_memory_manager.c ****           } else {
+ 164:Src/custom_memory_manager.c ****             mtCOVERAGE_TEST_MARKER();
+ 165:Src/custom_memory_manager.c ****           }
+ 166:Src/custom_memory_manager.c **** 
+ 167:Src/custom_memory_manager.c ****           xFreeBytesRemaining -= pxBlock->xBlockSize;
+ 278              		.loc 1 167 31
+ 279 010c 1A4B     		ldr	r3, .L16+8
+ 280 010e 1A68     		ldr	r2, [r3]
+ 281              		.loc 1 167 41
+ 282 0110 7B6A     		ldr	r3, [r7, #36]
+ 283 0112 5B68     		ldr	r3, [r3, #4]
+ 284              		.loc 1 167 31
+ 285 0114 D31A     		subs	r3, r2, r3
+ 286 0116 184A     		ldr	r2, .L16+8
+ 287 0118 1360     		str	r3, [r2]
+ 168:Src/custom_memory_manager.c **** 
+ 169:Src/custom_memory_manager.c ****           if (xFreeBytesRemaining < xMinimumEverFreeBytesRemaining) {
+ 288              		.loc 1 169 35
+ 289 011a 174B     		ldr	r3, .L16+8
+ 290 011c 1A68     		ldr	r2, [r3]
+ 291 011e 184B     		ldr	r3, .L16+16
+ 292 0120 1B68     		ldr	r3, [r3]
+ 293              		.loc 1 169 14
+ 294 0122 9A42     		cmp	r2, r3
+ 295 0124 03D2     		bcs	.L12
+ 170:Src/custom_memory_manager.c ****             xMinimumEverFreeBytesRemaining = xFreeBytesRemaining;
+ 296              		.loc 1 170 44
+ 297 0126 144B     		ldr	r3, .L16+8
+ 298 0128 1B68     		ldr	r3, [r3]
+ 299 012a 154A     		ldr	r2, .L16+16
+ 300 012c 1360     		str	r3, [r2]
+ 301              	.L12:
+ 171:Src/custom_memory_manager.c ****           } else {
+ 172:Src/custom_memory_manager.c ****             mtCOVERAGE_TEST_MARKER();
+ 173:Src/custom_memory_manager.c ****           }
+ 174:Src/custom_memory_manager.c **** 
+ 175:Src/custom_memory_manager.c ****           /* The block is being returned - it is allocated and owned
+ 176:Src/custom_memory_manager.c ****           by the application and has no "next" block. */
+ 177:Src/custom_memory_manager.c ****           pxBlock->xBlockSize |= xBlockAllocatedBit;
+ 302              		.loc 1 177 31
+ 303 012e 7B6A     		ldr	r3, [r7, #36]
+ 304 0130 5A68     		ldr	r2, [r3, #4]
+ 305 0132 104B     		ldr	r3, .L16+4
+ 306 0134 1B68     		ldr	r3, [r3]
+ 307 0136 1A43     		orrs	r2, r2, r3
+ 308 0138 7B6A     		ldr	r3, [r7, #36]
+ 309 013a 5A60     		str	r2, [r3, #4]
+ 178:Src/custom_memory_manager.c ****           pxBlock->pxNextFreeBlock = NULL;
+ 310              		.loc 1 178 36
+ 311 013c 7B6A     		ldr	r3, [r7, #36]
+ 312 013e 0022     		movs	r2, #0
+ 313 0140 1A60     		str	r2, [r3]
+ 314              	.L3:
+ 179:Src/custom_memory_manager.c ****         } else {
+ 180:Src/custom_memory_manager.c ****           mtCOVERAGE_TEST_MARKER();
+ 181:Src/custom_memory_manager.c ****         }
+ARM GAS  /tmp/cciFAXod.s 			page 13
+
+
+ 182:Src/custom_memory_manager.c ****       } else {
+ 183:Src/custom_memory_manager.c ****         mtCOVERAGE_TEST_MARKER();
+ 184:Src/custom_memory_manager.c ****       }
+ 185:Src/custom_memory_manager.c ****     } else {
+ 186:Src/custom_memory_manager.c ****       mtCOVERAGE_TEST_MARKER();
+ 187:Src/custom_memory_manager.c ****     }
+ 188:Src/custom_memory_manager.c **** 
+ 189:Src/custom_memory_manager.c ****     traceMALLOC(pvReturn, xWantedSize);
+ 190:Src/custom_memory_manager.c ****   }
+ 191:Src/custom_memory_manager.c ****   (void)xTaskResumeAll();
+ 315              		.loc 1 191 9
+ 316 0142 FFF7FEFF 		bl	xTaskResumeAll
+ 192:Src/custom_memory_manager.c **** 
+ 193:Src/custom_memory_manager.c **** #if (configUSE_MALLOC_FAILED_HOOK == 1)
+ 194:Src/custom_memory_manager.c ****   {
+ 195:Src/custom_memory_manager.c ****     if (pvReturn == NULL) {
+ 196:Src/custom_memory_manager.c ****       extern void vApplicationMallocFailedHook(void);
+ 197:Src/custom_memory_manager.c ****       vApplicationMallocFailedHook();
+ 198:Src/custom_memory_manager.c ****     } else {
+ 199:Src/custom_memory_manager.c ****       mtCOVERAGE_TEST_MARKER();
+ 200:Src/custom_memory_manager.c ****     }
+ 201:Src/custom_memory_manager.c ****   }
+ 202:Src/custom_memory_manager.c **** #endif
+ 203:Src/custom_memory_manager.c **** 
+ 204:Src/custom_memory_manager.c ****   configASSERT((((size_t)pvReturn) & (size_t)portBYTE_ALIGNMENT_MASK) == 0);
+ 317              		.loc 1 204 3
+ 318 0146 FB69     		ldr	r3, [r7, #28]
+ 319 0148 03F00703 		and	r3, r3, #7
+ 320 014c 002B     		cmp	r3, #0
+ 321 014e 09D0     		beq	.L13
+ 322              	.LBB16:
+ 323              	.LBB17:
+ 324              		.loc 2 195 2 discriminator 1
+ 325              		.syntax unified
+ 326              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 327 0150 4FF05003 			mov r3, #80												
+ 328 0154 83F31188 		msr basepri, r3											
+ 329 0158 BFF36F8F 		isb														
+ 330 015c BFF34F8F 		dsb														
+ 331              	
+ 332              	@ 0 "" 2
+ 333              		.thumb
+ 334              		.syntax unified
+ 335 0160 FB60     		str	r3, [r7, #12]
+ 336              	.L14:
+ 337              	.LBE17:
+ 338              	.LBE16:
+ 339              		.loc 1 204 3 discriminator 5
+ 340 0162 FEE7     		b	.L14
+ 341              	.L13:
+ 205:Src/custom_memory_manager.c ****   return pvReturn;
+ 342              		.loc 1 205 10
+ 343 0164 FB69     		ldr	r3, [r7, #28]
+ 206:Src/custom_memory_manager.c **** }
+ 344              		.loc 1 206 1
+ 345 0166 1846     		mov	r0, r3
+ 346 0168 2837     		adds	r7, r7, #40
+ARM GAS  /tmp/cciFAXod.s 			page 14
+
+
+ 347              	.LCFI3:
+ 348              		.cfi_def_cfa_offset 8
+ 349 016a BD46     		mov	sp, r7
+ 350              	.LCFI4:
+ 351              		.cfi_def_cfa_register 13
+ 352              		@ sp needed
+ 353 016c 80BD     		pop	{r7, pc}
+ 354              	.L17:
+ 355 016e 00BF     		.align	2
+ 356              	.L16:
+ 357 0170 00000000 		.word	pxEnd
+ 358 0174 00000000 		.word	xBlockAllocatedBit
+ 359 0178 00000000 		.word	xFreeBytesRemaining
+ 360 017c 00000000 		.word	xStart
+ 361 0180 00000000 		.word	xMinimumEverFreeBytesRemaining
+ 362              		.cfi_endproc
+ 363              	.LFE4:
+ 365              		.section	.text.vPortFree,"ax",%progbits
+ 366              		.align	1
+ 367              		.global	vPortFree
+ 368              		.syntax unified
+ 369              		.thumb
+ 370              		.thumb_func
+ 371              		.fpu fpv4-sp-d16
+ 373              	vPortFree:
+ 374              	.LFB5:
+ 207:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+ 208:Src/custom_memory_manager.c **** 
+ 209:Src/custom_memory_manager.c **** void vPortFree(void *pv) {
+ 375              		.loc 1 209 26
+ 376              		.cfi_startproc
+ 377              		@ args = 0, pretend = 0, frame = 24
+ 378              		@ frame_needed = 1, uses_anonymous_args = 0
+ 379 0000 80B5     		push	{r7, lr}
+ 380              	.LCFI5:
+ 381              		.cfi_def_cfa_offset 8
+ 382              		.cfi_offset 7, -8
+ 383              		.cfi_offset 14, -4
+ 384 0002 86B0     		sub	sp, sp, #24
+ 385              	.LCFI6:
+ 386              		.cfi_def_cfa_offset 32
+ 387 0004 00AF     		add	r7, sp, #0
+ 388              	.LCFI7:
+ 389              		.cfi_def_cfa_register 7
+ 390 0006 7860     		str	r0, [r7, #4]
+ 210:Src/custom_memory_manager.c ****   uint8_t *puc = (uint8_t *)pv;
+ 391              		.loc 1 210 12
+ 392 0008 7B68     		ldr	r3, [r7, #4]
+ 393 000a 7B61     		str	r3, [r7, #20]
+ 211:Src/custom_memory_manager.c ****   BlockLink_t *pxLink;
+ 212:Src/custom_memory_manager.c **** 
+ 213:Src/custom_memory_manager.c ****   if (pv != NULL) {
+ 394              		.loc 1 213 6
+ 395 000c 7B68     		ldr	r3, [r7, #4]
+ 396 000e 002B     		cmp	r3, #0
+ 397 0010 46D0     		beq	.L24
+ 214:Src/custom_memory_manager.c ****     /* The memory being freed will have an BlockLink_t structure immediately
+ARM GAS  /tmp/cciFAXod.s 			page 15
+
+
+ 215:Src/custom_memory_manager.c ****     before it. */
+ 216:Src/custom_memory_manager.c ****     puc -= xHeapStructSize;
+ 398              		.loc 1 216 9
+ 399 0012 0823     		movs	r3, #8
+ 400 0014 5B42     		rsbs	r3, r3, #0
+ 401 0016 7A69     		ldr	r2, [r7, #20]
+ 402 0018 1344     		add	r3, r3, r2
+ 403 001a 7B61     		str	r3, [r7, #20]
+ 217:Src/custom_memory_manager.c **** 
+ 218:Src/custom_memory_manager.c ****     /* This casting is to keep the compiler from issuing warnings. */
+ 219:Src/custom_memory_manager.c ****     pxLink = (void *)puc;
+ 404              		.loc 1 219 12
+ 405 001c 7B69     		ldr	r3, [r7, #20]
+ 406 001e 3B61     		str	r3, [r7, #16]
+ 220:Src/custom_memory_manager.c **** 
+ 221:Src/custom_memory_manager.c ****     /* Check the block is actually allocated. */
+ 222:Src/custom_memory_manager.c ****     configASSERT((pxLink->xBlockSize & xBlockAllocatedBit) != 0);
+ 407              		.loc 1 222 5
+ 408 0020 3B69     		ldr	r3, [r7, #16]
+ 409 0022 5A68     		ldr	r2, [r3, #4]
+ 410 0024 204B     		ldr	r3, .L25
+ 411 0026 1B68     		ldr	r3, [r3]
+ 412 0028 1340     		ands	r3, r3, r2
+ 413 002a 002B     		cmp	r3, #0
+ 414 002c 09D1     		bne	.L20
+ 415              	.LBB18:
+ 416              	.LBB19:
+ 417              		.loc 2 195 2 discriminator 1
+ 418              		.syntax unified
+ 419              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 420 002e 4FF05003 			mov r3, #80												
+ 421 0032 83F31188 		msr basepri, r3											
+ 422 0036 BFF36F8F 		isb														
+ 423 003a BFF34F8F 		dsb														
+ 424              	
+ 425              	@ 0 "" 2
+ 426              		.thumb
+ 427              		.syntax unified
+ 428 003e FB60     		str	r3, [r7, #12]
+ 429              	.L21:
+ 430              	.LBE19:
+ 431              	.LBE18:
+ 432              		.loc 1 222 5 discriminator 1
+ 433 0040 FEE7     		b	.L21
+ 434              	.L20:
+ 223:Src/custom_memory_manager.c ****     configASSERT(pxLink->pxNextFreeBlock == NULL);
+ 435              		.loc 1 223 5
+ 436 0042 3B69     		ldr	r3, [r7, #16]
+ 437 0044 1B68     		ldr	r3, [r3]
+ 438 0046 002B     		cmp	r3, #0
+ 439 0048 09D0     		beq	.L22
+ 440              	.LBB20:
+ 441              	.LBB21:
+ 442              		.loc 2 195 2 discriminator 1
+ 443              		.syntax unified
+ 444              	@ 195 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h" 1
+ 445 004a 4FF05003 			mov r3, #80												
+ARM GAS  /tmp/cciFAXod.s 			page 16
+
+
+ 446 004e 83F31188 		msr basepri, r3											
+ 447 0052 BFF36F8F 		isb														
+ 448 0056 BFF34F8F 		dsb														
+ 449              	
+ 450              	@ 0 "" 2
+ 451              		.thumb
+ 452              		.syntax unified
+ 453 005a BB60     		str	r3, [r7, #8]
+ 454              	.L23:
+ 455              	.LBE21:
+ 456              	.LBE20:
+ 457              		.loc 1 223 5 discriminator 2
+ 458 005c FEE7     		b	.L23
+ 459              	.L22:
+ 224:Src/custom_memory_manager.c **** 
+ 225:Src/custom_memory_manager.c ****     if ((pxLink->xBlockSize & xBlockAllocatedBit) != 0) {
+ 460              		.loc 1 225 16
+ 461 005e 3B69     		ldr	r3, [r7, #16]
+ 462 0060 5A68     		ldr	r2, [r3, #4]
+ 463              		.loc 1 225 29
+ 464 0062 114B     		ldr	r3, .L25
+ 465 0064 1B68     		ldr	r3, [r3]
+ 466 0066 1340     		ands	r3, r3, r2
+ 467              		.loc 1 225 8
+ 468 0068 002B     		cmp	r3, #0
+ 469 006a 19D0     		beq	.L24
+ 226:Src/custom_memory_manager.c ****       if (pxLink->pxNextFreeBlock == NULL) {
+ 470              		.loc 1 226 17
+ 471 006c 3B69     		ldr	r3, [r7, #16]
+ 472 006e 1B68     		ldr	r3, [r3]
+ 473              		.loc 1 226 10
+ 474 0070 002B     		cmp	r3, #0
+ 475 0072 15D1     		bne	.L24
+ 227:Src/custom_memory_manager.c ****         /* The block is being returned to the heap - it is no longer
+ 228:Src/custom_memory_manager.c ****         allocated. */
+ 229:Src/custom_memory_manager.c ****         pxLink->xBlockSize &= ~xBlockAllocatedBit;
+ 476              		.loc 1 229 28
+ 477 0074 3B69     		ldr	r3, [r7, #16]
+ 478 0076 5A68     		ldr	r2, [r3, #4]
+ 479              		.loc 1 229 31
+ 480 0078 0B4B     		ldr	r3, .L25
+ 481 007a 1B68     		ldr	r3, [r3]
+ 482 007c DB43     		mvns	r3, r3
+ 483              		.loc 1 229 28
+ 484 007e 1A40     		ands	r2, r2, r3
+ 485 0080 3B69     		ldr	r3, [r7, #16]
+ 486 0082 5A60     		str	r2, [r3, #4]
+ 230:Src/custom_memory_manager.c **** 
+ 231:Src/custom_memory_manager.c ****         vTaskSuspendAll();
+ 487              		.loc 1 231 9
+ 488 0084 FFF7FEFF 		bl	vTaskSuspendAll
+ 232:Src/custom_memory_manager.c ****         {
+ 233:Src/custom_memory_manager.c ****           /* Add this block to the list of free blocks. */
+ 234:Src/custom_memory_manager.c ****           xFreeBytesRemaining += pxLink->xBlockSize;
+ 489              		.loc 1 234 40
+ 490 0088 3B69     		ldr	r3, [r7, #16]
+ 491 008a 5A68     		ldr	r2, [r3, #4]
+ARM GAS  /tmp/cciFAXod.s 			page 17
+
+
+ 492              		.loc 1 234 31
+ 493 008c 074B     		ldr	r3, .L25+4
+ 494 008e 1B68     		ldr	r3, [r3]
+ 495 0090 1344     		add	r3, r3, r2
+ 496 0092 064A     		ldr	r2, .L25+4
+ 497 0094 1360     		str	r3, [r2]
+ 235:Src/custom_memory_manager.c ****           traceFREE(pv, pxLink->xBlockSize);
+ 236:Src/custom_memory_manager.c ****           prvInsertBlockIntoFreeList(((BlockLink_t *)pxLink));
+ 498              		.loc 1 236 11
+ 499 0096 3869     		ldr	r0, [r7, #16]
+ 500 0098 FFF7FEFF 		bl	prvInsertBlockIntoFreeList
+ 237:Src/custom_memory_manager.c ****         }
+ 238:Src/custom_memory_manager.c ****         (void)xTaskResumeAll();
+ 501              		.loc 1 238 15
+ 502 009c FFF7FEFF 		bl	xTaskResumeAll
+ 503              	.L24:
+ 239:Src/custom_memory_manager.c ****       } else {
+ 240:Src/custom_memory_manager.c ****         mtCOVERAGE_TEST_MARKER();
+ 241:Src/custom_memory_manager.c ****       }
+ 242:Src/custom_memory_manager.c ****     } else {
+ 243:Src/custom_memory_manager.c ****       mtCOVERAGE_TEST_MARKER();
+ 244:Src/custom_memory_manager.c ****     }
+ 245:Src/custom_memory_manager.c ****   }
+ 246:Src/custom_memory_manager.c **** }
+ 504              		.loc 1 246 1
+ 505 00a0 00BF     		nop
+ 506 00a2 1837     		adds	r7, r7, #24
+ 507              	.LCFI8:
+ 508              		.cfi_def_cfa_offset 8
+ 509 00a4 BD46     		mov	sp, r7
+ 510              	.LCFI9:
+ 511              		.cfi_def_cfa_register 13
+ 512              		@ sp needed
+ 513 00a6 80BD     		pop	{r7, pc}
+ 514              	.L26:
+ 515              		.align	2
+ 516              	.L25:
+ 517 00a8 00000000 		.word	xBlockAllocatedBit
+ 518 00ac 00000000 		.word	xFreeBytesRemaining
+ 519              		.cfi_endproc
+ 520              	.LFE5:
+ 522              		.section	.text.getBlockSize,"ax",%progbits
+ 523              		.align	1
+ 524              		.global	getBlockSize
+ 525              		.syntax unified
+ 526              		.thumb
+ 527              		.thumb_func
+ 528              		.fpu fpv4-sp-d16
+ 530              	getBlockSize:
+ 531              	.LFB6:
+ 247:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+ 248:Src/custom_memory_manager.c **** 
+ 249:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+ 250:Src/custom_memory_manager.c **** size_t getBlockSize(void *pv) {
+ 532              		.loc 1 250 31
+ 533              		.cfi_startproc
+ 534              		@ args = 0, pretend = 0, frame = 24
+ARM GAS  /tmp/cciFAXod.s 			page 18
+
+
+ 535              		@ frame_needed = 1, uses_anonymous_args = 0
+ 536              		@ link register save eliminated.
+ 537 0000 80B4     		push	{r7}
+ 538              	.LCFI10:
+ 539              		.cfi_def_cfa_offset 4
+ 540              		.cfi_offset 7, -4
+ 541 0002 87B0     		sub	sp, sp, #28
+ 542              	.LCFI11:
+ 543              		.cfi_def_cfa_offset 32
+ 544 0004 00AF     		add	r7, sp, #0
+ 545              	.LCFI12:
+ 546              		.cfi_def_cfa_register 7
+ 547 0006 7860     		str	r0, [r7, #4]
+ 251:Src/custom_memory_manager.c ****   uint8_t *puc = (uint8_t *)pv;
+ 548              		.loc 1 251 12
+ 549 0008 7B68     		ldr	r3, [r7, #4]
+ 550 000a 7B61     		str	r3, [r7, #20]
+ 252:Src/custom_memory_manager.c ****   BlockLink_t *pxLink;
+ 253:Src/custom_memory_manager.c **** 
+ 254:Src/custom_memory_manager.c ****   puc -= xHeapStructSize;
+ 551              		.loc 1 254 7
+ 552 000c 0823     		movs	r3, #8
+ 553 000e 5B42     		rsbs	r3, r3, #0
+ 554 0010 7A69     		ldr	r2, [r7, #20]
+ 555 0012 1344     		add	r3, r3, r2
+ 556 0014 7B61     		str	r3, [r7, #20]
+ 255:Src/custom_memory_manager.c ****   pxLink = (void *)puc;
+ 557              		.loc 1 255 10
+ 558 0016 7B69     		ldr	r3, [r7, #20]
+ 559 0018 3B61     		str	r3, [r7, #16]
+ 256:Src/custom_memory_manager.c **** 
+ 257:Src/custom_memory_manager.c ****   size_t count = pxLink->xBlockSize & ~xBlockAllocatedBit;
+ 560              		.loc 1 257 24
+ 561 001a 3B69     		ldr	r3, [r7, #16]
+ 562 001c 5A68     		ldr	r2, [r3, #4]
+ 563              		.loc 1 257 39
+ 564 001e 064B     		ldr	r3, .L29
+ 565 0020 1B68     		ldr	r3, [r3]
+ 566 0022 DB43     		mvns	r3, r3
+ 567              		.loc 1 257 10
+ 568 0024 1340     		ands	r3, r3, r2
+ 569 0026 FB60     		str	r3, [r7, #12]
+ 258:Src/custom_memory_manager.c **** 
+ 259:Src/custom_memory_manager.c ****   return count;
+ 570              		.loc 1 259 10
+ 571 0028 FB68     		ldr	r3, [r7, #12]
+ 260:Src/custom_memory_manager.c **** }
+ 572              		.loc 1 260 1
+ 573 002a 1846     		mov	r0, r3
+ 574 002c 1C37     		adds	r7, r7, #28
+ 575              	.LCFI13:
+ 576              		.cfi_def_cfa_offset 4
+ 577 002e BD46     		mov	sp, r7
+ 578              	.LCFI14:
+ 579              		.cfi_def_cfa_register 13
+ 580              		@ sp needed
+ 581 0030 5DF8047B 		ldr	r7, [sp], #4
+ARM GAS  /tmp/cciFAXod.s 			page 19
+
+
+ 582              	.LCFI15:
+ 583              		.cfi_restore 7
+ 584              		.cfi_def_cfa_offset 0
+ 585 0034 7047     		bx	lr
+ 586              	.L30:
+ 587 0036 00BF     		.align	2
+ 588              	.L29:
+ 589 0038 00000000 		.word	xBlockAllocatedBit
+ 590              		.cfi_endproc
+ 591              	.LFE6:
+ 593              		.section	.text.pvPortRealloc,"ax",%progbits
+ 594              		.align	1
+ 595              		.global	pvPortRealloc
+ 596              		.syntax unified
+ 597              		.thumb
+ 598              		.thumb_func
+ 599              		.fpu fpv4-sp-d16
+ 601              	pvPortRealloc:
+ 602              	.LFB7:
+ 261:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+ 262:Src/custom_memory_manager.c **** 
+ 263:Src/custom_memory_manager.c **** void *pvPortRealloc(void *pv, size_t xWantedSize) {
+ 603              		.loc 1 263 51
+ 604              		.cfi_startproc
+ 605              		@ args = 0, pretend = 0, frame = 32
+ 606              		@ frame_needed = 1, uses_anonymous_args = 0
+ 607 0000 80B5     		push	{r7, lr}
+ 608              	.LCFI16:
+ 609              		.cfi_def_cfa_offset 8
+ 610              		.cfi_offset 7, -8
+ 611              		.cfi_offset 14, -4
+ 612 0002 88B0     		sub	sp, sp, #32
+ 613              	.LCFI17:
+ 614              		.cfi_def_cfa_offset 40
+ 615 0004 00AF     		add	r7, sp, #0
+ 616              	.LCFI18:
+ 617              		.cfi_def_cfa_register 7
+ 618 0006 7860     		str	r0, [r7, #4]
+ 619 0008 3960     		str	r1, [r7]
+ 264:Src/custom_memory_manager.c ****   vTaskSuspendAll();
+ 620              		.loc 1 264 3
+ 621 000a FFF7FEFF 		bl	vTaskSuspendAll
+ 265:Src/custom_memory_manager.c **** 
+ 266:Src/custom_memory_manager.c ****   void *newmem = pvPortMalloc(xWantedSize);
+ 622              		.loc 1 266 18
+ 623 000e 3868     		ldr	r0, [r7]
+ 624 0010 FFF7FEFF 		bl	pvPortMalloc
+ 625 0014 3861     		str	r0, [r7, #16]
+ 267:Src/custom_memory_manager.c **** 
+ 268:Src/custom_memory_manager.c ****   uint8_t *puc = (uint8_t *)pv;
+ 626              		.loc 1 268 12
+ 627 0016 7B68     		ldr	r3, [r7, #4]
+ 628 0018 FB60     		str	r3, [r7, #12]
+ 269:Src/custom_memory_manager.c ****   BlockLink_t *pxLink;
+ 270:Src/custom_memory_manager.c **** 
+ 271:Src/custom_memory_manager.c ****   puc -= xHeapStructSize;
+ 629              		.loc 1 271 7
+ARM GAS  /tmp/cciFAXod.s 			page 20
+
+
+ 630 001a 0823     		movs	r3, #8
+ 631 001c 5B42     		rsbs	r3, r3, #0
+ 632 001e FA68     		ldr	r2, [r7, #12]
+ 633 0020 1344     		add	r3, r3, r2
+ 634 0022 FB60     		str	r3, [r7, #12]
+ 272:Src/custom_memory_manager.c ****   pxLink = (void *)puc;
+ 635              		.loc 1 272 10
+ 636 0024 FB68     		ldr	r3, [r7, #12]
+ 637 0026 BB60     		str	r3, [r7, #8]
+ 273:Src/custom_memory_manager.c **** 
+ 274:Src/custom_memory_manager.c ****   char *in_src = (char *)pv;
+ 638              		.loc 1 274 9
+ 639 0028 7B68     		ldr	r3, [r7, #4]
+ 640 002a FB61     		str	r3, [r7, #28]
+ 275:Src/custom_memory_manager.c ****   char *in_dest = (char *)newmem;
+ 641              		.loc 1 275 9
+ 642 002c 3B69     		ldr	r3, [r7, #16]
+ 643 002e BB61     		str	r3, [r7, #24]
+ 276:Src/custom_memory_manager.c ****   size_t count = pxLink->xBlockSize & ~xBlockAllocatedBit;
+ 644              		.loc 1 276 24
+ 645 0030 BB68     		ldr	r3, [r7, #8]
+ 646 0032 5A68     		ldr	r2, [r3, #4]
+ 647              		.loc 1 276 39
+ 648 0034 0E4B     		ldr	r3, .L35
+ 649 0036 1B68     		ldr	r3, [r3]
+ 650 0038 DB43     		mvns	r3, r3
+ 651              		.loc 1 276 10
+ 652 003a 1340     		ands	r3, r3, r2
+ 653 003c 7B61     		str	r3, [r7, #20]
+ 277:Src/custom_memory_manager.c **** 
+ 278:Src/custom_memory_manager.c ****   while (count--) *in_dest++ = *in_src++;
+ 654              		.loc 1 278 9
+ 655 003e 07E0     		b	.L32
+ 656              	.L33:
+ 657              		.loc 1 278 39 discriminator 2
+ 658 0040 FA69     		ldr	r2, [r7, #28]
+ 659 0042 531C     		adds	r3, r2, #1
+ 660 0044 FB61     		str	r3, [r7, #28]
+ 661              		.loc 1 278 27 discriminator 2
+ 662 0046 BB69     		ldr	r3, [r7, #24]
+ 663 0048 591C     		adds	r1, r3, #1
+ 664 004a B961     		str	r1, [r7, #24]
+ 665              		.loc 1 278 32 discriminator 2
+ 666 004c 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 667              		.loc 1 278 30 discriminator 2
+ 668 004e 1A70     		strb	r2, [r3]
+ 669              	.L32:
+ 670              		.loc 1 278 15 discriminator 1
+ 671 0050 7B69     		ldr	r3, [r7, #20]
+ 672 0052 5A1E     		subs	r2, r3, #1
+ 673 0054 7A61     		str	r2, [r7, #20]
+ 674              		.loc 1 278 9 discriminator 1
+ 675 0056 002B     		cmp	r3, #0
+ 676 0058 F2D1     		bne	.L33
+ 279:Src/custom_memory_manager.c **** 
+ 280:Src/custom_memory_manager.c ****   vPortFree(pv);
+ 677              		.loc 1 280 3
+ARM GAS  /tmp/cciFAXod.s 			page 21
+
+
+ 678 005a 7868     		ldr	r0, [r7, #4]
+ 679 005c FFF7FEFF 		bl	vPortFree
+ 281:Src/custom_memory_manager.c **** 
+ 282:Src/custom_memory_manager.c ****   (void)xTaskResumeAll();
+ 680              		.loc 1 282 9
+ 681 0060 FFF7FEFF 		bl	xTaskResumeAll
+ 283:Src/custom_memory_manager.c **** 
+ 284:Src/custom_memory_manager.c ****   return newmem;
+ 682              		.loc 1 284 10
+ 683 0064 3B69     		ldr	r3, [r7, #16]
+ 285:Src/custom_memory_manager.c **** }
+ 684              		.loc 1 285 1
+ 685 0066 1846     		mov	r0, r3
+ 686 0068 2037     		adds	r7, r7, #32
+ 687              	.LCFI19:
+ 688              		.cfi_def_cfa_offset 8
+ 689 006a BD46     		mov	sp, r7
+ 690              	.LCFI20:
+ 691              		.cfi_def_cfa_register 13
+ 692              		@ sp needed
+ 693 006c 80BD     		pop	{r7, pc}
+ 694              	.L36:
+ 695 006e 00BF     		.align	2
+ 696              	.L35:
+ 697 0070 00000000 		.word	xBlockAllocatedBit
+ 698              		.cfi_endproc
+ 699              	.LFE7:
+ 701              		.section	.text.pvPortCalloc,"ax",%progbits
+ 702              		.align	1
+ 703              		.global	pvPortCalloc
+ 704              		.syntax unified
+ 705              		.thumb
+ 706              		.thumb_func
+ 707              		.fpu fpv4-sp-d16
+ 709              	pvPortCalloc:
+ 710              	.LFB8:
+ 286:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+ 287:Src/custom_memory_manager.c **** 
+ 288:Src/custom_memory_manager.c **** void *pvPortCalloc(size_t num, size_t xWantedSize) {
+ 711              		.loc 1 288 52
+ 712              		.cfi_startproc
+ 713              		@ args = 0, pretend = 0, frame = 24
+ 714              		@ frame_needed = 1, uses_anonymous_args = 0
+ 715 0000 80B5     		push	{r7, lr}
+ 716              	.LCFI21:
+ 717              		.cfi_def_cfa_offset 8
+ 718              		.cfi_offset 7, -8
+ 719              		.cfi_offset 14, -4
+ 720 0002 86B0     		sub	sp, sp, #24
+ 721              	.LCFI22:
+ 722              		.cfi_def_cfa_offset 32
+ 723 0004 00AF     		add	r7, sp, #0
+ 724              	.LCFI23:
+ 725              		.cfi_def_cfa_register 7
+ 726 0006 7860     		str	r0, [r7, #4]
+ 727 0008 3960     		str	r1, [r7]
+ 289:Src/custom_memory_manager.c ****   vTaskSuspendAll();
+ARM GAS  /tmp/cciFAXod.s 			page 22
+
+
+ 728              		.loc 1 289 3
+ 729 000a FFF7FEFF 		bl	vTaskSuspendAll
+ 290:Src/custom_memory_manager.c ****   size_t count = xWantedSize * num;
+ 730              		.loc 1 290 10
+ 731 000e 3B68     		ldr	r3, [r7]
+ 732 0010 7A68     		ldr	r2, [r7, #4]
+ 733 0012 02FB03F3 		mul	r3, r2, r3
+ 734 0016 7B61     		str	r3, [r7, #20]
+ 291:Src/custom_memory_manager.c **** 
+ 292:Src/custom_memory_manager.c ****   void *mem = pvPortMalloc(count);
+ 735              		.loc 1 292 15
+ 736 0018 7869     		ldr	r0, [r7, #20]
+ 737 001a FFF7FEFF 		bl	pvPortMalloc
+ 738 001e F860     		str	r0, [r7, #12]
+ 293:Src/custom_memory_manager.c ****   char *in_dest = (char *)mem;
+ 739              		.loc 1 293 9
+ 740 0020 FB68     		ldr	r3, [r7, #12]
+ 741 0022 3B61     		str	r3, [r7, #16]
+ 294:Src/custom_memory_manager.c **** 
+ 295:Src/custom_memory_manager.c ****   while (count--) *in_dest++ = 0;
+ 742              		.loc 1 295 9
+ 743 0024 04E0     		b	.L38
+ 744              	.L39:
+ 745              		.loc 1 295 27 discriminator 2
+ 746 0026 3B69     		ldr	r3, [r7, #16]
+ 747 0028 5A1C     		adds	r2, r3, #1
+ 748 002a 3A61     		str	r2, [r7, #16]
+ 749              		.loc 1 295 30 discriminator 2
+ 750 002c 0022     		movs	r2, #0
+ 751 002e 1A70     		strb	r2, [r3]
+ 752              	.L38:
+ 753              		.loc 1 295 15 discriminator 1
+ 754 0030 7B69     		ldr	r3, [r7, #20]
+ 755 0032 5A1E     		subs	r2, r3, #1
+ 756 0034 7A61     		str	r2, [r7, #20]
+ 757              		.loc 1 295 9 discriminator 1
+ 758 0036 002B     		cmp	r3, #0
+ 759 0038 F5D1     		bne	.L39
+ 296:Src/custom_memory_manager.c **** 
+ 297:Src/custom_memory_manager.c ****   (void)xTaskResumeAll();
+ 760              		.loc 1 297 9
+ 761 003a FFF7FEFF 		bl	xTaskResumeAll
+ 298:Src/custom_memory_manager.c ****   return mem;
+ 762              		.loc 1 298 10
+ 763 003e FB68     		ldr	r3, [r7, #12]
+ 299:Src/custom_memory_manager.c **** }
+ 764              		.loc 1 299 1
+ 765 0040 1846     		mov	r0, r3
+ 766 0042 1837     		adds	r7, r7, #24
+ 767              	.LCFI24:
+ 768              		.cfi_def_cfa_offset 8
+ 769 0044 BD46     		mov	sp, r7
+ 770              	.LCFI25:
+ 771              		.cfi_def_cfa_register 13
+ 772              		@ sp needed
+ 773 0046 80BD     		pop	{r7, pc}
+ 774              		.cfi_endproc
+ARM GAS  /tmp/cciFAXod.s 			page 23
+
+
+ 775              	.LFE8:
+ 777              		.section	.text.xPortGetFreeHeapSize,"ax",%progbits
+ 778              		.align	1
+ 779              		.global	xPortGetFreeHeapSize
+ 780              		.syntax unified
+ 781              		.thumb
+ 782              		.thumb_func
+ 783              		.fpu fpv4-sp-d16
+ 785              	xPortGetFreeHeapSize:
+ 786              	.LFB9:
+ 300:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+ 301:Src/custom_memory_manager.c **** 
+ 302:Src/custom_memory_manager.c **** size_t xPortGetFreeHeapSize(void) { return xFreeBytesRemaining; }
+ 787              		.loc 1 302 35
+ 788              		.cfi_startproc
+ 789              		@ args = 0, pretend = 0, frame = 0
+ 790              		@ frame_needed = 1, uses_anonymous_args = 0
+ 791              		@ link register save eliminated.
+ 792 0000 80B4     		push	{r7}
+ 793              	.LCFI26:
+ 794              		.cfi_def_cfa_offset 4
+ 795              		.cfi_offset 7, -4
+ 796 0002 00AF     		add	r7, sp, #0
+ 797              	.LCFI27:
+ 798              		.cfi_def_cfa_register 7
+ 799              		.loc 1 302 44
+ 800 0004 034B     		ldr	r3, .L43
+ 801 0006 1B68     		ldr	r3, [r3]
+ 802              		.loc 1 302 1
+ 803 0008 1846     		mov	r0, r3
+ 804 000a BD46     		mov	sp, r7
+ 805              	.LCFI28:
+ 806              		.cfi_def_cfa_register 13
+ 807              		@ sp needed
+ 808 000c 5DF8047B 		ldr	r7, [sp], #4
+ 809              	.LCFI29:
+ 810              		.cfi_restore 7
+ 811              		.cfi_def_cfa_offset 0
+ 812 0010 7047     		bx	lr
+ 813              	.L44:
+ 814 0012 00BF     		.align	2
+ 815              	.L43:
+ 816 0014 00000000 		.word	xFreeBytesRemaining
+ 817              		.cfi_endproc
+ 818              	.LFE9:
+ 820              		.section	.text.xPortGetMinimumEverFreeHeapSize,"ax",%progbits
+ 821              		.align	1
+ 822              		.global	xPortGetMinimumEverFreeHeapSize
+ 823              		.syntax unified
+ 824              		.thumb
+ 825              		.thumb_func
+ 826              		.fpu fpv4-sp-d16
+ 828              	xPortGetMinimumEverFreeHeapSize:
+ 829              	.LFB10:
+ 303:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+ 304:Src/custom_memory_manager.c **** 
+ 305:Src/custom_memory_manager.c **** size_t xPortGetMinimumEverFreeHeapSize(void) {
+ARM GAS  /tmp/cciFAXod.s 			page 24
+
+
+ 830              		.loc 1 305 46
+ 831              		.cfi_startproc
+ 832              		@ args = 0, pretend = 0, frame = 0
+ 833              		@ frame_needed = 1, uses_anonymous_args = 0
+ 834              		@ link register save eliminated.
+ 835 0000 80B4     		push	{r7}
+ 836              	.LCFI30:
+ 837              		.cfi_def_cfa_offset 4
+ 838              		.cfi_offset 7, -4
+ 839 0002 00AF     		add	r7, sp, #0
+ 840              	.LCFI31:
+ 841              		.cfi_def_cfa_register 7
+ 306:Src/custom_memory_manager.c ****   return xMinimumEverFreeBytesRemaining;
+ 842              		.loc 1 306 10
+ 843 0004 034B     		ldr	r3, .L47
+ 844 0006 1B68     		ldr	r3, [r3]
+ 307:Src/custom_memory_manager.c **** }
+ 845              		.loc 1 307 1
+ 846 0008 1846     		mov	r0, r3
+ 847 000a BD46     		mov	sp, r7
+ 848              	.LCFI32:
+ 849              		.cfi_def_cfa_register 13
+ 850              		@ sp needed
+ 851 000c 5DF8047B 		ldr	r7, [sp], #4
+ 852              	.LCFI33:
+ 853              		.cfi_restore 7
+ 854              		.cfi_def_cfa_offset 0
+ 855 0010 7047     		bx	lr
+ 856              	.L48:
+ 857 0012 00BF     		.align	2
+ 858              	.L47:
+ 859 0014 00000000 		.word	xMinimumEverFreeBytesRemaining
+ 860              		.cfi_endproc
+ 861              	.LFE10:
+ 863              		.section	.text.vPortInitialiseBlocks,"ax",%progbits
+ 864              		.align	1
+ 865              		.global	vPortInitialiseBlocks
+ 866              		.syntax unified
+ 867              		.thumb
+ 868              		.thumb_func
+ 869              		.fpu fpv4-sp-d16
+ 871              	vPortInitialiseBlocks:
+ 872              	.LFB11:
+ 308:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+ 309:Src/custom_memory_manager.c **** 
+ 310:Src/custom_memory_manager.c **** void vPortInitialiseBlocks(void) {
+ 873              		.loc 1 310 34
+ 874              		.cfi_startproc
+ 875              		@ args = 0, pretend = 0, frame = 0
+ 876              		@ frame_needed = 1, uses_anonymous_args = 0
+ 877              		@ link register save eliminated.
+ 878 0000 80B4     		push	{r7}
+ 879              	.LCFI34:
+ 880              		.cfi_def_cfa_offset 4
+ 881              		.cfi_offset 7, -4
+ 882 0002 00AF     		add	r7, sp, #0
+ 883              	.LCFI35:
+ARM GAS  /tmp/cciFAXod.s 			page 25
+
+
+ 884              		.cfi_def_cfa_register 7
+ 311:Src/custom_memory_manager.c ****   /* This just exists to keep the linker quiet. */
+ 312:Src/custom_memory_manager.c **** }
+ 885              		.loc 1 312 1
+ 886 0004 00BF     		nop
+ 887 0006 BD46     		mov	sp, r7
+ 888              	.LCFI36:
+ 889              		.cfi_def_cfa_register 13
+ 890              		@ sp needed
+ 891 0008 5DF8047B 		ldr	r7, [sp], #4
+ 892              	.LCFI37:
+ 893              		.cfi_restore 7
+ 894              		.cfi_def_cfa_offset 0
+ 895 000c 7047     		bx	lr
+ 896              		.cfi_endproc
+ 897              	.LFE11:
+ 899              		.section	.text.prvHeapInit,"ax",%progbits
+ 900              		.align	1
+ 901              		.syntax unified
+ 902              		.thumb
+ 903              		.thumb_func
+ 904              		.fpu fpv4-sp-d16
+ 906              	prvHeapInit:
+ 907              	.LFB12:
+ 313:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+ 314:Src/custom_memory_manager.c **** 
+ 315:Src/custom_memory_manager.c **** static void prvHeapInit(void) {
+ 908              		.loc 1 315 31
+ 909              		.cfi_startproc
+ 910              		@ args = 0, pretend = 0, frame = 16
+ 911              		@ frame_needed = 1, uses_anonymous_args = 0
+ 912              		@ link register save eliminated.
+ 913 0000 80B4     		push	{r7}
+ 914              	.LCFI38:
+ 915              		.cfi_def_cfa_offset 4
+ 916              		.cfi_offset 7, -4
+ 917 0002 85B0     		sub	sp, sp, #20
+ 918              	.LCFI39:
+ 919              		.cfi_def_cfa_offset 24
+ 920 0004 00AF     		add	r7, sp, #0
+ 921              	.LCFI40:
+ 922              		.cfi_def_cfa_register 7
+ 316:Src/custom_memory_manager.c ****   BlockLink_t *pxFirstFreeBlock;
+ 317:Src/custom_memory_manager.c ****   uint8_t *pucAlignedHeap;
+ 318:Src/custom_memory_manager.c ****   size_t uxAddress;
+ 319:Src/custom_memory_manager.c ****   size_t xTotalHeapSize = configTOTAL_HEAP_SIZE;
+ 923              		.loc 1 319 10
+ 924 0006 4CF25033 		movw	r3, #50000
+ 925 000a BB60     		str	r3, [r7, #8]
+ 320:Src/custom_memory_manager.c **** 
+ 321:Src/custom_memory_manager.c ****   /* Ensure the heap starts on a correctly aligned boundary. */
+ 322:Src/custom_memory_manager.c ****   uxAddress = (size_t)ucHeap;
+ 926              		.loc 1 322 13
+ 927 000c 274B     		ldr	r3, .L52
+ 928 000e FB60     		str	r3, [r7, #12]
+ 323:Src/custom_memory_manager.c **** 
+ 324:Src/custom_memory_manager.c ****   if ((uxAddress & portBYTE_ALIGNMENT_MASK) != 0) {
+ARM GAS  /tmp/cciFAXod.s 			page 26
+
+
+ 929              		.loc 1 324 18
+ 930 0010 FB68     		ldr	r3, [r7, #12]
+ 931 0012 03F00703 		and	r3, r3, #7
+ 932              		.loc 1 324 6
+ 933 0016 002B     		cmp	r3, #0
+ 934 0018 0CD0     		beq	.L51
+ 325:Src/custom_memory_manager.c ****     uxAddress += (portBYTE_ALIGNMENT - 1);
+ 935              		.loc 1 325 15
+ 936 001a FB68     		ldr	r3, [r7, #12]
+ 937 001c 0733     		adds	r3, r3, #7
+ 938 001e FB60     		str	r3, [r7, #12]
+ 326:Src/custom_memory_manager.c ****     uxAddress &= ~((size_t)portBYTE_ALIGNMENT_MASK);
+ 939              		.loc 1 326 15
+ 940 0020 FB68     		ldr	r3, [r7, #12]
+ 941 0022 23F00703 		bic	r3, r3, #7
+ 942 0026 FB60     		str	r3, [r7, #12]
+ 327:Src/custom_memory_manager.c ****     xTotalHeapSize -= uxAddress - (size_t)ucHeap;
+ 943              		.loc 1 327 20
+ 944 0028 BA68     		ldr	r2, [r7, #8]
+ 945 002a FB68     		ldr	r3, [r7, #12]
+ 946 002c D31A     		subs	r3, r2, r3
+ 947              		.loc 1 327 35
+ 948 002e 1F4A     		ldr	r2, .L52
+ 949              		.loc 1 327 20
+ 950 0030 1344     		add	r3, r3, r2
+ 951 0032 BB60     		str	r3, [r7, #8]
+ 952              	.L51:
+ 328:Src/custom_memory_manager.c ****   }
+ 329:Src/custom_memory_manager.c **** 
+ 330:Src/custom_memory_manager.c ****   pucAlignedHeap = (uint8_t *)uxAddress;
+ 953              		.loc 1 330 18
+ 954 0034 FB68     		ldr	r3, [r7, #12]
+ 955 0036 7B60     		str	r3, [r7, #4]
+ 331:Src/custom_memory_manager.c **** 
+ 332:Src/custom_memory_manager.c ****   /* xStart is used to hold a pointer to the first item in the list of free
+ 333:Src/custom_memory_manager.c ****   blocks.  The void cast is used to prevent compiler warnings. */
+ 334:Src/custom_memory_manager.c ****   xStart.pxNextFreeBlock = (void *)pucAlignedHeap;
+ 956              		.loc 1 334 26
+ 957 0038 1D4A     		ldr	r2, .L52+4
+ 958 003a 7B68     		ldr	r3, [r7, #4]
+ 959 003c 1360     		str	r3, [r2]
+ 335:Src/custom_memory_manager.c ****   xStart.xBlockSize = (size_t)0;
+ 960              		.loc 1 335 21
+ 961 003e 1C4B     		ldr	r3, .L52+4
+ 962 0040 0022     		movs	r2, #0
+ 963 0042 5A60     		str	r2, [r3, #4]
+ 336:Src/custom_memory_manager.c **** 
+ 337:Src/custom_memory_manager.c ****   /* pxEnd is used to mark the end of the list of free blocks and is inserted
+ 338:Src/custom_memory_manager.c ****   at the end of the heap space. */
+ 339:Src/custom_memory_manager.c ****   uxAddress = ((size_t)pucAlignedHeap) + xTotalHeapSize;
+ 964              		.loc 1 339 16
+ 965 0044 7B68     		ldr	r3, [r7, #4]
+ 966              		.loc 1 339 13
+ 967 0046 BA68     		ldr	r2, [r7, #8]
+ 968 0048 1344     		add	r3, r3, r2
+ 969 004a FB60     		str	r3, [r7, #12]
+ 340:Src/custom_memory_manager.c ****   uxAddress -= xHeapStructSize;
+ARM GAS  /tmp/cciFAXod.s 			page 27
+
+
+ 970              		.loc 1 340 13
+ 971 004c 0822     		movs	r2, #8
+ 972 004e FB68     		ldr	r3, [r7, #12]
+ 973 0050 9B1A     		subs	r3, r3, r2
+ 974 0052 FB60     		str	r3, [r7, #12]
+ 341:Src/custom_memory_manager.c ****   uxAddress &= ~((size_t)portBYTE_ALIGNMENT_MASK);
+ 975              		.loc 1 341 13
+ 976 0054 FB68     		ldr	r3, [r7, #12]
+ 977 0056 23F00703 		bic	r3, r3, #7
+ 978 005a FB60     		str	r3, [r7, #12]
+ 342:Src/custom_memory_manager.c ****   pxEnd = (void *)uxAddress;
+ 979              		.loc 1 342 11
+ 980 005c FB68     		ldr	r3, [r7, #12]
+ 981              		.loc 1 342 9
+ 982 005e 154A     		ldr	r2, .L52+8
+ 983 0060 1360     		str	r3, [r2]
+ 343:Src/custom_memory_manager.c ****   pxEnd->xBlockSize = 0;
+ 984              		.loc 1 343 8
+ 985 0062 144B     		ldr	r3, .L52+8
+ 986 0064 1B68     		ldr	r3, [r3]
+ 987              		.loc 1 343 21
+ 988 0066 0022     		movs	r2, #0
+ 989 0068 5A60     		str	r2, [r3, #4]
+ 344:Src/custom_memory_manager.c ****   pxEnd->pxNextFreeBlock = NULL;
+ 990              		.loc 1 344 8
+ 991 006a 124B     		ldr	r3, .L52+8
+ 992 006c 1B68     		ldr	r3, [r3]
+ 993              		.loc 1 344 26
+ 994 006e 0022     		movs	r2, #0
+ 995 0070 1A60     		str	r2, [r3]
+ 345:Src/custom_memory_manager.c **** 
+ 346:Src/custom_memory_manager.c ****   /* To start with there is a single free block that is sized to take up the
+ 347:Src/custom_memory_manager.c ****   entire heap space, minus the space taken by pxEnd. */
+ 348:Src/custom_memory_manager.c ****   pxFirstFreeBlock = (void *)pucAlignedHeap;
+ 996              		.loc 1 348 20
+ 997 0072 7B68     		ldr	r3, [r7, #4]
+ 998 0074 3B60     		str	r3, [r7]
+ 349:Src/custom_memory_manager.c ****   pxFirstFreeBlock->xBlockSize = uxAddress - (size_t)pxFirstFreeBlock;
+ 999              		.loc 1 349 46
+ 1000 0076 3B68     		ldr	r3, [r7]
+ 1001              		.loc 1 349 44
+ 1002 0078 FA68     		ldr	r2, [r7, #12]
+ 1003 007a D21A     		subs	r2, r2, r3
+ 1004              		.loc 1 349 32
+ 1005 007c 3B68     		ldr	r3, [r7]
+ 1006 007e 5A60     		str	r2, [r3, #4]
+ 350:Src/custom_memory_manager.c ****   pxFirstFreeBlock->pxNextFreeBlock = pxEnd;
+ 1007              		.loc 1 350 37
+ 1008 0080 0C4B     		ldr	r3, .L52+8
+ 1009 0082 1A68     		ldr	r2, [r3]
+ 1010 0084 3B68     		ldr	r3, [r7]
+ 1011 0086 1A60     		str	r2, [r3]
+ 351:Src/custom_memory_manager.c **** 
+ 352:Src/custom_memory_manager.c ****   /* Only one block exists - and it covers the entire usable heap space. */
+ 353:Src/custom_memory_manager.c ****   xMinimumEverFreeBytesRemaining = pxFirstFreeBlock->xBlockSize;
+ 1012              		.loc 1 353 52
+ 1013 0088 3B68     		ldr	r3, [r7]
+ARM GAS  /tmp/cciFAXod.s 			page 28
+
+
+ 1014 008a 5B68     		ldr	r3, [r3, #4]
+ 1015              		.loc 1 353 34
+ 1016 008c 0A4A     		ldr	r2, .L52+12
+ 1017 008e 1360     		str	r3, [r2]
+ 354:Src/custom_memory_manager.c ****   xFreeBytesRemaining = pxFirstFreeBlock->xBlockSize;
+ 1018              		.loc 1 354 41
+ 1019 0090 3B68     		ldr	r3, [r7]
+ 1020 0092 5B68     		ldr	r3, [r3, #4]
+ 1021              		.loc 1 354 23
+ 1022 0094 094A     		ldr	r2, .L52+16
+ 1023 0096 1360     		str	r3, [r2]
+ 355:Src/custom_memory_manager.c **** 
+ 356:Src/custom_memory_manager.c ****   /* Work out the position of the top bit in a size_t variable. */
+ 357:Src/custom_memory_manager.c ****   xBlockAllocatedBit = ((size_t)1)
+ 1024              		.loc 1 357 22
+ 1025 0098 094B     		ldr	r3, .L52+20
+ 1026 009a 4FF00042 		mov	r2, #-2147483648
+ 1027 009e 1A60     		str	r2, [r3]
+ 358:Src/custom_memory_manager.c ****                        << ((sizeof(size_t) * heapBITS_PER_BYTE) - 1);
+ 359:Src/custom_memory_manager.c **** }
+ 1028              		.loc 1 359 1
+ 1029 00a0 00BF     		nop
+ 1030 00a2 1437     		adds	r7, r7, #20
+ 1031              	.LCFI41:
+ 1032              		.cfi_def_cfa_offset 4
+ 1033 00a4 BD46     		mov	sp, r7
+ 1034              	.LCFI42:
+ 1035              		.cfi_def_cfa_register 13
+ 1036              		@ sp needed
+ 1037 00a6 5DF8047B 		ldr	r7, [sp], #4
+ 1038              	.LCFI43:
+ 1039              		.cfi_restore 7
+ 1040              		.cfi_def_cfa_offset 0
+ 1041 00aa 7047     		bx	lr
+ 1042              	.L53:
+ 1043              		.align	2
+ 1044              	.L52:
+ 1045 00ac 00000000 		.word	ucHeap
+ 1046 00b0 00000000 		.word	xStart
+ 1047 00b4 00000000 		.word	pxEnd
+ 1048 00b8 00000000 		.word	xMinimumEverFreeBytesRemaining
+ 1049 00bc 00000000 		.word	xFreeBytesRemaining
+ 1050 00c0 00000000 		.word	xBlockAllocatedBit
+ 1051              		.cfi_endproc
+ 1052              	.LFE12:
+ 1054              		.section	.text.prvInsertBlockIntoFreeList,"ax",%progbits
+ 1055              		.align	1
+ 1056              		.syntax unified
+ 1057              		.thumb
+ 1058              		.thumb_func
+ 1059              		.fpu fpv4-sp-d16
+ 1061              	prvInsertBlockIntoFreeList:
+ 1062              	.LFB13:
+ 360:Src/custom_memory_manager.c **** /*-----------------------------------------------------------*/
+ 361:Src/custom_memory_manager.c **** 
+ 362:Src/custom_memory_manager.c **** static void prvInsertBlockIntoFreeList(BlockLink_t *pxBlockToInsert) {
+ 1063              		.loc 1 362 70
+ARM GAS  /tmp/cciFAXod.s 			page 29
+
+
+ 1064              		.cfi_startproc
+ 1065              		@ args = 0, pretend = 0, frame = 16
+ 1066              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1067              		@ link register save eliminated.
+ 1068 0000 80B4     		push	{r7}
+ 1069              	.LCFI44:
+ 1070              		.cfi_def_cfa_offset 4
+ 1071              		.cfi_offset 7, -4
+ 1072 0002 85B0     		sub	sp, sp, #20
+ 1073              	.LCFI45:
+ 1074              		.cfi_def_cfa_offset 24
+ 1075 0004 00AF     		add	r7, sp, #0
+ 1076              	.LCFI46:
+ 1077              		.cfi_def_cfa_register 7
+ 1078 0006 7860     		str	r0, [r7, #4]
+ 363:Src/custom_memory_manager.c ****   BlockLink_t *pxIterator;
+ 364:Src/custom_memory_manager.c ****   uint8_t *puc;
+ 365:Src/custom_memory_manager.c **** 
+ 366:Src/custom_memory_manager.c ****   /* Iterate through the list until a block is found that has a higher address
+ 367:Src/custom_memory_manager.c ****   than the block being inserted. */
+ 368:Src/custom_memory_manager.c ****   for (pxIterator = &xStart; pxIterator->pxNextFreeBlock < pxBlockToInsert;
+ 1079              		.loc 1 368 19
+ 1080 0008 284B     		ldr	r3, .L64
+ 1081 000a FB60     		str	r3, [r7, #12]
+ 1082              		.loc 1 368 3
+ 1083 000c 02E0     		b	.L55
+ 1084              	.L56:
+ 369:Src/custom_memory_manager.c ****        pxIterator = pxIterator->pxNextFreeBlock) {
+ 1085              		.loc 1 369 19
+ 1086 000e FB68     		ldr	r3, [r7, #12]
+ 1087 0010 1B68     		ldr	r3, [r3]
+ 1088 0012 FB60     		str	r3, [r7, #12]
+ 1089              	.L55:
+ 368:Src/custom_memory_manager.c ****        pxIterator = pxIterator->pxNextFreeBlock) {
+ 1090              		.loc 1 368 40 discriminator 1
+ 1091 0014 FB68     		ldr	r3, [r7, #12]
+ 1092 0016 1B68     		ldr	r3, [r3]
+ 368:Src/custom_memory_manager.c ****        pxIterator = pxIterator->pxNextFreeBlock) {
+ 1093              		.loc 1 368 3 discriminator 1
+ 1094 0018 7A68     		ldr	r2, [r7, #4]
+ 1095 001a 9A42     		cmp	r2, r3
+ 1096 001c F7D8     		bhi	.L56
+ 370:Src/custom_memory_manager.c ****     /* Nothing to do here, just iterate to the right position. */
+ 371:Src/custom_memory_manager.c ****   }
+ 372:Src/custom_memory_manager.c **** 
+ 373:Src/custom_memory_manager.c ****   /* Do the block being inserted, and the block it is being inserted after
+ 374:Src/custom_memory_manager.c ****   make a contiguous block of memory? */
+ 375:Src/custom_memory_manager.c ****   puc = (uint8_t *)pxIterator;
+ 1097              		.loc 1 375 7
+ 1098 001e FB68     		ldr	r3, [r7, #12]
+ 1099 0020 BB60     		str	r3, [r7, #8]
+ 376:Src/custom_memory_manager.c ****   if ((puc + pxIterator->xBlockSize) == (uint8_t *)pxBlockToInsert) {
+ 1100              		.loc 1 376 24
+ 1101 0022 FB68     		ldr	r3, [r7, #12]
+ 1102 0024 5B68     		ldr	r3, [r3, #4]
+ 1103              		.loc 1 376 12
+ 1104 0026 BA68     		ldr	r2, [r7, #8]
+ARM GAS  /tmp/cciFAXod.s 			page 30
+
+
+ 1105 0028 1344     		add	r3, r3, r2
+ 1106              		.loc 1 376 6
+ 1107 002a 7A68     		ldr	r2, [r7, #4]
+ 1108 002c 9A42     		cmp	r2, r3
+ 1109 002e 08D1     		bne	.L57
+ 377:Src/custom_memory_manager.c ****     pxIterator->xBlockSize += pxBlockToInsert->xBlockSize;
+ 1110              		.loc 1 377 28
+ 1111 0030 FB68     		ldr	r3, [r7, #12]
+ 1112 0032 5A68     		ldr	r2, [r3, #4]
+ 1113              		.loc 1 377 46
+ 1114 0034 7B68     		ldr	r3, [r7, #4]
+ 1115 0036 5B68     		ldr	r3, [r3, #4]
+ 1116              		.loc 1 377 28
+ 1117 0038 1A44     		add	r2, r2, r3
+ 1118 003a FB68     		ldr	r3, [r7, #12]
+ 1119 003c 5A60     		str	r2, [r3, #4]
+ 378:Src/custom_memory_manager.c ****     pxBlockToInsert = pxIterator;
+ 1120              		.loc 1 378 21
+ 1121 003e FB68     		ldr	r3, [r7, #12]
+ 1122 0040 7B60     		str	r3, [r7, #4]
+ 1123              	.L57:
+ 379:Src/custom_memory_manager.c ****   } else {
+ 380:Src/custom_memory_manager.c ****     mtCOVERAGE_TEST_MARKER();
+ 381:Src/custom_memory_manager.c ****   }
+ 382:Src/custom_memory_manager.c **** 
+ 383:Src/custom_memory_manager.c ****   /* Do the block being inserted, and the block it is being inserted before
+ 384:Src/custom_memory_manager.c ****   make a contiguous block of memory? */
+ 385:Src/custom_memory_manager.c ****   puc = (uint8_t *)pxBlockToInsert;
+ 1124              		.loc 1 385 7
+ 1125 0042 7B68     		ldr	r3, [r7, #4]
+ 1126 0044 BB60     		str	r3, [r7, #8]
+ 386:Src/custom_memory_manager.c ****   if ((puc + pxBlockToInsert->xBlockSize) ==
+ 1127              		.loc 1 386 29
+ 1128 0046 7B68     		ldr	r3, [r7, #4]
+ 1129 0048 5B68     		ldr	r3, [r3, #4]
+ 1130              		.loc 1 386 12
+ 1131 004a BA68     		ldr	r2, [r7, #8]
+ 1132 004c 1A44     		add	r2, r2, r3
+ 387:Src/custom_memory_manager.c ****       (uint8_t *)pxIterator->pxNextFreeBlock) {
+ 1133              		.loc 1 387 28
+ 1134 004e FB68     		ldr	r3, [r7, #12]
+ 1135 0050 1B68     		ldr	r3, [r3]
+ 386:Src/custom_memory_manager.c ****   if ((puc + pxBlockToInsert->xBlockSize) ==
+ 1136              		.loc 1 386 6
+ 1137 0052 9A42     		cmp	r2, r3
+ 1138 0054 18D1     		bne	.L58
+ 388:Src/custom_memory_manager.c ****     if (pxIterator->pxNextFreeBlock != pxEnd) {
+ 1139              		.loc 1 388 19
+ 1140 0056 FB68     		ldr	r3, [r7, #12]
+ 1141 0058 1A68     		ldr	r2, [r3]
+ 1142              		.loc 1 388 37
+ 1143 005a 154B     		ldr	r3, .L64+4
+ 1144 005c 1B68     		ldr	r3, [r3]
+ 1145              		.loc 1 388 8
+ 1146 005e 9A42     		cmp	r2, r3
+ 1147 0060 0DD0     		beq	.L59
+ 389:Src/custom_memory_manager.c ****       /* Form one big block from the two blocks. */
+ARM GAS  /tmp/cciFAXod.s 			page 31
+
+
+ 390:Src/custom_memory_manager.c ****       pxBlockToInsert->xBlockSize += pxIterator->pxNextFreeBlock->xBlockSize;
+ 1148              		.loc 1 390 35
+ 1149 0062 7B68     		ldr	r3, [r7, #4]
+ 1150 0064 5A68     		ldr	r2, [r3, #4]
+ 1151              		.loc 1 390 48
+ 1152 0066 FB68     		ldr	r3, [r7, #12]
+ 1153 0068 1B68     		ldr	r3, [r3]
+ 1154              		.loc 1 390 65
+ 1155 006a 5B68     		ldr	r3, [r3, #4]
+ 1156              		.loc 1 390 35
+ 1157 006c 1A44     		add	r2, r2, r3
+ 1158 006e 7B68     		ldr	r3, [r7, #4]
+ 1159 0070 5A60     		str	r2, [r3, #4]
+ 391:Src/custom_memory_manager.c ****       pxBlockToInsert->pxNextFreeBlock =
+ 392:Src/custom_memory_manager.c ****           pxIterator->pxNextFreeBlock->pxNextFreeBlock;
+ 1160              		.loc 1 392 21
+ 1161 0072 FB68     		ldr	r3, [r7, #12]
+ 1162 0074 1B68     		ldr	r3, [r3]
+ 1163              		.loc 1 392 38
+ 1164 0076 1A68     		ldr	r2, [r3]
+ 391:Src/custom_memory_manager.c ****       pxBlockToInsert->pxNextFreeBlock =
+ 1165              		.loc 1 391 40
+ 1166 0078 7B68     		ldr	r3, [r7, #4]
+ 1167 007a 1A60     		str	r2, [r3]
+ 1168 007c 08E0     		b	.L61
+ 1169              	.L59:
+ 393:Src/custom_memory_manager.c ****     } else {
+ 394:Src/custom_memory_manager.c ****       pxBlockToInsert->pxNextFreeBlock = pxEnd;
+ 1170              		.loc 1 394 40
+ 1171 007e 0C4B     		ldr	r3, .L64+4
+ 1172 0080 1A68     		ldr	r2, [r3]
+ 1173 0082 7B68     		ldr	r3, [r7, #4]
+ 1174 0084 1A60     		str	r2, [r3]
+ 1175 0086 03E0     		b	.L61
+ 1176              	.L58:
+ 395:Src/custom_memory_manager.c ****     }
+ 396:Src/custom_memory_manager.c ****   } else {
+ 397:Src/custom_memory_manager.c ****     pxBlockToInsert->pxNextFreeBlock = pxIterator->pxNextFreeBlock;
+ 1177              		.loc 1 397 50
+ 1178 0088 FB68     		ldr	r3, [r7, #12]
+ 1179 008a 1A68     		ldr	r2, [r3]
+ 1180              		.loc 1 397 38
+ 1181 008c 7B68     		ldr	r3, [r7, #4]
+ 1182 008e 1A60     		str	r2, [r3]
+ 1183              	.L61:
+ 398:Src/custom_memory_manager.c ****   }
+ 399:Src/custom_memory_manager.c **** 
+ 400:Src/custom_memory_manager.c ****   /* If the block being inserted plugged a gab, so was merged with the block
+ 401:Src/custom_memory_manager.c ****   before and the block after, then it's pxNextFreeBlock pointer will have
+ 402:Src/custom_memory_manager.c ****   already been set, and should not be set here as that would make it point
+ 403:Src/custom_memory_manager.c ****   to itself. */
+ 404:Src/custom_memory_manager.c ****   if (pxIterator != pxBlockToInsert) {
+ 1184              		.loc 1 404 6
+ 1185 0090 FA68     		ldr	r2, [r7, #12]
+ 1186 0092 7B68     		ldr	r3, [r7, #4]
+ 1187 0094 9A42     		cmp	r2, r3
+ 1188 0096 02D0     		beq	.L63
+ARM GAS  /tmp/cciFAXod.s 			page 32
+
+
+ 405:Src/custom_memory_manager.c ****     pxIterator->pxNextFreeBlock = pxBlockToInsert;
+ 1189              		.loc 1 405 33
+ 1190 0098 FB68     		ldr	r3, [r7, #12]
+ 1191 009a 7A68     		ldr	r2, [r7, #4]
+ 1192 009c 1A60     		str	r2, [r3]
+ 1193              	.L63:
+ 406:Src/custom_memory_manager.c ****   } else {
+ 407:Src/custom_memory_manager.c ****     mtCOVERAGE_TEST_MARKER();
+ 408:Src/custom_memory_manager.c ****   }
+ 409:Src/custom_memory_manager.c **** }
+ 1194              		.loc 1 409 1
+ 1195 009e 00BF     		nop
+ 1196 00a0 1437     		adds	r7, r7, #20
+ 1197              	.LCFI47:
+ 1198              		.cfi_def_cfa_offset 4
+ 1199 00a2 BD46     		mov	sp, r7
+ 1200              	.LCFI48:
+ 1201              		.cfi_def_cfa_register 13
+ 1202              		@ sp needed
+ 1203 00a4 5DF8047B 		ldr	r7, [sp], #4
+ 1204              	.LCFI49:
+ 1205              		.cfi_restore 7
+ 1206              		.cfi_def_cfa_offset 0
+ 1207 00a8 7047     		bx	lr
+ 1208              	.L65:
+ 1209 00aa 00BF     		.align	2
+ 1210              	.L64:
+ 1211 00ac 00000000 		.word	xStart
+ 1212 00b0 00000000 		.word	pxEnd
+ 1213              		.cfi_endproc
+ 1214              	.LFE13:
+ 1216              		.text
+ 1217              	.Letext0:
+ 1218              		.file 3 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/lib/gcc/arm-none-eabi/8.3.1/include/std
+ 1219              		.file 4 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/machine/_default_
+ 1220              		.file 5 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_types.h"
+ 1221              		.file 6 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/reent.h"
+ 1222              		.file 7 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/lock.h"
+ 1223              		.file 8 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/stdlib.h"
+ 1224              		.file 9 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_stdint.h"
+ 1225              		.file 10 "Inc/FreeRTOSConfig.h"
+ARM GAS  /tmp/cciFAXod.s 			page 33
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 custom_memory_manager.c
+     /tmp/cciFAXod.s:18     .bss.ucHeap:0000000000000000 $d
+     /tmp/cciFAXod.s:21     .bss.ucHeap:0000000000000000 ucHeap
+     /tmp/cciFAXod.s:24     .rodata.xHeapStructSize:0000000000000000 $d
+     /tmp/cciFAXod.s:27     .rodata.xHeapStructSize:0000000000000000 xHeapStructSize
+     /tmp/cciFAXod.s:30     .bss.xStart:0000000000000000 $d
+     /tmp/cciFAXod.s:33     .bss.xStart:0000000000000000 xStart
+     /tmp/cciFAXod.s:36     .bss.pxEnd:0000000000000000 $d
+     /tmp/cciFAXod.s:39     .bss.pxEnd:0000000000000000 pxEnd
+     /tmp/cciFAXod.s:42     .bss.xFreeBytesRemaining:0000000000000000 $d
+     /tmp/cciFAXod.s:45     .bss.xFreeBytesRemaining:0000000000000000 xFreeBytesRemaining
+     /tmp/cciFAXod.s:48     .bss.xMinimumEverFreeBytesRemaining:0000000000000000 $d
+     /tmp/cciFAXod.s:51     .bss.xMinimumEverFreeBytesRemaining:0000000000000000 xMinimumEverFreeBytesRemaining
+     /tmp/cciFAXod.s:54     .bss.xBlockAllocatedBit:0000000000000000 $d
+     /tmp/cciFAXod.s:57     .bss.xBlockAllocatedBit:0000000000000000 xBlockAllocatedBit
+     /tmp/cciFAXod.s:60     .text.pvPortMalloc:0000000000000000 $t
+     /tmp/cciFAXod.s:68     .text.pvPortMalloc:0000000000000000 pvPortMalloc
+     /tmp/cciFAXod.s:906    .text.prvHeapInit:0000000000000000 prvHeapInit
+     /tmp/cciFAXod.s:1061   .text.prvInsertBlockIntoFreeList:0000000000000000 prvInsertBlockIntoFreeList
+     /tmp/cciFAXod.s:357    .text.pvPortMalloc:0000000000000170 $d
+     /tmp/cciFAXod.s:366    .text.vPortFree:0000000000000000 $t
+     /tmp/cciFAXod.s:373    .text.vPortFree:0000000000000000 vPortFree
+     /tmp/cciFAXod.s:517    .text.vPortFree:00000000000000a8 $d
+     /tmp/cciFAXod.s:523    .text.getBlockSize:0000000000000000 $t
+     /tmp/cciFAXod.s:530    .text.getBlockSize:0000000000000000 getBlockSize
+     /tmp/cciFAXod.s:589    .text.getBlockSize:0000000000000038 $d
+     /tmp/cciFAXod.s:594    .text.pvPortRealloc:0000000000000000 $t
+     /tmp/cciFAXod.s:601    .text.pvPortRealloc:0000000000000000 pvPortRealloc
+     /tmp/cciFAXod.s:697    .text.pvPortRealloc:0000000000000070 $d
+     /tmp/cciFAXod.s:702    .text.pvPortCalloc:0000000000000000 $t
+     /tmp/cciFAXod.s:709    .text.pvPortCalloc:0000000000000000 pvPortCalloc
+     /tmp/cciFAXod.s:778    .text.xPortGetFreeHeapSize:0000000000000000 $t
+     /tmp/cciFAXod.s:785    .text.xPortGetFreeHeapSize:0000000000000000 xPortGetFreeHeapSize
+     /tmp/cciFAXod.s:816    .text.xPortGetFreeHeapSize:0000000000000014 $d
+     /tmp/cciFAXod.s:821    .text.xPortGetMinimumEverFreeHeapSize:0000000000000000 $t
+     /tmp/cciFAXod.s:828    .text.xPortGetMinimumEverFreeHeapSize:0000000000000000 xPortGetMinimumEverFreeHeapSize
+     /tmp/cciFAXod.s:859    .text.xPortGetMinimumEverFreeHeapSize:0000000000000014 $d
+     /tmp/cciFAXod.s:864    .text.vPortInitialiseBlocks:0000000000000000 $t
+     /tmp/cciFAXod.s:871    .text.vPortInitialiseBlocks:0000000000000000 vPortInitialiseBlocks
+     /tmp/cciFAXod.s:900    .text.prvHeapInit:0000000000000000 $t
+     /tmp/cciFAXod.s:1045   .text.prvHeapInit:00000000000000ac $d
+     /tmp/cciFAXod.s:1055   .text.prvInsertBlockIntoFreeList:0000000000000000 $t
+     /tmp/cciFAXod.s:1211   .text.prvInsertBlockIntoFreeList:00000000000000ac $d
+
+UNDEFINED SYMBOLS
+vTaskSuspendAll
+xTaskResumeAll
