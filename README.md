@@ -27,7 +27,7 @@ standards, e.g., ISO 26262.
 
 This repository is open-sourced under the Apache-2.0 license. See the [LICENSE](LICENSE) file for details.
 
-For a list of other open-source components included in ROS 2 system_modes,
+For a list of other open-source components included in this repository,
 see the file [3rd-party-licenses.txt](3rd-party-licenses.txt).
 
 ## Known Issues/Limitations
