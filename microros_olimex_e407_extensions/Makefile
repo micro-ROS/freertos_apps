@@ -159,7 +159,6 @@ FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_sched.c \
 FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c \
 FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c \
 Src/custom_memory_manager.c \
-Src/libatomic.c \
 Src/allocators.c \
 $(wildcard $(UROS_APP_FOLDER)/*.c)
 
