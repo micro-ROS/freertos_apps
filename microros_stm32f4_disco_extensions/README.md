@@ -37,9 +37,9 @@ source install/local_setup.bash
 ### Run and Connect Device
 Start the Micro-ROS Agent, remember to reset the microcontroller to establish connection with the agent
 ```
-ros2 run micro_ros_agent micro_ros_agent serial --dev [device]
+ros2 run micro_ros_agent micro_ros_agent serial --dev <device>
 ```
-where `[device]` is likely `/dev/ttyUSB0` or you can try `dmesg |grep tty`
+In my case device is  `/dev/ttyUSB0` or you can try `dmesg |grep tty` to find the correct device
 
 You should see the following
 ```
@@ -47,7 +47,7 @@ You should see the following
 [1596701205.760299] info     | Root.cpp           | create_client            | create                 | client_key: 0xF005BA11, session_id: 0x81
 [1596701205.760416] info     | SessionManager.hpp | establish_session        | session established    | client_key: 0x4026907153, address: 1
 ```
-You can also `-v6` add the end of the line for debugging
+You can also add `-v6`the end of the line for debugging
 ### Monitor messages
 In a new terminal
 ```
@@ -56,4 +56,3 @@ cd uros_ws
 ros2 topic list
 ```
 As per the app you are running you will get the topics related to them
-```
