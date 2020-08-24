@@ -141,8 +141,8 @@ void appMain(void * arg)
 		rclc_executor_spin_some(&executor, 100);
 		usleep(100000);
 		//takes picture
-        pic = esp_camera_fb_get();
-       	vTaskDelay(5000 / portTICK_RATE_MS);
+		pic = esp_camera_fb_get();
+		vTaskDelay(5000 / portTICK_RATE_MS);
 	}
 
     // free resources
