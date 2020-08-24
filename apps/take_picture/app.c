@@ -100,8 +100,8 @@ static esp_err_t init_camera()
 
 void appMain(void * arg)
 {
-    init_camera();
-    rcl_allocator_t allocator = rcl_get_default_allocator();
+	init_camera();
+	rcl_allocator_t allocator = rcl_get_default_allocator();
 	rclc_support_t support;
 
 	// create init_options
