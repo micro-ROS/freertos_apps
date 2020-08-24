@@ -148,5 +148,5 @@ void appMain(void * arg)
     // free resources
 	RCCHECK(rcl_publisher_fini(&publisher, &node))
 	RCCHECK(rcl_node_fini(&node))
-    vTaskDelete(NULL);
+	vTaskDelete(NULL);
 }
