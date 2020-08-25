@@ -15,6 +15,10 @@
 #ifndef _UXR_CLIENT_SERIAL_TRANSPORT_CRAZYFLIE_H_
 #define _UXR_CLIENT_SERIAL_TRANSPORT_CRAZYFLIE_H_
 
+#include "stdint.h"
+#include "stdbool.h"
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -22,7 +26,9 @@ extern "C"
 
 typedef struct uxrSerialPlatform
 {
-    
+    uint8_t radio_channel;  
+    uint8_t default_radio_channel; 
+    bool primary_channel;
 } uxrSerialPlatform;
 
 #ifdef __cplusplus
