@@ -47,7 +47,7 @@ void appMain(void * arg)
 	RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscription_callback, ON_NEW_DATA));
 
         while(1){
-                rclc_executor_spin_some(&executor, 100);
+                rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
                 usleep(100000);
         }
 
