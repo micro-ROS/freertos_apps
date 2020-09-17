@@ -37,8 +37,8 @@ externalproject_add(libmicroros
 file(MAKE_DIRECTORY ${MICROROS_INCLUDE_DIR})
 
 add_library(microros STATIC IMPORTED GLOBAL)
-add_dependencies(microros libmicroros idf::libatomic)
-target_link_libraries(microros INTERFACE idf::libatomic)
+add_dependencies(microros libmicroros)
+target_link_libraries(microros INTERFACE c idf::lwip)
 
 set_target_properties(microros PROPERTIES IMPORTED_LOCATION             ${CMAKE_BINARY_DIR}/libmicroros.a)
 set_target_properties(microros PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${MICROROS_INCLUDE_DIR})
