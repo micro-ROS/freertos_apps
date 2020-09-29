@@ -8,6 +8,7 @@ Supported hardware platforms are:
 * Olimex STM32-E407 development board
 * Crazyflie 2.1 drone
 * ST Nucleo F446ZE (community supported)
+* ST Nucleo F746ZG (community supported)
 * ESP32
 
 ## Usage
