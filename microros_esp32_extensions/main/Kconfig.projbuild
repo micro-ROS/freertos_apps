@@ -122,7 +122,7 @@ endmenu
 	menu "Camera Pins"
 		choice CAMERA_MODEL
 		    bool "Select Camera Pinout"
-		    default BOARD_WROVER_KIT
+		    default BOARD_ESP32CAM_AITHINKER
 		    help
 			Select Camera Pinout.
 
