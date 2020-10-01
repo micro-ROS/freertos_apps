@@ -8,7 +8,7 @@
                 "-DRMW_UXRCE_MAX_SERVICES=0",
                 "-DRMW_UXRCE_MAX_CLIENTS=0",
                 "-DRMW_UXRCE_MAX_HISTORY=1",
-                "-DRMW_UXRCE_STREAM_HISTORY=4"
+                "-DRMW_UXRCE_STREAM_HISTORY=80"
             ]
         }
     }

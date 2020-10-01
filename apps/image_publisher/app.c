@@ -16,7 +16,7 @@
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
-#define BYTES_PER_PIXEL 4
+#define BYTES_PER_PIXEL 2
 
 rcl_publisher_t publisher;
 sensor_msgs__msg__Image* msg;
@@ -41,8 +41,8 @@ void appMain(void * arg)
 		"freertos_image_publisher"));
 	
 	//set height, width, step and is_bigedian
-	msg->height = 10;
-	msg->width = 10;
+	msg->height = 120;
+	msg->width = 160;
 	msg->is_bigendian = 0;
 	msg->step = msg->width * msg->height * 2;
 
