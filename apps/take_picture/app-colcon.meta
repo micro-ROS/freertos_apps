@@ -7,14 +7,15 @@
                 "-DRMW_UXRCE_MAX_SUBSCRIPTIONS=0",
                 "-DRMW_UXRCE_MAX_SERVICES=0",
                 "-DRMW_UXRCE_MAX_CLIENTS=0",
-                "-DRMW_UXRCE_MAX_HISTORY=4",
+                "-DRMW_UXRCE_MAX_HISTORY=12"
             ]
         },
         "microxrcedds_client": {
             "cmake-args": [
-             	"-DUCLIENT_UDP_TRANSPORT_MTU=32768",
                    
+                "-DUCLIENT_UDP_TRANSPORT_MTU=4096",
+                  
             ]
-	}
-    } 
+        }
+    }
 }
