@@ -1,10 +1,7 @@
 /**
- * This example takes a picture every 5s.
-   Example src: https://github.com/espressif/esp32-camera.git 
+ * This example takes a picture every 1s.
+   For more information about esp32-camera - https://github.com/espressif/esp32-camera.git 
  */
-
-
-
 
 // ================================ CODE ======================================
 
