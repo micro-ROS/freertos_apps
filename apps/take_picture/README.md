@@ -1,3 +1,5 @@
+# esp32-camera configuration
+
 * Step 1: create and configure
 
   The `create_firmware_ws.sh` is the same as esp32.                                                                                                                   
