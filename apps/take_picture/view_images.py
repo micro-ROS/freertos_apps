@@ -19,7 +19,7 @@ class MinimalSubscriber(Node):
         self.bridge = CvBridge()
     def listener_callback(self, image_message):
         self.get_logger().info('recieved an image')
-        
+        self.cv_image = self.bridge.compressed_imgmsg_to_cv2(image_message,'8UC3')        
     	#recieve image and co nvert to cv2 image
         cv2.imshow('esp32_image', self.cv_image)
         cv2.waitKey(3)
