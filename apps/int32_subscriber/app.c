@@ -28,7 +28,7 @@ void appMain(void * arg)
 	RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
 
 	// create node
-	rcl_node_t node = rcl_get_zero_initialized_node();
+	rcl_node_t node;
 	RCCHECK(rclc_node_init_default(&node, "int32_subscriber_rclc", "", &support));
 
 	// create subscriber
@@ -39,20 +39,21 @@ void appMain(void * arg)
 		"/microROS/int32_subscriber"));
 
 	// create executor
-	rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
+	rclc_executor_t executor;
 	RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
 
 	unsigned int rcl_wait_timeout = 1000;   // in ms
 	RCCHECK(rclc_executor_set_timeout(&executor, RCL_MS_TO_NS(rcl_wait_timeout)));
 	RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscription_callback, ON_NEW_DATA));
 
-        while(1){
-                rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
-                usleep(100000);
-        }
+	while(1){
+			rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
+			usleep(100000);
+	}
 
-
+	// free resources
 	RCCHECK(rcl_subscription_fini(&subscriber, &node));
 	RCCHECK(rcl_node_fini(&node));
+	
 	vTaskDelete(NULL);
 }
