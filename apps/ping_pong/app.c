@@ -87,7 +87,7 @@ void appMain(void *argument)
 	RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
 
 	// create node
-	rcl_node_t node = rcl_get_zero_initialized_node();
+	rcl_node_t node;
 	RCCHECK(rclc_node_init_default(&node, "pingpong_node", "", &support));
 
 	// Create a reliable ping publisher
@@ -108,16 +108,13 @@ void appMain(void *argument)
 
 
 	// Create a 3 seconds ping timer timer,
-	rcl_timer_t timer = rcl_get_zero_initialized_timer();
+	rcl_timer_t timer;
 	RCCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(2000), ping_timer_callback));
 
 
 	// Create executor
-	rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
+	rclc_executor_t executor;
 	RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
-
-	unsigned int rcl_wait_timeout = 10;   // in ms
-	RCCHECK(rclc_executor_set_timeout(&executor, RCL_MS_TO_NS(rcl_wait_timeout)));
 	RCCHECK(rclc_executor_add_timer(&executor, &timer));
 	RCCHECK(rclc_executor_add_subscription(&executor, &ping_subscriber, &incoming_ping,
 		&ping_subscription_callback, ON_NEW_DATA));
