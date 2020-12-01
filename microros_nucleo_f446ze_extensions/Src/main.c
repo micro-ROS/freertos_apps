@@ -135,9 +135,9 @@ int main(void) {
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
-#ifdef MICRO_XRCEDDS_UDP
+#ifdef RMW_UXRCE_TRANSPORT_UDP
   printf_uart = &huart3;
-#elif defined(MICRO_XRCEDDS_CUSTOM)
+#elif defined(RMW_UXRCE_TRANSPORT_CUSTOM_SERIAL)
   if (!strcmp("3", RMW_UXRCE_DEFAULT_SERIAL_DEVICE)) {
     printf_uart = &huart6;
   } else {
@@ -377,9 +377,9 @@ void StartDefaultTask(void *argument) {
   HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
   bool availableNetwork = false;
 
-#ifdef MICRO_XRCEDDS_CUSTOM
+#ifdef RMW_UXRCE_TRANSPORT_CUSTOM_SERIAL
   availableNetwork = true;
-#elif defined(MICRO_XRCEDDS_UDP)
+#elif defined(RMW_UXRCE_TRANSPORT_UDP)
   printf("Ethernet Initialization\r\n");
 
   // Waiting for an IP
@@ -428,7 +428,7 @@ void StartDefaultTask(void *argument) {
   xHandle = xTaskGetHandle("microROS_app");
 
   while (1) {
-    if (eTaskGetState(xHandle) != eSuspended && availableNetwork) {
+    if (xHandle != NULL && eTaskGetState(xHandle) != eSuspended && availableNetwork) {
       HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_RESET);
       osDelay(100);
       HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);

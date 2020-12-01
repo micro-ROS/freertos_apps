@@ -149,7 +149,7 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
 
-#ifdef MICRO_XRCEDDS_UDP
+#ifdef RMW_UXRCE_TRANSPORT_UDP
   printf_uart = &huart3;
 #endif
 
@@ -412,9 +412,9 @@ void initTaskFunction(void *argument)
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
   bool availableNetwork = false;
 
-#ifdef MICRO_XRCEDDS_CUSTOM_SERIAL
+#ifdef RMW_UXRCE_TRANSPORT_CUSTOM_SERIAL
   availableNetwork = true;
-#elif defined(MICRO_XRCEDDS_UDP)
+#elif defined(RMW_UXRCE_TRANSPORT_UDP)
   printf("Ethernet Initialization\r\n");
 
 	//Waiting for an IP
@@ -447,7 +447,7 @@ void initTaskFunction(void *argument)
   osThreadAttr_t attributes;
   memset(&attributes, 0x0, sizeof(osThreadAttr_t));
   attributes.name = "microROS_app";
-  attributes.stack_size = 4*3000;
+  attributes.stack_size = 5*3000;
   attributes.priority = (osPriority_t) osPriorityNormal1;
   osThreadNew(appMain, NULL, &attributes);
 
@@ -464,7 +464,7 @@ void initTaskFunction(void *argument)
   xHandle = xTaskGetHandle("microROS_app");
 
   while (1){
-    if (eTaskGetState(xHandle) != eSuspended && availableNetwork){
+    if (xHandle != NULL && eTaskGetState(xHandle) != eSuspended && availableNetwork){
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
       osDelay(100);
       HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
