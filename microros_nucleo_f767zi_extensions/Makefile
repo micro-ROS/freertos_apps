@@ -167,7 +167,7 @@ FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c \
 FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c \
 Src/allocators.c \
 Src/custom_memory_manager.c \
-Src/libatomic.c \
+Src/microros_transports.c \ 
 $(wildcard $(UROS_APP_FOLDER)/*.c)
 
 # Removing heap4 manager while being polite with STM32CubeMX
@@ -265,31 +265,8 @@ C_INCLUDES =  \
 MICROROS_INCLUDES += $(shell find $(UROS_DIR)/install -name 'include' | sed -E "s/(.*)/-I\1/")
 MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include
 MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include/FreeRTOS_POSIX
-MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include/private
-MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/FreeRTOS-Plus-POSIX/include
-MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/FreeRTOS-Plus-POSIX/include/portable
-MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/FreeRTOS-Plus-POSIX/include/portable/crazyflie
-MICROROS_INCLUDES += -I$(CRAZYFLIE_BASE)/src/lib/FreeRTOS/include
 C_INCLUDES += $(MICROROS_INCLUDES)
 
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/FreeRTOS-Plus-POSIX/include
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include/private
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include/FreeRTOS_POSIX
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include/FreeRTOS_POSIX/sys
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/src/hal/interface
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/src/modules/interface
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/src/utils/interface
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/src/config
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/src/drivers/interface
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/Middlewares/Third_Party/LwIP/src/include/posix
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/Middlewares/Third_Party/LwIP/src/include
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/Inc
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/Drivers/STM32F7xx_HAL_Driver/Inc
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/Drivers/CMSIS/Device/ST/STM32F7xx/Include
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/Drivers/CMSIS/Include
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/Middlewares/Third_Party/LwIP/system
-COLCON_INCLUDES_STR := $(foreach x,$(COLCON_INCLUDES),$(x)\n)
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -329,8 +306,7 @@ arm_toolchain: $(EXTENSIONS_DIR)/arm_toolchain.cmake.in
 		sed "s/@CROSS_COMPILE@/$(subst /,\/,$(CROSS_COMPILE))/g" | \
 		sed "s/@FREERTOS_TOPDIR@/$(subst /,\/,$(TOPFOLDER))/g" | \
 		sed "s/@ARCH_CPU_FLAGS@/\"$(ARCHCPUFLAGS)\"/g" | \
-		sed "s/@ARCH_OPT_FLAGS@/\"$(ARCHOPTIMIZATION)\"/g" | \
-		sed "s/@INCLUDES@/$(subst /,\/,$(COLCON_INCLUDES_STR))/g" \
+		sed "s/@ARCH_OPT_FLAGS@/\"$(ARCHOPTIMIZATION)\"/g" \
 		> $(EXTENSIONS_DIR)/arm_toolchain.cmake
 
 colcon_compile: arm_toolchain
