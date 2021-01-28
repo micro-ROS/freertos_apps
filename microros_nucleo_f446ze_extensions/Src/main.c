@@ -140,9 +140,7 @@ int main(void) {
   /* USER CODE BEGIN 2 */
 #ifdef RMW_UXRCE_TRANSPORT_UDP 
   printf_uart = &huart3; 
-#elif defined(RMW_UXRCE_TRANSPORT_CUSTOM) 
-  printf_uart = &huart6; 
-#endif 
+#endif
   /* USER CODE END 2 */
 
   /* Init scheduler */
