@@ -11,7 +11,6 @@
 #include <rcutils/allocator.h>
 #include <rmw_uros/options.h>
 
-
 #include "config.h"
 #include "log.h"
 #include "crc.h"
@@ -95,9 +94,15 @@ void microros_primary(void * params){
         rc = rcl_init_options_init(&init_options, rcutils_get_default_allocator());      
         RCCHECK(clean1)
 
-        rmw_init_options_t* rmw_options = rcl_init_options_get_rmw_init_options(&init_options);
-        rc = rmw_uros_options_set_serial_device("65", rmw_options);
-        rc = rmw_uros_options_set_client_key(0xBA5EBA11, rmw_options);
+        const uint8_t radio_channel = 65;
+        rmw_uros_set_custom_transport( 
+            true, 
+            (void *) &radio_channel, 
+            crazyflie_serial_open, 
+            crazyflie_serial_close, 
+            crazyflie_serial_write, 
+            crazyflie_serial_read
+        ); 
 
         context = rcl_get_zero_initialized_context();                                    
 
@@ -259,9 +264,15 @@ void microros_secondary(void * params){
         rc = rcl_init_options_init(&init_options, rcutils_get_default_allocator());      
         RCCHECK(clean2)
 
-        rmw_init_options_t* rmw_options = rcl_init_options_get_rmw_init_options(&init_options);
-        rc = rmw_uros_options_set_serial_device("30", rmw_options);
-        rc = rmw_uros_options_set_client_key(0xDEADBEEF, rmw_options);
+        const uint8_t radio_channel = 30;
+        rmw_uros_set_custom_transport( 
+            true, 
+            (void *) &radio_channel, 
+            crazyflie_serial_open, 
+            crazyflie_serial_close, 
+            crazyflie_serial_write, 
+            crazyflie_serial_read
+        ); 
 
         context = rcl_get_zero_initialized_context();                                    
 

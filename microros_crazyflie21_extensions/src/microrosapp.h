@@ -1,6 +1,8 @@
 #ifndef _MAIN_H_
 #define _MAIN_H_
 
+#include <microros_transports.h>
+
 void appMain(void);
 void *pvPortRealloc( void *pv, size_t xWantedSize );
 void *pvPortCalloc( size_t num, size_t xWantedSize );
