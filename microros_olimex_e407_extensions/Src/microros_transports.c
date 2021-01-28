@@ -8,6 +8,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#ifdef RMW_UXRCE_TRANSPORT_CUSTOM
+
 // --- micro-ROS Transports ---
 #define UART_DMA_BUFFER_SIZE 2048
 
@@ -58,3 +60,5 @@ size_t freertos_serial_read(struct uxrCustomTransport* transport, uint8_t* buf, 
     
     return wrote;
 }
+
+#endif //RMW_UXRCE_TRANSPORT_CUSTOM
