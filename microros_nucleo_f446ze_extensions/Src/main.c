@@ -31,6 +31,9 @@
 #include <ucdr/microcdr.h>
 #include <uxr/client/client.h>
 
+#include <rmw_uros/options.h>  
+#include <microros_transports.h>  
+
 #include "FreeRTOS.h"
 #include "stm32f4xx_hal.h"
 #include "task.h"
@@ -135,15 +138,11 @@ int main(void) {
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
-#ifdef MICRO_XRCEDDS_UDP
-  printf_uart = &huart3;
-#elif defined(MICRO_XRCEDDS_CUSTOM)
-  if (!strcmp("3", RMW_UXRCE_DEFAULT_SERIAL_DEVICE)) {
-    printf_uart = &huart6;
-  } else {
-    printf_uart = &huart3;
-  }
-#endif
+#ifdef RMW_UXRCE_TRANSPORT_UDP 
+  printf_uart = &huart3; 
+#elif defined(RMW_UXRCE_TRANSPORT_CUSTOM) 
+  printf_uart = &huart6; 
+#endif 
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -377,9 +376,16 @@ void StartDefaultTask(void *argument) {
   HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
   bool availableNetwork = false;
 
-#ifdef MICRO_XRCEDDS_CUSTOM
-  availableNetwork = true;
-#elif defined(MICRO_XRCEDDS_UDP)
+#ifdef RMW_UXRCE_TRANSPORT_CUSTOM 
+  availableNetwork = true; 
+  rmw_uros_set_custom_transport( 
+    true, 
+    (void *) &huart3, 
+    freertos_serial_open, 
+    freertos_serial_close, 
+    freertos_serial_write, 
+    freertos_serial_read); 
+#elif defined(RMW_UXRCE_TRANSPORT_UDP) 
   printf("Ethernet Initialization\r\n");
 
   // Waiting for an IP
