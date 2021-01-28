@@ -87,7 +87,7 @@ lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c \
 lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_pthread.c \
 Core/Src/custom_memory_manager.c \
 Core/Src/allocators.c \
-Src/microros_transports.c \ 
+Src/microros_transports.c \
 Core/Src/FreeRTOS-openocd.c \
 $(wildcard $(UROS_APP_FOLDER)/*.c)
 

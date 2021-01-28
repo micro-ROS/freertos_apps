@@ -29,6 +29,7 @@
 #include <stdbool.h>
 #include "allocators.h"
 #include "cmsis_os2.h"
+#include <usart.h>
 
 #include <rcl/rcl.h>
 #include <rmw_microxrcedds_c/config.h>
