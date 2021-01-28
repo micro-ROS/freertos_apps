@@ -43,7 +43,7 @@ bool esp32_serial_close(struct uxrCustomTransport * transport){
 
 size_t esp32_serial_write(struct uxrCustomTransport* transport, const uint8_t * buf, size_t len, uint8_t * err){
     size_t * uart_port = (size_t*) transport->args;
-    const int txBytes = uart_write_bytes(*uart_port, buf, len);
+    const int txBytes = uart_write_bytes(*uart_port, (const char*) buf, len);
     return txBytes;
 }
 
