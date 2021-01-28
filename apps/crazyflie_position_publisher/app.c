@@ -7,7 +7,7 @@
 #include <geometry_msgs/msg/point32.h>
 
 #include <rcutils/allocator.h>
-
+#include <rmw_uros/options.h>
 
 #include "config.h"
 #include "log.h"
@@ -61,8 +61,13 @@ void appMain(){
     rcl_allocator_t allocator = rcl_get_default_allocator();
 	rclc_support_t support;
 
+	rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
+	RCCHECK(rcl_init_options_init(&init_options, allocator));
+    rmw_init_options_t* rmw_options = rcl_init_options_get_rmw_init_options(&init_options);
+    rmw_uros_options_set_serial_device("65", rmw_options);
+
 	// create init_options
-	RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
+	RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator));
 
 	// create node
 	rcl_node_t node;
