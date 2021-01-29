@@ -1,8 +1,11 @@
-#include <uxr/client/profile/transport/serial/serial_transport_external.h>
+#include <uxr/client/transport.h>
 
 #include "FreeRTOS.h"
 #include "radiolink.h"
+#include "task.h"
 
+#include "stdint.h"
+#include "stdbool.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -36,11 +39,10 @@ static bool init_queue_seconday = false;
 static struct crtpLinkOperations *link = NULL;
 
 bool crazyflie_serial_open(struct uxrCustomTransport * transport){
-    crazyflie_trasport * platform = (crazyflie_trasport*)transport->args;
+    const uint8_t * radio_channel = (const uint8_t*)transport->args;
     uint8_t default_radio_channel = configblockGetRadioChannel();
-    bool primary_channel = radio_channel == default_radio_channel;
+    bool primary_channel = *radio_channel == default_radio_channel;
 
-    radio_channel = (fd != 0) ? fd : configblockGetRadioChannel();
     if(primary_channel && !init_queue_primary){
         crtpInitTaskQueue(PRIMARY_CHANNEL_PORT);
         init_queue_primary = true;
@@ -59,9 +61,9 @@ bool crazyflie_serial_close(struct uxrCustomTransport * transport){
 }
 
 size_t crazyflie_serial_write(struct uxrCustomTransport* transport, const uint8_t * buf, size_t len, uint8_t * err){
-    crazyflie_trasport * platform = (crazyflie_trasport*)transport->args;
+    const uint8_t * radio_channel = (const uint8_t*)transport->args;
     uint8_t default_radio_channel = configblockGetRadioChannel();
-    bool primary_channel = radio_channel == default_radio_channel;
+    bool primary_channel = *radio_channel == default_radio_channel;
 
     CRTPPacket send_pkg;
     size_t index = 0;
@@ -76,7 +78,7 @@ size_t crazyflie_serial_write(struct uxrCustomTransport* transport, const uint8_
         len -= to_write;
         index += to_write;
 
-        if(!primary_channel) radiolinkSetChannel(radio_channel);
+        if(!primary_channel) radiolinkSetChannel(*radio_channel);
         while (link->sendPacket(&send_pkg) == false){
             vTaskDelay(10);
         }
@@ -92,20 +94,20 @@ size_t crazyflie_serial_write(struct uxrCustomTransport* transport, const uint8_
 }
 
 size_t crazyflie_serial_read(struct uxrCustomTransport* transport, uint8_t* buf, size_t len, int timeout, uint8_t* err){
-    crazyflie_trasport * platform = (crazyflie_trasport*)transport->args;
+    const uint8_t * radio_channel = (const uint8_t*)transport->args;
     uint8_t default_radio_channel = configblockGetRadioChannel();
-    bool primary_channel = radio_channel == default_radio_channel;
+    bool primary_channel = *radio_channel == default_radio_channel;
 
     static CRTPPacket recv_packet;
     size_t written;
 
-    *errcode = 0;
+    *err = 0;
 
     uint8_t * crtp_buffer = (primary_channel) ? crtp_buffer_primary : crtp_buffer_secondary;
-    uint8_t * crpt_index = (primary_channel) ? &crpt_primary_index : &crpt_secondary_index;
-    uint8_t * crpt_index_max = (primary_channel) ? &crpt_primary_index_max : &crpt_secondary_index_max;
+    size_t * crpt_index = (primary_channel) ? &crpt_primary_index : &crpt_secondary_index;
+    size_t * crpt_index_max = (primary_channel) ? &crpt_primary_index_max : &crpt_secondary_index_max;
 
-    if(!primary_channel) radiolinkSetChannel(radio_channel);
+    if(!primary_channel) radiolinkSetChannel(*radio_channel);
 
 
     size_t retrieved = 0;
@@ -126,7 +128,7 @@ size_t crazyflie_serial_read(struct uxrCustomTransport* transport, uint8_t* buf,
         DEBUG_PRINT("MicroXRCEDDS CRTP Buffer full. Clearing buffer.\n");
         *crpt_index = 0;
         *crpt_index_max = 0;
-        *errcode = 2;
+        *err = 2;
     }
 
     if (*crpt_index > *crpt_index_max)

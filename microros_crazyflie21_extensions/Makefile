@@ -43,7 +43,7 @@ APP = 1
 APP_STACKSIZE = 2250
 APP_PRIORITY = 3
 
-PROJ_OBJ += app.o
+PROJ_OBJ += app.o microros_transports.o
 MEMMANG_OBJ = custom_memory_manager.o
 PROJ_OBJ += $(MICROROS_LIBRARIES) 
 PROJ_OBJ += $(MICROROS_POSIX_FREERTOS_OBJECTS)
