@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _MICROROS_CLIENT_esp32_SERIAL_TRANSPORT_H_
-#define _MICROROS_CLIENT_esp32_SERIAL_TRANSPORT_H_
+#ifndef _MICROROS_CLIENT_ESP32_SERIAL_TRANSPORT_H_
+#define _MICROROS_CLIENT_ESP32_SERIAL_TRANSPORT_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -29,4 +29,4 @@ size_t esp32_serial_read(struct uxrCustomTransport* transport, uint8_t* buf, siz
 }
 #endif
 
-#endif //_MICROROS_CLIENT_esp32_SERIAL_TRANSPORT_H_
+#endif //_MICROROS_CLIENT_ESP32_SERIAL_TRANSPORT_H_
