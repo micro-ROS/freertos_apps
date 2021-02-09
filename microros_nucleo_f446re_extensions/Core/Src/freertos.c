@@ -29,11 +29,15 @@
 #include <stdbool.h>
 #include "allocators.h"
 #include "cmsis_os2.h"
+#include <usart.h>
 
 #include <rcl/rcl.h>
 #include <rmw_microxrcedds_c/config.h>
 #include <ucdr/microcdr.h>
 #include <uxr/client/client.h>
+
+#include <rmw_uros/options.h> 
+#include <microros_transports.h> 
 
 /* USER CODE END Includes */
 
@@ -127,9 +131,16 @@ void StartDefaultTask(void *argument)
   HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
   bool availableNetwork = false;
 
-#ifdef MICRO_XRCEDDS_CUSTOM
-  availableNetwork = true;
-#elif defined(MICRO_XRCEDDS_UDP)
+#ifdef RMW_UXRCE_TRANSPORT_CUSTOM 
+  availableNetwork = true; 
+  rmw_uros_set_custom_transport( 
+    true, 
+    (void *) &huart2, 
+    freertos_serial_open, 
+    freertos_serial_close, 
+    freertos_serial_write, 
+    freertos_serial_read); 
+#elif defined(RMW_UXRCE_TRANSPORT_UDP) 
   printf("Ethernet Initialization\r\n");
 
   // Waiting for an IP

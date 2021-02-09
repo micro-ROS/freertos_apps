@@ -12,27 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _UXR_CLIENT_SERIAL_TRANSPORT_CRAZYFLIE_H_
-#define _UXR_CLIENT_SERIAL_TRANSPORT_CRAZYFLIE_H_
-
-#include "stdint.h"
-#include "stdbool.h"
-
+#ifndef _MICROROS_CLIENT_CRAZYFLIE_SERIAL_TRANSPORT_H_
+#define _MICROROS_CLIENT_CRAZYFLIE_SERIAL_TRANSPORT_H_
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-typedef struct uxrSerialPlatform
-{
-    uint8_t radio_channel;  
-    uint8_t default_radio_channel; 
-    bool primary_channel;
-} uxrSerialPlatform;
+bool crazyflie_serial_open(struct uxrCustomTransport * transport);
+bool crazyflie_serial_close(struct uxrCustomTransport * transport);
+size_t crazyflie_serial_write(struct uxrCustomTransport* transport, const uint8_t * buf, size_t len, uint8_t * err);
+size_t crazyflie_serial_read(struct uxrCustomTransport* transport, uint8_t* buf, size_t len, int timeout, uint8_t* err);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //_UXR_CLIENT_SERIAL_TRANSPORT_CRAZYFLIE_H_
+#endif //_MICROROS_CLIENT_CRAZYFLIE_SERIAL_TRANSPORT_H_

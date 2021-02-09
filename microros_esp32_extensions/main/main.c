@@ -1,7 +1,5 @@
 #include "app.h"
 
-#include "uxr/client/config.h"
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -19,6 +17,9 @@
 
 #include "lwip/err.h"
 #include "lwip/sys.h"
+
+#include <rmw_uros/options.h>  
+#include <microros_transports.h>
 
 #define ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
 #define ESP_WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD
@@ -104,12 +105,12 @@ void wifi_init_sta()
     vEventGroupDelete(s_wifi_event_group);
 }
 
-
+static size_t uart_no = UART_NUM_0;
 
 void app_main(void)
 {   
     // Start networkign if required
-#ifdef UCLIENT_PROFILE_UDP
+#ifdef RMW_UXRCE_TRANSPORT_UDP
     //Initialize NVS
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -120,7 +121,15 @@ void app_main(void)
 
     ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
     wifi_init_sta();
-#endif  // UCLIENT_PROFILE_UDP
+#elif defined(RMW_UXRCE_TRANSPORT_CUSTOM)
+    rmw_uros_set_custom_transport(  
+        true,  
+        (void *) &uart_no,  
+        esp32_serial_open,  
+        esp32_serial_close,  
+        esp32_serial_write,  
+        esp32_serial_read);  
+#endif
 
     // start microROS task
     xTaskCreate(appMain, "uros_task", 12*2048, NULL, 5, NULL);

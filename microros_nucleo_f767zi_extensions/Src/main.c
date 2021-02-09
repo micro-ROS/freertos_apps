@@ -33,6 +33,9 @@
 #include <uxr/client/client.h>
 #include <ucdr/microcdr.h>
 
+#include <rmw_uros/options.h> 
+#include <microros_transports.h> 
+
 #include <sys/socket.h>
 #include <ip_addr.h>
 
@@ -149,7 +152,7 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
 
-#ifdef MICRO_XRCEDDS_UDP
+#ifdef RMW_UXRCE_TRANSPORT_UDP
   printf_uart = &huart3;
 #endif
 
@@ -412,9 +415,16 @@ void initTaskFunction(void *argument)
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
   bool availableNetwork = false;
 
-#ifdef MICRO_XRCEDDS_CUSTOM_SERIAL
-  availableNetwork = true;
-#elif defined(MICRO_XRCEDDS_UDP)
+#ifdef RMW_UXRCE_TRANSPORT_CUSTOM 
+  availableNetwork = true; 
+  rmw_uros_set_custom_transport( 
+    true, 
+    (void *) &huart3, 
+    freertos_serial_open, 
+    freertos_serial_close, 
+    freertos_serial_write, 
+    freertos_serial_read); 
+#elif defined(RMW_UXRCE_TRANSPORT_UDP) 
   printf("Ethernet Initialization\r\n");
 
 	//Waiting for an IP

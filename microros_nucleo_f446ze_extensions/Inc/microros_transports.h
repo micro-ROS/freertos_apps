@@ -12,28 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _UXR_CLIENT_SERIAL_TRANSPORT_OLIMEXSTM32E407_H_
-#define _UXR_CLIENT_SERIAL_TRANSPORT_OLIMEXSTM32E407_H_
+#ifndef _MICROROS_CLIENT_FREERTOS_SERIAL_TRANSPORT_H_
+#define _MICROROS_CLIENT_FREERTOS_SERIAL_TRANSPORT_H_
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-#include "stm32f4xx_hal.h"
-
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart3;
-extern UART_HandleTypeDef huart6;
-extern DMA_HandleTypeDef hdma_usart3_rx;
-
-typedef struct uxrSerialPlatform
-{
-    UART_HandleTypeDef * uart;
-} uxrSerialPlatform;
+bool freertos_serial_open(struct uxrCustomTransport * transport);
+bool freertos_serial_close(struct uxrCustomTransport * transport);
+size_t freertos_serial_write(struct uxrCustomTransport* transport, const uint8_t * buf, size_t len, uint8_t * err);
+size_t freertos_serial_read(struct uxrCustomTransport* transport, uint8_t* buf, size_t len, int timeout, uint8_t* err);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //_UXR_CLIENT_SERIAL_TRANSPORT_OLIMEXSTM32E407_H_
+#endif //_MICROROS_CLIENT_FREERTOS_SERIAL_TRANSPORT_H_

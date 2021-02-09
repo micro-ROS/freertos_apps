@@ -37,30 +37,13 @@ MICROROS_POSIX_FREERTOS_OBJECTS += FreeRTOS_POSIX_sched.o
 MICROROS_POSIX_FREERTOS_OBJECTS += FreeRTOS_POSIX_unistd.o 
 MICROROS_POSIX_FREERTOS_OBJECTS += FreeRTOS_POSIX_utils.o 
 
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/FreeRTOS-Plus-POSIX/include 
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include 
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include/private 
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include/FreeRTOS_POSIX 
-COLCON_INCLUDES += $(EXTENSIONS_DIR)/include/FreeRTOS_POSIX/sys
-COLCON_INCLUDES += $(CRAZYFLIE_BASE)/src/hal/interface 
-COLCON_INCLUDES += $(CRAZYFLIE_BASE)/src/modules/interface 
-COLCON_INCLUDES += $(CRAZYFLIE_BASE)/src/utils/interface 
-COLCON_INCLUDES += $(CRAZYFLIE_BASE)/src/config 
-COLCON_INCLUDES += $(CRAZYFLIE_BASE)/src/drivers/interface
-COLCON_INCLUDES += $(CRAZYFLIE_BASE)/src/drivers/interface
-COLCON_INCLUDES += $(CRAZYFLIE_BASE)/vendor/FreeRTOS/include
-COLCON_INCLUDES += $(CRAZYFLIE_BASE)/vendor/FreeRTOS/portable/GCC/ARM_CM4F
-
-COLCON_INCLUDES_STR := $(foreach x,$(COLCON_INCLUDES),$(x)\n)
-
-
 # Crazyflie 2.1 app configuration
 
 APP = 1
 APP_STACKSIZE = 2250
 APP_PRIORITY = 3
 
-PROJ_OBJ += app.o
+PROJ_OBJ += app.o microros_transports.o
 MEMMANG_OBJ = custom_memory_manager.o
 PROJ_OBJ += $(MICROROS_LIBRARIES) 
 PROJ_OBJ += $(MICROROS_POSIX_FREERTOS_OBJECTS)
@@ -81,8 +64,7 @@ arm_toolchain: $(EXTENSIONS_DIR)/arm_toolchain.cmake.in
 		sed "s/@CROSS_COMPILE@/$(subst /,\/,$(CROSS_COMPILE))/g" | \
 		sed "s/@FREERTOS_TOPDIR@/$(subst /,\/,$(TOPFOLDER))/g" | \
 		sed "s/@ARCH_CPU_FLAGS@/\"$(ARCHCPUFLAGS)\"/g" | \
-		sed "s/@ARCH_OPT_FLAGS@/\"$(ARCHOPTIMIZATION)\"/g" | \
-		sed "s/@INCLUDES@/$(subst /,\/,$(COLCON_INCLUDES_STR))/g" \
+		sed "s/@ARCH_OPT_FLAGS@/\"$(ARCHOPTIMIZATION)\"/g" \
 		> $(EXTENSIONS_DIR)/arm_toolchain.cmake
 
 colcon_compile: arm_toolchain

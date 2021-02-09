@@ -1,5 +1,5 @@
 file(GLOB SRCS ${UROS_APP_FOLDER}/*.c*)
-idf_component_register(SRCS main.c ${SRCS}
+idf_component_register(SRCS main.c microros_transports.c ${SRCS}
                        INCLUDE_DIRS ".")
 
 set(EXTENSIONS_DIR ${COMPONENT_DIR}/..)
