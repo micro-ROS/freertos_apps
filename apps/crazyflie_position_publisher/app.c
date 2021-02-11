@@ -7,7 +7,7 @@
 #include <geometry_msgs/msg/point32.h>
 
 #include <rcutils/allocator.h>
-#include <rmw_uros/options.h>
+#include <rmw_microros/api.h>
 
 #include "config.h"
 #include "log.h"
