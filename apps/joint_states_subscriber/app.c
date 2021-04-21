@@ -7,9 +7,6 @@
 #include <sensor_msgs/msg/joint_state.h>
 #include <stdio.h>
 
-#include "A6_X4connector.h"
-#include "FreeRTOS.h"
-
 #define ARRAY_LEN 200
 #define JOINT_DOUBLE_LEN 20
 
