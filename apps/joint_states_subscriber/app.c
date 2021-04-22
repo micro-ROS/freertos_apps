@@ -17,17 +17,13 @@
 rcl_subscription_t joint_states_subscriber;
 sensor_msgs__msg__JointState joint_states_msg;
 
-char test_array[ARRAY_LEN];
-
 void subscription_joint_state_callback(const void *msgin){
 	const sensor_msgs__msg__JointState *msg = (const sensor_msgs__msg__JointState *)msgin;
-	printf("I get joint_state topic msg.pos: %d , %x , %f \r\n", (int)(msg->position.data[6] * 100), msg->position.data[6], msg->position.data[6]);
+	printf("I get joint_state topic msg.pos: %d \r\n", (int)(msg->position.data[0] * 100));
 }
 
-//int appMain(int argc, const char * const * argv)
 int appMain(void *argument)
 {
-  	memset(test_array,'z',ARRAY_LEN);
 
   	rcl_allocator_t allocator = rcl_get_default_allocator();
 	rclc_support_t support;
