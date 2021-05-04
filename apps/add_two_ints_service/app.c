@@ -6,7 +6,7 @@
 #include <std_msgs/msg/int32.h>
 #include "example_interfaces/srv/add_two_ints.h"
 
-#include <rmw_microros/api.h>
+#include <rmw_microros/rmw_microros.h>
 
 #include <stdio.h>
 #include <unistd.h>

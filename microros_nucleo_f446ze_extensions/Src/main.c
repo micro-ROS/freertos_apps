@@ -31,7 +31,8 @@
 #include <ucdr/microcdr.h>
 #include <uxr/client/client.h>
 
-#include <rmw_microros/api.h>  
+#include <rmw_microros/rmw_microros.h>  
+
 #include <microros_transports.h>  
 
 #include "FreeRTOS.h"
