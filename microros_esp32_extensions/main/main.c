@@ -18,7 +18,7 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
-#include <rmw_uros/options.h>  
+#include <rmw_microros/rmw_microros.h>  
 #include <microros_transports.h>
 
 #define ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
