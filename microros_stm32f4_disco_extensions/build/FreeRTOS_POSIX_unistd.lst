@@ -1,0 +1,226 @@
+ARM GAS  /tmp/cc6ZSva8.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"FreeRTOS_POSIX_unistd.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.sleep,"ax",%progbits
+  18              		.align	1
+  19              		.global	sleep
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	sleep:
+  27              	.LFB4:
+  28              		.file 1 "lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c"
+   1:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** /*
+   2:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * Amazon FreeRTOS POSIX V1.1.0
+   3:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+   4:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  *
+   5:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+   6:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * this software and associated documentation files (the "Software"), to deal in
+   7:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * the Software without restriction, including without limitation the rights to
+   8:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+   9:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * the Software, and to permit persons to whom the Software is furnished to do so,
+  10:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * subject to the following conditions:
+  11:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  *
+  12:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * The above copyright notice and this permission notice shall be included in all
+  13:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * copies or substantial portions of the Software.
+  14:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  *
+  15:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  16:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+  17:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+  18:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+  19:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  20:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  21:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  *
+  22:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * http://aws.amazon.com/freertos
+  23:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * http://www.FreeRTOS.org
+  24:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  */
+  25:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** 
+  26:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** /**
+  27:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * @file FreeRTOS_POSIX_unistd.c
+  28:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  * @brief Implementation of functions in unistd.h
+  29:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****  */
+  30:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** 
+ARM GAS  /tmp/cc6ZSva8.s 			page 2
+
+
+  31:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** /* FreeRTOS+POSIX includes. */
+  32:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** #include "FreeRTOS_POSIX.h"
+  33:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** #include "FreeRTOS_POSIX/unistd.h"
+  34:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** 
+  35:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** /*-----------------------------------------------------------*/
+  36:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** 
+  37:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** unsigned sleep( unsigned seconds )
+  38:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** {
+  29              		.loc 1 38 1
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 8
+  32              		@ frame_needed = 1, uses_anonymous_args = 0
+  33 0000 80B5     		push	{r7, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 8
+  36              		.cfi_offset 7, -8
+  37              		.cfi_offset 14, -4
+  38 0002 82B0     		sub	sp, sp, #8
+  39              	.LCFI1:
+  40              		.cfi_def_cfa_offset 16
+  41 0004 00AF     		add	r7, sp, #0
+  42              	.LCFI2:
+  43              		.cfi_def_cfa_register 7
+  44 0006 7860     		str	r0, [r7, #4]
+  39:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****     vTaskDelay( pdMS_TO_TICKS( seconds * 1000 ) );
+  45              		.loc 1 39 17
+  46 0008 7B68     		ldr	r3, [r7, #4]
+  47 000a 074A     		ldr	r2, .L3
+  48 000c 02FB03F3 		mul	r3, r2, r3
+  49              		.loc 1 39 5
+  50 0010 064A     		ldr	r2, .L3+4
+  51 0012 A2FB0323 		umull	r2, r3, r2, r3
+  52 0016 9B09     		lsrs	r3, r3, #6
+  53 0018 1846     		mov	r0, r3
+  54 001a FFF7FEFF 		bl	vTaskDelay
+  40:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** 
+  41:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****     return 0;
+  55              		.loc 1 41 12
+  56 001e 0023     		movs	r3, #0
+  42:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** }
+  57              		.loc 1 42 1
+  58 0020 1846     		mov	r0, r3
+  59 0022 0837     		adds	r7, r7, #8
+  60              	.LCFI3:
+  61              		.cfi_def_cfa_offset 8
+  62 0024 BD46     		mov	sp, r7
+  63              	.LCFI4:
+  64              		.cfi_def_cfa_register 13
+  65              		@ sp needed
+  66 0026 80BD     		pop	{r7, pc}
+  67              	.L4:
+  68              		.align	2
+  69              	.L3:
+  70 0028 40420F00 		.word	1000000
+  71 002c D34D6210 		.word	274877907
+  72              		.cfi_endproc
+  73              	.LFE4:
+ARM GAS  /tmp/cc6ZSva8.s 			page 3
+
+
+  75              		.section	.text.usleep,"ax",%progbits
+  76              		.align	1
+  77              		.global	usleep
+  78              		.syntax unified
+  79              		.thumb
+  80              		.thumb_func
+  81              		.fpu fpv4-sp-d16
+  83              	usleep:
+  84              	.LFB5:
+  43:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** 
+  44:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** /*-----------------------------------------------------------*/
+  45:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** 
+  46:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** int usleep( useconds_t usec )
+  47:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** {
+  85              		.loc 1 47 1
+  86              		.cfi_startproc
+  87              		@ args = 0, pretend = 0, frame = 8
+  88              		@ frame_needed = 1, uses_anonymous_args = 0
+  89 0000 80B5     		push	{r7, lr}
+  90              	.LCFI5:
+  91              		.cfi_def_cfa_offset 8
+  92              		.cfi_offset 7, -8
+  93              		.cfi_offset 14, -4
+  94 0002 82B0     		sub	sp, sp, #8
+  95              	.LCFI6:
+  96              		.cfi_def_cfa_offset 16
+  97 0004 00AF     		add	r7, sp, #0
+  98              	.LCFI7:
+  99              		.cfi_def_cfa_register 7
+ 100 0006 7860     		str	r0, [r7, #4]
+  48:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****     /* To avoid delaying for less than usec, always round up. */
+  49:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****     vTaskDelay( pdMS_TO_TICKS( usec / 1000 + ( usec % 1000 != 0 ) ) );
+ 101              		.loc 1 49 17
+ 102 0008 7B68     		ldr	r3, [r7, #4]
+ 103 000a 124A     		ldr	r2, .L7
+ 104 000c A2FB0323 		umull	r2, r3, r2, r3
+ 105 0010 9909     		lsrs	r1, r3, #6
+ 106 0012 7A68     		ldr	r2, [r7, #4]
+ 107 0014 0F4B     		ldr	r3, .L7
+ 108 0016 A3FB0203 		umull	r0, r3, r3, r2
+ 109 001a 9B09     		lsrs	r3, r3, #6
+ 110 001c 4FF47A70 		mov	r0, #1000
+ 111 0020 00FB03F3 		mul	r3, r0, r3
+ 112 0024 D31A     		subs	r3, r2, r3
+ 113 0026 002B     		cmp	r3, #0
+ 114 0028 14BF     		ite	ne
+ 115 002a 0123     		movne	r3, #1
+ 116 002c 0023     		moveq	r3, #0
+ 117 002e DBB2     		uxtb	r3, r3
+ 118 0030 0B44     		add	r3, r3, r1
+ 119 0032 4FF47A72 		mov	r2, #1000
+ 120 0036 02FB03F3 		mul	r3, r2, r3
+ 121              		.loc 1 49 5
+ 122 003a 064A     		ldr	r2, .L7
+ 123 003c A2FB0323 		umull	r2, r3, r2, r3
+ 124 0040 9B09     		lsrs	r3, r3, #6
+ 125 0042 1846     		mov	r0, r3
+ARM GAS  /tmp/cc6ZSva8.s 			page 4
+
+
+ 126 0044 FFF7FEFF 		bl	vTaskDelay
+  50:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** 
+  51:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c ****     return 0;
+ 127              		.loc 1 51 12
+ 128 0048 0023     		movs	r3, #0
+  52:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_unistd.c **** }
+ 129              		.loc 1 52 1
+ 130 004a 1846     		mov	r0, r3
+ 131 004c 0837     		adds	r7, r7, #8
+ 132              	.LCFI8:
+ 133              		.cfi_def_cfa_offset 8
+ 134 004e BD46     		mov	sp, r7
+ 135              	.LCFI9:
+ 136              		.cfi_def_cfa_register 13
+ 137              		@ sp needed
+ 138 0050 80BD     		pop	{r7, pc}
+ 139              	.L8:
+ 140 0052 00BF     		.align	2
+ 141              	.L7:
+ 142 0054 D34D6210 		.word	274877907
+ 143              		.cfi_endproc
+ 144              	.LFE5:
+ 146              		.text
+ 147              	.Letext0:
+ 148              		.file 2 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/machine/_default_
+ 149              		.file 3 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_stdint.h"
+ 150              		.file 4 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h"
+ 151              		.file 5 "lib/include/FreeRTOS_POSIX/sys/types.h"
+ 152              		.file 6 "Inc/FreeRTOSConfig.h"
+ARM GAS  /tmp/cc6ZSva8.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 FreeRTOS_POSIX_unistd.c
+     /tmp/cc6ZSva8.s:18     .text.sleep:0000000000000000 $t
+     /tmp/cc6ZSva8.s:26     .text.sleep:0000000000000000 sleep
+     /tmp/cc6ZSva8.s:70     .text.sleep:0000000000000028 $d
+     /tmp/cc6ZSva8.s:76     .text.usleep:0000000000000000 $t
+     /tmp/cc6ZSva8.s:83     .text.usleep:0000000000000000 usleep
+     /tmp/cc6ZSva8.s:142    .text.usleep:0000000000000054 $d
+
+UNDEFINED SYMBOLS
+vTaskDelay

@@ -1,0 +1,642 @@
+ARM GAS  /tmp/ccgrJz9X.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"app.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.rodata.rmw_qos_profile_sensor_data,"a"
+  18              		.align	3
+  21              	rmw_qos_profile_sensor_data:
+  22 0000 01       		.byte	1
+  23 0001 000000   		.space	3
+  24 0004 05000000 		.word	5
+  25 0008 02       		.byte	2
+  26 0009 02       		.byte	2
+  27 000a 00000000 		.space	6
+  27      0000
+  28 0010 00000000 		.word	0
+  29 0014 00000000 		.word	0
+  30 0018 00000000 		.word	0
+  31 001c 00000000 		.word	0
+  32 0020 00000000 		.word	0
+  33 0024 00000000 		.word	0
+  34 0028 00000000 		.word	0
+  35 002c 00000000 		.word	0
+  36 0030 00       		.byte	0
+  37 0031 00000000 		.space	7
+  37      000000
+  38 0038 00000000 		.word	0
+  39 003c 00000000 		.word	0
+  40 0040 00000000 		.word	0
+  41 0044 00000000 		.word	0
+  42 0048 00       		.byte	0
+  43 0049 00000000 		.space	7
+  43      000000
+  44              		.section	.rodata.rmw_qos_profile_parameters,"a"
+  45              		.align	3
+  48              	rmw_qos_profile_parameters:
+  49 0000 01       		.byte	1
+  50 0001 000000   		.space	3
+  51 0004 E8030000 		.word	1000
+  52 0008 01       		.byte	1
+  53 0009 02       		.byte	2
+  54 000a 00000000 		.space	6
+  54      0000
+  55 0010 00000000 		.word	0
+  56 0014 00000000 		.word	0
+  57 0018 00000000 		.word	0
+ARM GAS  /tmp/ccgrJz9X.s 			page 2
+
+
+  58 001c 00000000 		.word	0
+  59 0020 00000000 		.word	0
+  60 0024 00000000 		.word	0
+  61 0028 00000000 		.word	0
+  62 002c 00000000 		.word	0
+  63 0030 00       		.byte	0
+  64 0031 00000000 		.space	7
+  64      000000
+  65 0038 00000000 		.word	0
+  66 003c 00000000 		.word	0
+  67 0040 00000000 		.word	0
+  68 0044 00000000 		.word	0
+  69 0048 00       		.byte	0
+  70 0049 00000000 		.space	7
+  70      000000
+  71              		.section	.rodata.rmw_qos_profile_default,"a"
+  72              		.align	3
+  75              	rmw_qos_profile_default:
+  76 0000 01       		.byte	1
+  77 0001 000000   		.space	3
+  78 0004 0A000000 		.word	10
+  79 0008 01       		.byte	1
+  80 0009 02       		.byte	2
+  81 000a 00000000 		.space	6
+  81      0000
+  82 0010 00000000 		.word	0
+  83 0014 00000000 		.word	0
+  84 0018 00000000 		.word	0
+  85 001c 00000000 		.word	0
+  86 0020 00000000 		.word	0
+  87 0024 00000000 		.word	0
+  88 0028 00000000 		.word	0
+  89 002c 00000000 		.word	0
+  90 0030 00       		.byte	0
+  91 0031 00000000 		.space	7
+  91      000000
+  92 0038 00000000 		.word	0
+  93 003c 00000000 		.word	0
+  94 0040 00000000 		.word	0
+  95 0044 00000000 		.word	0
+  96 0048 00       		.byte	0
+  97 0049 00000000 		.space	7
+  97      000000
+  98              		.section	.rodata.rmw_qos_profile_services_default,"a"
+  99              		.align	3
+ 102              	rmw_qos_profile_services_default:
+ 103 0000 01       		.byte	1
+ 104 0001 000000   		.space	3
+ 105 0004 0A000000 		.word	10
+ 106 0008 01       		.byte	1
+ 107 0009 02       		.byte	2
+ 108 000a 00000000 		.space	6
+ 108      0000
+ 109 0010 00000000 		.word	0
+ 110 0014 00000000 		.word	0
+ 111 0018 00000000 		.word	0
+ 112 001c 00000000 		.word	0
+ARM GAS  /tmp/ccgrJz9X.s 			page 3
+
+
+ 113 0020 00000000 		.word	0
+ 114 0024 00000000 		.word	0
+ 115 0028 00000000 		.word	0
+ 116 002c 00000000 		.word	0
+ 117 0030 00       		.byte	0
+ 118 0031 00000000 		.space	7
+ 118      000000
+ 119 0038 00000000 		.word	0
+ 120 003c 00000000 		.word	0
+ 121 0040 00000000 		.word	0
+ 122 0044 00000000 		.word	0
+ 123 0048 00       		.byte	0
+ 124 0049 00000000 		.space	7
+ 124      000000
+ 125              		.section	.rodata.rmw_qos_profile_parameter_events,"a"
+ 126              		.align	3
+ 129              	rmw_qos_profile_parameter_events:
+ 130 0000 01       		.byte	1
+ 131 0001 000000   		.space	3
+ 132 0004 E8030000 		.word	1000
+ 133 0008 01       		.byte	1
+ 134 0009 02       		.byte	2
+ 135 000a 00000000 		.space	6
+ 135      0000
+ 136 0010 00000000 		.word	0
+ 137 0014 00000000 		.word	0
+ 138 0018 00000000 		.word	0
+ 139 001c 00000000 		.word	0
+ 140 0020 00000000 		.word	0
+ 141 0024 00000000 		.word	0
+ 142 0028 00000000 		.word	0
+ 143 002c 00000000 		.word	0
+ 144 0030 00       		.byte	0
+ 145 0031 00000000 		.space	7
+ 145      000000
+ 146 0038 00000000 		.word	0
+ 147 003c 00000000 		.word	0
+ 148 0040 00000000 		.word	0
+ 149 0044 00000000 		.word	0
+ 150 0048 00       		.byte	0
+ 151 0049 00000000 		.space	7
+ 151      000000
+ 152              		.section	.rodata.rmw_qos_profile_system_default,"a"
+ 153              		.align	3
+ 156              	rmw_qos_profile_system_default:
+ 157 0000 00000000 		.space	80
+ 157      00000000 
+ 157      00000000 
+ 157      00000000 
+ 157      00000000 
+ 158              		.section	.rodata.rcl_action_qos_profile_status_default,"a"
+ 159              		.align	3
+ 162              	rcl_action_qos_profile_status_default:
+ 163 0000 01       		.byte	1
+ 164 0001 000000   		.space	3
+ 165 0004 01000000 		.word	1
+ 166 0008 01       		.byte	1
+ARM GAS  /tmp/ccgrJz9X.s 			page 4
+
+
+ 167 0009 01       		.byte	1
+ 168 000a 00000000 		.space	6
+ 168      0000
+ 169 0010 00000000 		.word	0
+ 170 0014 00000000 		.word	0
+ 171 0018 00000000 		.word	0
+ 172 001c 00000000 		.word	0
+ 173 0020 00000000 		.word	0
+ 174 0024 00000000 		.word	0
+ 175 0028 00000000 		.word	0
+ 176 002c 00000000 		.word	0
+ 177 0030 00       		.byte	0
+ 178 0031 00000000 		.space	7
+ 178      000000
+ 179 0038 00000000 		.word	0
+ 180 003c 00000000 		.word	0
+ 181 0040 00000000 		.word	0
+ 182 0044 00000000 		.word	0
+ 183 0048 00       		.byte	0
+ 184 0049 00000000 		.space	7
+ 184      000000
+ 185              		.section	.rodata
+ 186              		.align	2
+ 187              	.LC0:
+ 188 0000 3200     		.ascii	"2\000"
+ 189 0002 0000     		.align	2
+ 190              	.LC1:
+ 191 0004 4661696C 		.ascii	"Failed status on line %d: %d. Aborting.\012\000"
+ 191      65642073 
+ 191      74617475 
+ 191      73206F6E 
+ 191      206C696E 
+ 192 002d 000000   		.align	2
+ 193              	.LC2:
+ 194 0030 00       		.ascii	"\000"
+ 195 0031 000000   		.align	2
+ 196              	.LC3:
+ 197 0034 696E7433 		.ascii	"int32_publisher\000"
+ 197      325F7075 
+ 197      626C6973 
+ 197      68657200 
+ 198              		.align	2
+ 199              	.LC4:
+ 200 0044 2F696E74 		.ascii	"/int32_publisher\000"
+ 200      33325F70 
+ 200      75626C69 
+ 200      73686572 
+ 200      00
+ 201 0055 000000   		.align	2
+ 202              	.LC5:
+ 203 0058 46726565 		.ascii	"Free heap post uROS configuration: %d bytes\012\000"
+ 203      20686561 
+ 203      7020706F 
+ 203      73742075 
+ 203      524F5320 
+ 204 0085 000000   		.align	2
+ 205              	.LC6:
+ARM GAS  /tmp/ccgrJz9X.s 			page 5
+
+
+ 206 0088 75524F53 		.ascii	"uROS Used Memory %d bytes\012\000"
+ 206      20557365 
+ 206      64204D65 
+ 206      6D6F7279 
+ 206      20256420 
+ 207 00a3 00       		.align	2
+ 208              	.LC7:
+ 209 00a4 75524F53 		.ascii	"uROS Absolute Used Memory %d bytes\012\000"
+ 209      20416273 
+ 209      6F6C7574 
+ 209      65205573 
+ 209      6564204D 
+ 210              		.align	2
+ 211              	.LC8:
+ 212 00c8 53656E74 		.ascii	"Sent: '%li'\012\000"
+ 212      3A202725 
+ 212      6C69270A 
+ 212      00
+ 213              		.section	.text.appMain,"ax",%progbits
+ 214              		.align	1
+ 215              		.global	appMain
+ 216              		.arch armv7e-m
+ 217              		.syntax unified
+ 218              		.thumb
+ 219              		.thumb_func
+ 220              		.fpu fpv4-sp-d16
+ 222              	appMain:
+ 223              	.LFB3:
+ 224              		.file 1 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c"
+   1:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** #include <allocators.h>
+   2:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+   3:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** #include <rcl/rcl.h>
+   4:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** #include <rcl_action/rcl_action.h>
+   5:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** #include <rcl/error_handling.h>
+   6:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** #include <std_msgs/msg/int32.h>
+   7:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** #include "example_interfaces/srv/add_two_ints.h"
+   8:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+   9:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** #include <rmw_uros/options.h>
+  10:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  11:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** #include <stdio.h>
+  12:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** #include <unistd.h>
+  13:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  14:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on 
+  15:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status
+  16:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  17:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** void appMain(void *argument)
+  18:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** {
+ 225              		.loc 1 18 1
+ 226              		.cfi_startproc
+ 227              		@ args = 0, pretend = 0, frame = 224
+ 228              		@ frame_needed = 1, uses_anonymous_args = 0
+ 229 0000 90B5     		push	{r4, r7, lr}
+ 230              	.LCFI0:
+ 231              		.cfi_def_cfa_offset 12
+ 232              		.cfi_offset 4, -12
+ 233              		.cfi_offset 7, -8
+ 234              		.cfi_offset 14, -4
+ARM GAS  /tmp/ccgrJz9X.s 			page 6
+
+
+ 235 0002 BBB0     		sub	sp, sp, #236
+ 236              	.LCFI1:
+ 237              		.cfi_def_cfa_offset 248
+ 238 0004 02AF     		add	r7, sp, #8
+ 239              	.LCFI2:
+ 240              		.cfi_def_cfa 7, 240
+ 241 0006 7860     		str	r0, [r7, #4]
+  19:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   rcl_init_options_t options = rcl_get_zero_initialized_init_options();
+ 242              		.loc 1 19 32
+ 243 0008 FFF7FEFF 		bl	rcl_get_zero_initialized_init_options
+ 244 000c 0346     		mov	r3, r0
+ 245 000e C7F8B030 		str	r3, [r7, #176]
+  20:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  21:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   //RCCHECK(rcl_init_options_init(&options, rcl_get_default_allocator()))
+  22:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   rcl_init_options_init(&options, rcl_get_default_allocator());
+ 246              		.loc 1 22 3
+ 247 0012 07F1B403 		add	r3, r7, #180
+ 248 0016 1846     		mov	r0, r3
+ 249 0018 FFF7FEFF 		bl	rcutils_get_default_allocator
+ 250 001c 07F1B004 		add	r4, r7, #176
+ 251 0020 6A46     		mov	r2, sp
+ 252 0022 07F1C003 		add	r3, r7, #192
+ 253 0026 93E80300 		ldm	r3, {r0, r1}
+ 254 002a 82E80300 		stm	r2, {r0, r1}
+ 255 002e 07F1B403 		add	r3, r7, #180
+ 256 0032 0ECB     		ldm	r3, {r1, r2, r3}
+ 257 0034 2046     		mov	r0, r4
+ 258 0036 FFF7FEFF 		bl	rcl_init_options_init
+  23:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  24:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   // Optional RMW configuration
+  25:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   rmw_init_options_t* rmw_options = rcl_init_options_get_rmw_init_options(&options);
+ 259              		.loc 1 25 37
+ 260 003a 07F1B003 		add	r3, r7, #176
+ 261 003e 1846     		mov	r0, r3
+ 262 0040 FFF7FEFF 		bl	rcl_init_options_get_rmw_init_options
+ 263 0044 C7F8DC00 		str	r0, [r7, #220]
+  26:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   rmw_uros_options_set_serial_device("2", rmw_options);
+ 264              		.loc 1 26 3
+ 265 0048 D7F8DC10 		ldr	r1, [r7, #220]
+ 266 004c 5548     		ldr	r0, .L8
+ 267 004e FFF7FEFF 		bl	rmw_uros_options_set_serial_device
+ 268              	.LBB2:
+  27:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   RCCHECK(rmw_uros_options_set_client_key(0x0ddba11, rmw_options))
+ 269              		.loc 1 27 3
+ 270 0052 D7F8DC10 		ldr	r1, [r7, #220]
+ 271 0056 5448     		ldr	r0, .L8+4
+ 272 0058 FFF7FEFF 		bl	rmw_uros_options_set_client_key
+ 273 005c C7F8D800 		str	r0, [r7, #216]
+ 274 0060 D7F8D830 		ldr	r3, [r7, #216]
+ 275 0064 002B     		cmp	r3, #0
+ 276 0066 08D0     		beq	.L2
+ 277              	.LBB3:
+ 278              		.loc 1 27 3 is_stmt 0 discriminator 1
+ 279 0068 D7F8D820 		ldr	r2, [r7, #216]
+ 280 006c 1B21     		movs	r1, #27
+ 281 006e 4F48     		ldr	r0, .L8+8
+ 282 0070 FFF7FEFF 		bl	printf
+ARM GAS  /tmp/ccgrJz9X.s 			page 7
+
+
+ 283 0074 0020     		movs	r0, #0
+ 284 0076 FFF7FEFF 		bl	vTaskDelete
+ 285              	.L2:
+ 286              	.LBE3:
+ 287              	.LBE2:
+  28:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  29:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   rcl_context_t context = rcl_get_zero_initialized_context();
+ 288              		.loc 1 29 27 is_stmt 1
+ 289 007a 07F1A003 		add	r3, r7, #160
+ 290 007e 1846     		mov	r0, r3
+ 291 0080 FFF7FEFF 		bl	rcl_get_zero_initialized_context
+ 292              	.LBB4:
+  30:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   RCCHECK(rcl_init(0, NULL, &options, &context))
+ 293              		.loc 1 30 3
+ 294 0084 07F1A003 		add	r3, r7, #160
+ 295 0088 07F1B002 		add	r2, r7, #176
+ 296 008c 0021     		movs	r1, #0
+ 297 008e 0020     		movs	r0, #0
+ 298 0090 FFF7FEFF 		bl	rcl_init
+ 299 0094 C7F8D400 		str	r0, [r7, #212]
+ 300 0098 D7F8D430 		ldr	r3, [r7, #212]
+ 301 009c 002B     		cmp	r3, #0
+ 302 009e 08D0     		beq	.L3
+ 303              	.LBB5:
+ 304              		.loc 1 30 3 is_stmt 0 discriminator 1
+ 305 00a0 D7F8D420 		ldr	r2, [r7, #212]
+ 306 00a4 1E21     		movs	r1, #30
+ 307 00a6 4148     		ldr	r0, .L8+8
+ 308 00a8 FFF7FEFF 		bl	printf
+ 309 00ac 0020     		movs	r0, #0
+ 310 00ae FFF7FEFF 		bl	vTaskDelete
+ 311              	.L3:
+ 312              	.LBE5:
+ 313              	.LBE4:
+  31:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  32:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  33:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   rcl_node_options_t node_ops = rcl_node_get_default_options();
+ 314              		.loc 1 33 33 is_stmt 1
+ 315 00b2 07F18003 		add	r3, r7, #128
+ 316 00b6 1846     		mov	r0, r3
+ 317 00b8 FFF7FEFF 		bl	rcl_node_get_default_options
+  34:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  35:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   rcl_node_t node = rcl_get_zero_initialized_node();
+ 318              		.loc 1 35 21
+ 319 00bc 07F17803 		add	r3, r7, #120
+ 320 00c0 1846     		mov	r0, r3
+ 321 00c2 FFF7FEFF 		bl	rcl_get_zero_initialized_node
+ 322              	.LBB6:
+  36:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   RCCHECK(rcl_node_init(&node, "int32_publisher", "", &context, &node_ops))
+ 323              		.loc 1 36 3
+ 324 00c6 07F1A002 		add	r2, r7, #160
+ 325 00ca 07F17800 		add	r0, r7, #120
+ 326 00ce 07F18003 		add	r3, r7, #128
+ 327 00d2 0093     		str	r3, [sp]
+ 328 00d4 1346     		mov	r3, r2
+ 329 00d6 364A     		ldr	r2, .L8+12
+ 330 00d8 3649     		ldr	r1, .L8+16
+ARM GAS  /tmp/ccgrJz9X.s 			page 8
+
+
+ 331 00da FFF7FEFF 		bl	rcl_node_init
+ 332 00de C7F8D000 		str	r0, [r7, #208]
+ 333 00e2 D7F8D030 		ldr	r3, [r7, #208]
+ 334 00e6 002B     		cmp	r3, #0
+ 335 00e8 08D0     		beq	.L4
+ 336              	.LBB7:
+ 337              		.loc 1 36 3 is_stmt 0 discriminator 1
+ 338 00ea D7F8D020 		ldr	r2, [r7, #208]
+ 339 00ee 2421     		movs	r1, #36
+ 340 00f0 2E48     		ldr	r0, .L8+8
+ 341 00f2 FFF7FEFF 		bl	printf
+ 342 00f6 0020     		movs	r0, #0
+ 343 00f8 FFF7FEFF 		bl	vTaskDelete
+ 344              	.L4:
+ 345              	.LBE7:
+ 346              	.LBE6:
+  37:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  38:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   rcl_publisher_options_t publisher_ops = rcl_publisher_get_default_options();
+ 347              		.loc 1 38 43 is_stmt 1
+ 348 00fc 07F11003 		add	r3, r7, #16
+ 349 0100 1846     		mov	r0, r3
+ 350 0102 FFF7FEFF 		bl	rcl_publisher_get_default_options
+  39:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   rcl_publisher_t publisher = rcl_get_zero_initialized_publisher();
+ 351              		.loc 1 39 31
+ 352 0106 FFF7FEFF 		bl	rcl_get_zero_initialized_publisher
+ 353 010a 0346     		mov	r3, r0
+ 354 010c FB60     		str	r3, [r7, #12]
+ 355              	.LBB8:
+  40:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   RCCHECK(rcl_publisher_init(&publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32), 
+ 356              		.loc 1 40 3
+ 357 010e FFF7FEFF 		bl	rosidl_typesupport_c__get_message_type_support_handle__std_msgs__msg__Int32
+ 358 0112 0246     		mov	r2, r0
+ 359 0114 07F17801 		add	r1, r7, #120
+ 360 0118 07F10C00 		add	r0, r7, #12
+ 361 011c 07F11003 		add	r3, r7, #16
+ 362 0120 0093     		str	r3, [sp]
+ 363 0122 254B     		ldr	r3, .L8+20
+ 364 0124 FFF7FEFF 		bl	rcl_publisher_init
+ 365 0128 C7F8CC00 		str	r0, [r7, #204]
+ 366 012c D7F8CC30 		ldr	r3, [r7, #204]
+ 367 0130 002B     		cmp	r3, #0
+ 368 0132 08D0     		beq	.L5
+ 369              	.LBB9:
+ 370              		.loc 1 40 3 is_stmt 0 discriminator 1
+ 371 0134 D7F8CC20 		ldr	r2, [r7, #204]
+ 372 0138 2821     		movs	r1, #40
+ 373 013a 1C48     		ldr	r0, .L8+8
+ 374 013c FFF7FEFF 		bl	printf
+ 375 0140 0020     		movs	r0, #0
+ 376 0142 FFF7FEFF 		bl	vTaskDelete
+ 377              	.L5:
+ 378              	.LBE9:
+ 379              	.LBE8:
+  41:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  42:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   std_msgs__msg__Int32 msg;
+  43:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   msg.data = 0;
+ 380              		.loc 1 43 12 is_stmt 1
+ARM GAS  /tmp/ccgrJz9X.s 			page 9
+
+
+ 381 0146 0023     		movs	r3, #0
+ 382 0148 BB60     		str	r3, [r7, #8]
+  44:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  45:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   printf("Free heap post uROS configuration: %d bytes\n", xPortGetFreeHeapSize());
+ 383              		.loc 1 45 3
+ 384 014a FFF7FEFF 		bl	xPortGetFreeHeapSize
+ 385 014e 0346     		mov	r3, r0
+ 386 0150 1946     		mov	r1, r3
+ 387 0152 1A48     		ldr	r0, .L8+24
+ 388 0154 FFF7FEFF 		bl	printf
+  46:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   printf("uROS Used Memory %d bytes\n", usedMemory);
+ 389              		.loc 1 46 3
+ 390 0158 194B     		ldr	r3, .L8+28
+ 391 015a 1B68     		ldr	r3, [r3]
+ 392 015c 1946     		mov	r1, r3
+ 393 015e 1948     		ldr	r0, .L8+32
+ 394 0160 FFF7FEFF 		bl	printf
+  47:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   printf("uROS Absolute Used Memory %d bytes\n", absoluteUsedMemory);
+ 395              		.loc 1 47 3
+ 396 0164 184B     		ldr	r3, .L8+36
+ 397 0166 1B68     		ldr	r3, [r3]
+ 398 0168 1946     		mov	r1, r3
+ 399 016a 1848     		ldr	r0, .L8+40
+ 400 016c FFF7FEFF 		bl	printf
+ 401              	.L7:
+  48:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  49:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   rcl_ret_t rc;
+  50:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****   do {
+  51:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****     rc = rcl_publish(&publisher, (const void*)&msg, NULL);
+ 402              		.loc 1 51 10
+ 403 0170 07F10801 		add	r1, r7, #8
+ 404 0174 07F10C03 		add	r3, r7, #12
+ 405 0178 0022     		movs	r2, #0
+ 406 017a 1846     		mov	r0, r3
+ 407 017c FFF7FEFF 		bl	rcl_publish
+ 408 0180 C7F8C800 		str	r0, [r7, #200]
+  52:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  53:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****     if (RCL_RET_OK == rc ) {
+ 409              		.loc 1 53 8
+ 410 0184 D7F8C830 		ldr	r3, [r7, #200]
+ 411 0188 002B     		cmp	r3, #0
+ 412 018a 06D1     		bne	.L6
+  54:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****         printf("Sent: '%li'\n", msg.data++);
+ 413              		.loc 1 54 36
+ 414 018c BB68     		ldr	r3, [r7, #8]
+ 415              		.loc 1 54 9
+ 416 018e 5A1C     		adds	r2, r3, #1
+ 417 0190 BA60     		str	r2, [r7, #8]
+ 418 0192 1946     		mov	r1, r3
+ 419 0194 0E48     		ldr	r0, .L8+44
+ 420 0196 FFF7FEFF 		bl	printf
+ 421              	.L6:
+  55:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****     }
+  56:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+  57:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c ****     usleep(100000);
+ 422              		.loc 1 57 5
+ 423 019a 0E48     		ldr	r0, .L8+48
+ARM GAS  /tmp/ccgrJz9X.s 			page 10
+
+
+ 424 019c FFF7FEFF 		bl	usleep
+  51:/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/apps/int32_publisher/app.c **** 
+ 425              		.loc 1 51 8
+ 426 01a0 E6E7     		b	.L7
+ 427              	.L9:
+ 428 01a2 00BF     		.align	2
+ 429              	.L8:
+ 430 01a4 00000000 		.word	.LC0
+ 431 01a8 11BADD00 		.word	14531089
+ 432 01ac 04000000 		.word	.LC1
+ 433 01b0 30000000 		.word	.LC2
+ 434 01b4 34000000 		.word	.LC3
+ 435 01b8 44000000 		.word	.LC4
+ 436 01bc 58000000 		.word	.LC5
+ 437 01c0 00000000 		.word	usedMemory
+ 438 01c4 88000000 		.word	.LC6
+ 439 01c8 00000000 		.word	absoluteUsedMemory
+ 440 01cc A4000000 		.word	.LC7
+ 441 01d0 C8000000 		.word	.LC8
+ 442 01d4 A0860100 		.word	100000
+ 443              		.cfi_endproc
+ 444              	.LFE3:
+ 446              		.text
+ 447              	.Letext0:
+ 448              		.file 2 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/lib/gcc/arm-none-eabi/8.3.1/include/std
+ 449              		.file 3 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/machine/_default_
+ 450              		.file 4 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_types.h"
+ 451              		.file 5 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/reent.h"
+ 452              		.file 6 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/lock.h"
+ 453              		.file 7 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/stdlib.h"
+ 454              		.file 8 "Inc/allocators.h"
+ 455              		.file 9 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/.
+ 456              		.file 10 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 457              		.file 11 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_stdint.h"
+ 458              		.file 12 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 459              		.file 13 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 460              		.file 14 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/lib/gcc/arm-none-eabi/8.3.1/include/st
+ 461              		.file 15 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 462              		.file 16 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 463              		.file 17 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 464              		.file 18 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 465              		.file 19 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 466              		.file 20 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 467              		.file 21 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 468              		.file 22 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 469              		.file 23 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 470              		.file 24 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 471              		.file 25 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 472              		.file 26 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 473              		.file 27 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 474              		.file 28 "/home/mip-laptop/uros_frtos_ws/firmware/freertos_apps/microros_stm32f4_disco_extensions/
+ 475              		.file 29 "<built-in>"
+ARM GAS  /tmp/ccgrJz9X.s 			page 11
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 app.c
+     /tmp/ccgrJz9X.s:18     .rodata.rmw_qos_profile_sensor_data:0000000000000000 $d
+     /tmp/ccgrJz9X.s:21     .rodata.rmw_qos_profile_sensor_data:0000000000000000 rmw_qos_profile_sensor_data
+     /tmp/ccgrJz9X.s:45     .rodata.rmw_qos_profile_parameters:0000000000000000 $d
+     /tmp/ccgrJz9X.s:48     .rodata.rmw_qos_profile_parameters:0000000000000000 rmw_qos_profile_parameters
+     /tmp/ccgrJz9X.s:72     .rodata.rmw_qos_profile_default:0000000000000000 $d
+     /tmp/ccgrJz9X.s:75     .rodata.rmw_qos_profile_default:0000000000000000 rmw_qos_profile_default
+     /tmp/ccgrJz9X.s:99     .rodata.rmw_qos_profile_services_default:0000000000000000 $d
+     /tmp/ccgrJz9X.s:102    .rodata.rmw_qos_profile_services_default:0000000000000000 rmw_qos_profile_services_default
+     /tmp/ccgrJz9X.s:126    .rodata.rmw_qos_profile_parameter_events:0000000000000000 $d
+     /tmp/ccgrJz9X.s:129    .rodata.rmw_qos_profile_parameter_events:0000000000000000 rmw_qos_profile_parameter_events
+     /tmp/ccgrJz9X.s:153    .rodata.rmw_qos_profile_system_default:0000000000000000 $d
+     /tmp/ccgrJz9X.s:156    .rodata.rmw_qos_profile_system_default:0000000000000000 rmw_qos_profile_system_default
+     /tmp/ccgrJz9X.s:159    .rodata.rcl_action_qos_profile_status_default:0000000000000000 $d
+     /tmp/ccgrJz9X.s:162    .rodata.rcl_action_qos_profile_status_default:0000000000000000 rcl_action_qos_profile_status_default
+     /tmp/ccgrJz9X.s:186    .rodata:0000000000000000 $d
+     /tmp/ccgrJz9X.s:214    .text.appMain:0000000000000000 $t
+     /tmp/ccgrJz9X.s:222    .text.appMain:0000000000000000 appMain
+     /tmp/ccgrJz9X.s:430    .text.appMain:00000000000001a4 $d
+
+UNDEFINED SYMBOLS
+rcl_get_zero_initialized_init_options
+rcutils_get_default_allocator
+rcl_init_options_init
+rcl_init_options_get_rmw_init_options
+rmw_uros_options_set_serial_device
+rmw_uros_options_set_client_key
+printf
+vTaskDelete
+rcl_get_zero_initialized_context
+rcl_init
+rcl_node_get_default_options
+rcl_get_zero_initialized_node
+rcl_node_init
+rcl_publisher_get_default_options
+rcl_get_zero_initialized_publisher
+rosidl_typesupport_c__get_message_type_support_handle__std_msgs__msg__Int32
+rcl_publisher_init
+xPortGetFreeHeapSize
+rcl_publish
+usleep
+usedMemory
+absoluteUsedMemory

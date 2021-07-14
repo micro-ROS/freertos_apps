@@ -1,0 +1,1709 @@
+ARM GAS  /tmp/ccilE5UX.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"FreeRTOS_POSIX_utils.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.UTILS_strnlen,"ax",%progbits
+  18              		.align	1
+  19              		.global	UTILS_strnlen
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	UTILS_strnlen:
+  27              	.LFB4:
+  28              		.file 1 "lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c"
+   1:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /*
+   2:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * Amazon FreeRTOS POSIX V1.1.0
+   3:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+   4:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  *
+   5:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+   6:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * this software and associated documentation files (the "Software"), to deal in
+   7:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * the Software without restriction, including without limitation the rights to
+   8:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+   9:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * the Software, and to permit persons to whom the Software is furnished to do so,
+  10:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * subject to the following conditions:
+  11:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  *
+  12:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * The above copyright notice and this permission notice shall be included in all
+  13:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * copies or substantial portions of the Software.
+  14:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  *
+  15:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  16:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+  17:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+  18:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+  19:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  20:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  21:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  *
+  22:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * http://aws.amazon.com/freertos
+  23:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * http://www.FreeRTOS.org
+  24:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  */
+  25:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  26:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /**
+  27:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * @file FreeRTOS_POSIX_utils.c
+  28:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  * @brief Implementation of utility functions in utils.h
+  29:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****  */
+  30:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ARM GAS  /tmp/ccilE5UX.s 			page 2
+
+
+  31:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /* C standard library includes. */
+  32:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** #include <stddef.h>
+  33:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** #include <limits.h>
+  34:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  35:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /* FreeRTOS+POSIX includes. */
+  36:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** #include "FreeRTOS_POSIX.h"
+  37:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** #include "FreeRTOS_POSIX/errno.h"
+  38:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** #include "FreeRTOS_POSIX/utils.h"
+  39:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  40:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /*-----------------------------------------------------------*/
+  41:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  42:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** size_t UTILS_strnlen( const char * const pcString,
+  43:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                       size_t xMaxLength )
+  44:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** {
+  29              		.loc 1 44 1
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 16
+  32              		@ frame_needed = 1, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34 0000 80B4     		push	{r7}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 4
+  37              		.cfi_offset 7, -4
+  38 0002 85B0     		sub	sp, sp, #20
+  39              	.LCFI1:
+  40              		.cfi_def_cfa_offset 24
+  41 0004 00AF     		add	r7, sp, #0
+  42              	.LCFI2:
+  43              		.cfi_def_cfa_register 7
+  44 0006 7860     		str	r0, [r7, #4]
+  45 0008 3960     		str	r1, [r7]
+  45:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     const char * pcCharPointer = pcString;
+  46              		.loc 1 45 18
+  47 000a 7B68     		ldr	r3, [r7, #4]
+  48 000c FB60     		str	r3, [r7, #12]
+  46:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     size_t xLength = 0;
+  49              		.loc 1 46 12
+  50 000e 0023     		movs	r3, #0
+  51 0010 BB60     		str	r3, [r7, #8]
+  47:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  48:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( pcString != NULL )
+  52              		.loc 1 48 7
+  53 0012 7B68     		ldr	r3, [r7, #4]
+  54 0014 002B     		cmp	r3, #0
+  55 0016 0ED0     		beq	.L2
+  49:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+  50:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         while( ( *pcCharPointer != '\0' ) && ( xLength < xMaxLength ) )
+  56              		.loc 1 50 14
+  57 0018 05E0     		b	.L3
+  58              	.L4:
+  51:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+  52:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             xLength++;
+  59              		.loc 1 52 20
+  60 001a BB68     		ldr	r3, [r7, #8]
+  61 001c 0133     		adds	r3, r3, #1
+  62 001e BB60     		str	r3, [r7, #8]
+  53:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             pcCharPointer++;
+ARM GAS  /tmp/ccilE5UX.s 			page 3
+
+
+  63              		.loc 1 53 26
+  64 0020 FB68     		ldr	r3, [r7, #12]
+  65 0022 0133     		adds	r3, r3, #1
+  66 0024 FB60     		str	r3, [r7, #12]
+  67              	.L3:
+  50:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+  68              		.loc 1 50 18
+  69 0026 FB68     		ldr	r3, [r7, #12]
+  70 0028 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  50:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+  71              		.loc 1 50 14
+  72 002a 002B     		cmp	r3, #0
+  73 002c 03D0     		beq	.L2
+  50:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+  74              		.loc 1 50 43 discriminator 1
+  75 002e BA68     		ldr	r2, [r7, #8]
+  76 0030 3B68     		ldr	r3, [r7]
+  77 0032 9A42     		cmp	r2, r3
+  78 0034 F1D3     		bcc	.L4
+  79              	.L2:
+  54:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+  55:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+  56:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  57:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     return xLength;
+  80              		.loc 1 57 12
+  81 0036 BB68     		ldr	r3, [r7, #8]
+  58:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** }
+  82              		.loc 1 58 1
+  83 0038 1846     		mov	r0, r3
+  84 003a 1437     		adds	r7, r7, #20
+  85              	.LCFI3:
+  86              		.cfi_def_cfa_offset 4
+  87 003c BD46     		mov	sp, r7
+  88              	.LCFI4:
+  89              		.cfi_def_cfa_register 13
+  90              		@ sp needed
+  91 003e 5DF8047B 		ldr	r7, [sp], #4
+  92              	.LCFI5:
+  93              		.cfi_restore 7
+  94              		.cfi_def_cfa_offset 0
+  95 0042 7047     		bx	lr
+  96              		.cfi_endproc
+  97              	.LFE4:
+  99              		.section	.text.UTILS_AbsoluteTimespecToDeltaTicks,"ax",%progbits
+ 100              		.align	1
+ 101              		.global	UTILS_AbsoluteTimespecToDeltaTicks
+ 102              		.syntax unified
+ 103              		.thumb
+ 104              		.thumb_func
+ 105              		.fpu fpv4-sp-d16
+ 107              	UTILS_AbsoluteTimespecToDeltaTicks:
+ 108              	.LFB5:
+  59:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  60:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /*-----------------------------------------------------------*/
+  61:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  62:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** int UTILS_AbsoluteTimespecToDeltaTicks( const struct timespec * const pxAbsoluteTime,
+  63:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                                         const struct timespec * const pxCurrentTime,
+ARM GAS  /tmp/ccilE5UX.s 			page 4
+
+
+  64:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                                         TickType_t * const pxResult )
+  65:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** {
+ 109              		.loc 1 65 1
+ 110              		.cfi_startproc
+ 111              		@ args = 0, pretend = 0, frame = 40
+ 112              		@ frame_needed = 1, uses_anonymous_args = 0
+ 113 0000 80B5     		push	{r7, lr}
+ 114              	.LCFI6:
+ 115              		.cfi_def_cfa_offset 8
+ 116              		.cfi_offset 7, -8
+ 117              		.cfi_offset 14, -4
+ 118 0002 8AB0     		sub	sp, sp, #40
+ 119              	.LCFI7:
+ 120              		.cfi_def_cfa_offset 48
+ 121 0004 00AF     		add	r7, sp, #0
+ 122              	.LCFI8:
+ 123              		.cfi_def_cfa_register 7
+ 124 0006 F860     		str	r0, [r7, #12]
+ 125 0008 B960     		str	r1, [r7, #8]
+ 126 000a 7A60     		str	r2, [r7, #4]
+  66:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     int iStatus = 0;
+ 127              		.loc 1 66 9
+ 128 000c 0023     		movs	r3, #0
+ 129 000e 7B62     		str	r3, [r7, #36]
+  67:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     struct timespec xDifference = { 0 };
+ 130              		.loc 1 67 21
+ 131 0010 07F11003 		add	r3, r7, #16
+ 132 0014 0022     		movs	r2, #0
+ 133 0016 1A60     		str	r2, [r3]
+ 134 0018 5A60     		str	r2, [r3, #4]
+ 135 001a 9A60     		str	r2, [r3, #8]
+ 136 001c DA60     		str	r2, [r3, #12]
+  68:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  69:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     /* Check parameters. */
+  70:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( ( pxAbsoluteTime == NULL ) || ( pxCurrentTime == NULL ) || ( pxResult == NULL ) )
+ 137              		.loc 1 70 7
+ 138 001e FB68     		ldr	r3, [r7, #12]
+ 139 0020 002B     		cmp	r3, #0
+ 140 0022 05D0     		beq	.L7
+ 141              		.loc 1 70 36 discriminator 1
+ 142 0024 BB68     		ldr	r3, [r7, #8]
+ 143 0026 002B     		cmp	r3, #0
+ 144 0028 02D0     		beq	.L7
+ 145              		.loc 1 70 65 discriminator 2
+ 146 002a 7B68     		ldr	r3, [r7, #4]
+ 147 002c 002B     		cmp	r3, #0
+ 148 002e 01D1     		bne	.L8
+ 149              	.L7:
+  71:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+  72:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = EINVAL;
+ 150              		.loc 1 72 17
+ 151 0030 1623     		movs	r3, #22
+ 152 0032 7B62     		str	r3, [r7, #36]
+ 153              	.L8:
+  73:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+  74:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  75:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     /* Calculate the difference between the current time and absolute time. */
+ARM GAS  /tmp/ccilE5UX.s 			page 5
+
+
+  76:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( iStatus == 0 )
+ 154              		.loc 1 76 7
+ 155 0034 7B6A     		ldr	r3, [r7, #36]
+ 156 0036 002B     		cmp	r3, #0
+ 157 0038 13D1     		bne	.L9
+  77:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+  78:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = UTILS_TimespecSubtract( pxAbsoluteTime, pxCurrentTime, &xDifference );
+ 158              		.loc 1 78 19
+ 159 003a 07F11003 		add	r3, r7, #16
+ 160 003e 1A46     		mov	r2, r3
+ 161 0040 B968     		ldr	r1, [r7, #8]
+ 162 0042 F868     		ldr	r0, [r7, #12]
+ 163 0044 FFF7FEFF 		bl	UTILS_TimespecSubtract
+ 164 0048 7862     		str	r0, [r7, #36]
+  79:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  80:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         if( iStatus == 1 )
+ 165              		.loc 1 80 11
+ 166 004a 7B6A     		ldr	r3, [r7, #36]
+ 167 004c 012B     		cmp	r3, #1
+ 168 004e 02D1     		bne	.L10
+  81:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+  82:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             /* pxAbsoluteTime was in the past. */
+  83:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             iStatus = ETIMEDOUT;
+ 169              		.loc 1 83 21
+ 170 0050 7423     		movs	r3, #116
+ 171 0052 7B62     		str	r3, [r7, #36]
+ 172 0054 05E0     		b	.L9
+ 173              	.L10:
+  84:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+  85:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         else if( iStatus == -1 )
+ 174              		.loc 1 85 16
+ 175 0056 7B6A     		ldr	r3, [r7, #36]
+ 176 0058 B3F1FF3F 		cmp	r3, #-1
+ 177 005c 01D1     		bne	.L9
+  86:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+  87:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             /* error */
+  88:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             iStatus = EINVAL;
+ 178              		.loc 1 88 21
+ 179 005e 1623     		movs	r3, #22
+ 180 0060 7B62     		str	r3, [r7, #36]
+ 181              	.L9:
+  89:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+  90:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+  91:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  92:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     /* Convert the time difference to ticks. */
+  93:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( iStatus == 0 )
+ 182              		.loc 1 93 7
+ 183 0062 7B6A     		ldr	r3, [r7, #36]
+ 184 0064 002B     		cmp	r3, #0
+ 185 0066 06D1     		bne	.L11
+  94:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+  95:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = UTILS_TimespecToTicks( &xDifference, pxResult );
+ 186              		.loc 1 95 19
+ 187 0068 07F11003 		add	r3, r7, #16
+ 188 006c 7968     		ldr	r1, [r7, #4]
+ 189 006e 1846     		mov	r0, r3
+ 190 0070 FFF7FEFF 		bl	UTILS_TimespecToTicks
+ARM GAS  /tmp/ccilE5UX.s 			page 6
+
+
+ 191 0074 7862     		str	r0, [r7, #36]
+ 192              	.L11:
+  96:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+  97:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+  98:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     return iStatus;
+ 193              		.loc 1 98 12
+ 194 0076 7B6A     		ldr	r3, [r7, #36]
+  99:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** }
+ 195              		.loc 1 99 1
+ 196 0078 1846     		mov	r0, r3
+ 197 007a 2837     		adds	r7, r7, #40
+ 198              	.LCFI9:
+ 199              		.cfi_def_cfa_offset 8
+ 200 007c BD46     		mov	sp, r7
+ 201              	.LCFI10:
+ 202              		.cfi_def_cfa_register 13
+ 203              		@ sp needed
+ 204 007e 80BD     		pop	{r7, pc}
+ 205              		.cfi_endproc
+ 206              	.LFE5:
+ 208              		.section	.text.UTILS_TimespecToTicks,"ax",%progbits
+ 209              		.align	1
+ 210              		.global	UTILS_TimespecToTicks
+ 211              		.syntax unified
+ 212              		.thumb
+ 213              		.thumb_func
+ 214              		.fpu fpv4-sp-d16
+ 216              	UTILS_TimespecToTicks:
+ 217              	.LFB6:
+ 100:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 101:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /*-----------------------------------------------------------*/
+ 102:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 103:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** int UTILS_TimespecToTicks( const struct timespec * const pxTimespec,
+ 104:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                            TickType_t * const pxResult )
+ 105:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** {
+ 218              		.loc 1 105 1
+ 219              		.cfi_startproc
+ 220              		@ args = 0, pretend = 0, frame = 32
+ 221              		@ frame_needed = 1, uses_anonymous_args = 0
+ 222 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 223              	.LCFI11:
+ 224              		.cfi_def_cfa_offset 28
+ 225              		.cfi_offset 4, -28
+ 226              		.cfi_offset 5, -24
+ 227              		.cfi_offset 6, -20
+ 228              		.cfi_offset 7, -16
+ 229              		.cfi_offset 8, -12
+ 230              		.cfi_offset 9, -8
+ 231              		.cfi_offset 14, -4
+ 232 0004 89B0     		sub	sp, sp, #36
+ 233              	.LCFI12:
+ 234              		.cfi_def_cfa_offset 64
+ 235 0006 00AF     		add	r7, sp, #0
+ 236              	.LCFI13:
+ 237              		.cfi_def_cfa_register 7
+ 238 0008 7860     		str	r0, [r7, #4]
+ 239 000a 3960     		str	r1, [r7]
+ARM GAS  /tmp/ccilE5UX.s 			page 7
+
+
+ 106:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     int iStatus = 0;
+ 240              		.loc 1 106 9
+ 241 000c 0023     		movs	r3, #0
+ 242 000e FB61     		str	r3, [r7, #28]
+ 107:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     int64_t llTotalTicks = 0;
+ 243              		.loc 1 107 13
+ 244 0010 4FF00003 		mov	r3, #0
+ 245 0014 4FF00004 		mov	r4, #0
+ 246 0018 C7E90434 		strd	r3, [r7, #16]
+ 108:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     long lNanoseconds = 0;
+ 247              		.loc 1 108 10
+ 248 001c 0023     		movs	r3, #0
+ 249 001e FB60     		str	r3, [r7, #12]
+ 109:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 110:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     /* Check parameters. */
+ 111:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( ( pxTimespec == NULL ) || ( pxResult == NULL ) )
+ 250              		.loc 1 111 7
+ 251 0020 7B68     		ldr	r3, [r7, #4]
+ 252 0022 002B     		cmp	r3, #0
+ 253 0024 02D0     		beq	.L14
+ 254              		.loc 1 111 32 discriminator 1
+ 255 0026 3B68     		ldr	r3, [r7]
+ 256 0028 002B     		cmp	r3, #0
+ 257 002a 02D1     		bne	.L15
+ 258              	.L14:
+ 112:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 113:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = EINVAL;
+ 259              		.loc 1 113 17
+ 260 002c 1623     		movs	r3, #22
+ 261 002e FB61     		str	r3, [r7, #28]
+ 262 0030 0DE0     		b	.L16
+ 263              	.L15:
+ 114:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 115:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     else if( ( iStatus == 0 ) && ( UTILS_ValidateTimespec( pxTimespec ) == false ) )
+ 264              		.loc 1 115 12
+ 265 0032 FB69     		ldr	r3, [r7, #28]
+ 266 0034 002B     		cmp	r3, #0
+ 267 0036 0AD1     		bne	.L16
+ 268              		.loc 1 115 36 discriminator 1
+ 269 0038 7868     		ldr	r0, [r7, #4]
+ 270 003a FFF7FEFF 		bl	UTILS_ValidateTimespec
+ 271 003e 0346     		mov	r3, r0
+ 272              		.loc 1 115 73 discriminator 1
+ 273 0040 83F00103 		eor	r3, r3, #1
+ 274 0044 DBB2     		uxtb	r3, r3
+ 275              		.loc 1 115 31 discriminator 1
+ 276 0046 002B     		cmp	r3, #0
+ 277 0048 01D0     		beq	.L16
+ 116:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 117:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = EINVAL;
+ 278              		.loc 1 117 17
+ 279 004a 1623     		movs	r3, #22
+ 280 004c FB61     		str	r3, [r7, #28]
+ 281              	.L16:
+ 118:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 119:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 120:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( iStatus == 0 )
+ARM GAS  /tmp/ccilE5UX.s 			page 8
+
+
+ 282              		.loc 1 120 7
+ 283 004e FB69     		ldr	r3, [r7, #28]
+ 284 0050 002B     		cmp	r3, #0
+ 285 0052 69D1     		bne	.L17
+ 121:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 122:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* Convert timespec.tv_sec to ticks. */
+ 123:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         llTotalTicks = ( int64_t ) configTICK_RATE_HZ * ( pxTimespec->tv_sec );
+ 286              		.loc 1 123 69
+ 287 0054 7B68     		ldr	r3, [r7, #4]
+ 288 0056 D3E90012 		ldrd	r1, [r3]
+ 289              		.loc 1 123 22
+ 290 005a 0B46     		mov	r3, r1
+ 291 005c 1446     		mov	r4, r2
+ 292 005e 4FF00005 		mov	r5, #0
+ 293 0062 4FF00006 		mov	r6, #0
+ 294 0066 6601     		lsls	r6, r4, #5
+ 295 0068 46EAD366 		orr	r6, r6, r3, lsr #27
+ 296 006c 5D01     		lsls	r5, r3, #5
+ 297 006e 2B46     		mov	r3, r5
+ 298 0070 3446     		mov	r4, r6
+ 299 0072 5B1A     		subs	r3, r3, r1
+ 300 0074 64EB0204 		sbc	r4, r4, r2
+ 301 0078 4FF00005 		mov	r5, #0
+ 302 007c 4FF00006 		mov	r6, #0
+ 303 0080 A600     		lsls	r6, r4, #2
+ 304 0082 46EA9376 		orr	r6, r6, r3, lsr #30
+ 305 0086 9D00     		lsls	r5, r3, #2
+ 306 0088 2B46     		mov	r3, r5
+ 307 008a 3446     		mov	r4, r6
+ 308 008c 5B18     		adds	r3, r3, r1
+ 309 008e 42EB0404 		adc	r4, r2, r4
+ 310 0092 4FF00001 		mov	r1, #0
+ 311 0096 4FF00002 		mov	r2, #0
+ 312 009a E200     		lsls	r2, r4, #3
+ 313 009c 42EA5372 		orr	r2, r2, r3, lsr #29
+ 314 00a0 D900     		lsls	r1, r3, #3
+ 315 00a2 0B46     		mov	r3, r1
+ 316 00a4 1446     		mov	r4, r2
+ 317 00a6 C7E90434 		strd	r3, [r7, #16]
+ 124:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 125:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* Convert timespec.tv_nsec to ticks. This value does not have to be checked
+ 126:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****          * for overflow because a valid timespec has 0 <= tv_nsec < 1000000000 and
+ 127:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****          * NANOSECONDS_PER_TICK > 1. */
+ 128:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         lNanoseconds = pxTimespec->tv_nsec / ( long ) NANOSECONDS_PER_TICK +                  /* Wh
+ 318              		.loc 1 128 34
+ 319 00aa 7B68     		ldr	r3, [r7, #4]
+ 320 00ac 9B68     		ldr	r3, [r3, #8]
+ 321              		.loc 1 128 44
+ 322 00ae 214A     		ldr	r2, .L21
+ 323 00b0 82FB0312 		smull	r1, r2, r2, r3
+ 324 00b4 9214     		asrs	r2, r2, #18
+ 325 00b6 DB17     		asrs	r3, r3, #31
+ 326 00b8 D11A     		subs	r1, r2, r3
+ 129:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                        ( long ) ( pxTimespec->tv_nsec % ( long ) NANOSECONDS_PER_TICK != 0 ); /* Ad
+ 327              		.loc 1 129 45
+ 328 00ba 7B68     		ldr	r3, [r7, #4]
+ 329 00bc 9A68     		ldr	r2, [r3, #8]
+ARM GAS  /tmp/ccilE5UX.s 			page 9
+
+
+ 330              		.loc 1 129 55
+ 331 00be 1D4B     		ldr	r3, .L21
+ 332 00c0 83FB0203 		smull	r0, r3, r3, r2
+ 333 00c4 9814     		asrs	r0, r3, #18
+ 334 00c6 D317     		asrs	r3, r2, #31
+ 335 00c8 C31A     		subs	r3, r0, r3
+ 336 00ca 1B48     		ldr	r0, .L21+4
+ 337 00cc 00FB03F3 		mul	r3, r0, r3
+ 338 00d0 D31A     		subs	r3, r2, r3
+ 339              		.loc 1 129 24
+ 340 00d2 002B     		cmp	r3, #0
+ 341 00d4 14BF     		ite	ne
+ 342 00d6 0123     		movne	r3, #1
+ 343 00d8 0023     		moveq	r3, #0
+ 344 00da DBB2     		uxtb	r3, r3
+ 128:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                        ( long ) ( pxTimespec->tv_nsec % ( long ) NANOSECONDS_PER_TICK != 0 ); /* Ad
+ 345              		.loc 1 128 22
+ 346 00dc 0B44     		add	r3, r3, r1
+ 347 00de FB60     		str	r3, [r7, #12]
+ 130:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 131:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* Add the nanoseconds to the total ticks. */
+ 132:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         llTotalTicks += ( int64_t ) lNanoseconds;
+ 348              		.loc 1 132 25
+ 349 00e0 FB68     		ldr	r3, [r7, #12]
+ 350 00e2 4FEAE374 		asr	r4, r3, #31
+ 351              		.loc 1 132 22
+ 352 00e6 D7E90412 		ldrd	r1, [r7, #16]
+ 353 00ea 11EB0308 		adds	r8, r1, r3
+ 354 00ee 42EB0409 		adc	r9, r2, r4
+ 355 00f2 C7E90489 		strd	r8, [r7, #16]
+ 133:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 134:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* Check for overflow */
+ 135:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         if( llTotalTicks < 0 )
+ 356              		.loc 1 135 11
+ 357 00f6 D7E90434 		ldrd	r3, [r7, #16]
+ 358 00fa 002B     		cmp	r3, #0
+ 359 00fc 74F10003 		sbcs	r3, r4, #0
+ 360 0100 02DA     		bge	.L18
+ 136:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 137:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             iStatus = EINVAL;
+ 361              		.loc 1 137 21
+ 362 0102 1623     		movs	r3, #22
+ 363 0104 FB61     		str	r3, [r7, #28]
+ 364 0106 0CE0     		b	.L19
+ 365              	.L18:
+ 366              	.LBB2:
+ 138:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 139:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         else
+ 140:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 141:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             /* check if TickType_t is 32 bit or 64 bit */
+ 142:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             uint32_t ulTickTypeSize = sizeof( TickType_t );
+ 367              		.loc 1 142 22
+ 368 0108 0423     		movs	r3, #4
+ 369 010a BB60     		str	r3, [r7, #8]
+ 143:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 144:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             /* check for downcast overflow */
+ 145:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             if( ulTickTypeSize == sizeof( uint32_t ) )
+ARM GAS  /tmp/ccilE5UX.s 			page 10
+
+
+ 370              		.loc 1 145 15
+ 371 010c BB68     		ldr	r3, [r7, #8]
+ 372 010e 042B     		cmp	r3, #4
+ 373 0110 07D1     		bne	.L19
+ 146:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             {
+ 147:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                 if( llTotalTicks > UINT_MAX )
+ 374              		.loc 1 147 19
+ 375 0112 D7E90434 		ldrd	r3, [r7, #16]
+ 376 0116 002B     		cmp	r3, #0
+ 377 0118 74F10103 		sbcs	r3, r4, #1
+ 378 011c 01DB     		blt	.L19
+ 148:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                 {
+ 149:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                     iStatus = EINVAL;
+ 379              		.loc 1 149 29
+ 380 011e 1623     		movs	r3, #22
+ 381 0120 FB61     		str	r3, [r7, #28]
+ 382              	.L19:
+ 383              	.LBE2:
+ 150:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                 }
+ 151:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             }
+ 152:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 153:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 154:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* Write result. */
+ 155:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         *pxResult = ( TickType_t ) llTotalTicks;
+ 384              		.loc 1 155 21
+ 385 0122 3A69     		ldr	r2, [r7, #16]
+ 386              		.loc 1 155 19
+ 387 0124 3B68     		ldr	r3, [r7]
+ 388 0126 1A60     		str	r2, [r3]
+ 389              	.L17:
+ 156:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 157:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 158:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     return iStatus;
+ 390              		.loc 1 158 12
+ 391 0128 FB69     		ldr	r3, [r7, #28]
+ 159:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** }
+ 392              		.loc 1 159 1
+ 393 012a 1846     		mov	r0, r3
+ 394 012c 2437     		adds	r7, r7, #36
+ 395              	.LCFI14:
+ 396              		.cfi_def_cfa_offset 28
+ 397 012e BD46     		mov	sp, r7
+ 398              	.LCFI15:
+ 399              		.cfi_def_cfa_register 13
+ 400              		@ sp needed
+ 401 0130 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 402              	.L22:
+ 403              		.align	2
+ 404              	.L21:
+ 405 0134 83DE1B43 		.word	1125899907
+ 406 0138 40420F00 		.word	1000000
+ 407              		.cfi_endproc
+ 408              	.LFE6:
+ 410              		.global	__aeabi_ldivmod
+ 411              		.section	.text.UTILS_NanosecondsToTimespec,"ax",%progbits
+ 412              		.align	1
+ 413              		.global	UTILS_NanosecondsToTimespec
+ARM GAS  /tmp/ccilE5UX.s 			page 11
+
+
+ 414              		.syntax unified
+ 415              		.thumb
+ 416              		.thumb_func
+ 417              		.fpu fpv4-sp-d16
+ 419              	UTILS_NanosecondsToTimespec:
+ 420              	.LFB7:
+ 160:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 161:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /*-----------------------------------------------------------*/
+ 162:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 163:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** void UTILS_NanosecondsToTimespec( int64_t llSource,
+ 164:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                                   struct timespec * const pxDestination )
+ 165:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** {
+ 421              		.loc 1 165 1
+ 422              		.cfi_startproc
+ 423              		@ args = 0, pretend = 0, frame = 24
+ 424              		@ frame_needed = 1, uses_anonymous_args = 0
+ 425 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 426              	.LCFI16:
+ 427              		.cfi_def_cfa_offset 20
+ 428              		.cfi_offset 4, -20
+ 429              		.cfi_offset 5, -16
+ 430              		.cfi_offset 6, -12
+ 431              		.cfi_offset 7, -8
+ 432              		.cfi_offset 14, -4
+ 433 0002 87B0     		sub	sp, sp, #28
+ 434              	.LCFI17:
+ 435              		.cfi_def_cfa_offset 48
+ 436 0004 00AF     		add	r7, sp, #0
+ 437              	.LCFI18:
+ 438              		.cfi_def_cfa_register 7
+ 439 0006 C7E90201 		strd	r0, [r7, #8]
+ 440 000a 7A60     		str	r2, [r7, #4]
+ 166:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     long lCarrySec = 0;
+ 441              		.loc 1 166 10
+ 442 000c 0023     		movs	r3, #0
+ 443 000e 7B61     		str	r3, [r7, #20]
+ 167:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 168:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     /* Convert to timespec. */
+ 169:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     pxDestination->tv_sec = ( time_t ) ( llSource / NANOSECONDS_PER_SECOND );
+ 444              		.loc 1 169 29
+ 445 0010 D7E90201 		ldrd	r0, [r7, #8]
+ 446 0014 20A3     		adr	r3, .L26+8
+ 447 0016 D3E90023 		ldrd	r2, [r3]
+ 448 001a FFF7FEFF 		bl	__aeabi_ldivmod
+ 449              	.LVL0:
+ 450 001e 0346     		mov	r3, r0
+ 451 0020 0C46     		mov	r4, r1
+ 452              		.loc 1 169 27
+ 453 0022 7A68     		ldr	r2, [r7, #4]
+ 454 0024 C2E90034 		strd	r3, [r2]
+ 170:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     pxDestination->tv_nsec = ( long ) ( llSource % NANOSECONDS_PER_SECOND );
+ 455              		.loc 1 170 50
+ 456 0028 D7E90201 		ldrd	r0, [r7, #8]
+ 457 002c 1AA3     		adr	r3, .L26+8
+ 458 002e D3E90023 		ldrd	r2, [r3]
+ 459 0032 FFF7FEFF 		bl	__aeabi_ldivmod
+ 460              	.LVL1:
+ARM GAS  /tmp/ccilE5UX.s 			page 12
+
+
+ 461 0036 1C46     		mov	r4, r3
+ 462 0038 1346     		mov	r3, r2
+ 463              		.loc 1 170 30
+ 464 003a 1A46     		mov	r2, r3
+ 465              		.loc 1 170 28
+ 466 003c 7B68     		ldr	r3, [r7, #4]
+ 467 003e 9A60     		str	r2, [r3, #8]
+ 171:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 172:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     /* Subtract from tv_sec if tv_nsec < 0. */
+ 173:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( pxDestination->tv_nsec < 0L )
+ 468              		.loc 1 173 22
+ 469 0040 7B68     		ldr	r3, [r7, #4]
+ 470 0042 9B68     		ldr	r3, [r3, #8]
+ 471              		.loc 1 173 7
+ 472 0044 002B     		cmp	r3, #0
+ 473 0046 1EDA     		bge	.L25
+ 174:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 175:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* Compute the number of seconds to carry. */
+ 176:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         lCarrySec = ( pxDestination->tv_nsec / ( long ) NANOSECONDS_PER_SECOND ) + 1L;
+ 474              		.loc 1 176 36
+ 475 0048 7B68     		ldr	r3, [r7, #4]
+ 476 004a 9B68     		ldr	r3, [r3, #8]
+ 477              		.loc 1 176 46
+ 478 004c 104A     		ldr	r2, .L26
+ 479 004e 82FB0312 		smull	r1, r2, r2, r3
+ 480 0052 1217     		asrs	r2, r2, #28
+ 481 0054 DB17     		asrs	r3, r3, #31
+ 482 0056 D31A     		subs	r3, r2, r3
+ 483              		.loc 1 176 19
+ 484 0058 0133     		adds	r3, r3, #1
+ 485 005a 7B61     		str	r3, [r7, #20]
+ 177:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 178:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         pxDestination->tv_sec -= ( time_t ) ( lCarrySec );
+ 486              		.loc 1 178 31
+ 487 005c 7B68     		ldr	r3, [r7, #4]
+ 488 005e D3E90012 		ldrd	r1, [r3]
+ 489              		.loc 1 178 34
+ 490 0062 7B69     		ldr	r3, [r7, #20]
+ 491 0064 4FEAE374 		asr	r4, r3, #31
+ 492              		.loc 1 178 31
+ 493 0068 CD1A     		subs	r5, r1, r3
+ 494 006a 62EB0406 		sbc	r6, r2, r4
+ 495 006e 7B68     		ldr	r3, [r7, #4]
+ 496 0070 C3E90056 		strd	r5, [r3]
+ 179:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         pxDestination->tv_nsec += lCarrySec * ( long ) NANOSECONDS_PER_SECOND;
+ 497              		.loc 1 179 32
+ 498 0074 7B68     		ldr	r3, [r7, #4]
+ 499 0076 9A68     		ldr	r2, [r3, #8]
+ 500              		.loc 1 179 45
+ 501 0078 7B69     		ldr	r3, [r7, #20]
+ 502 007a 0649     		ldr	r1, .L26+4
+ 503 007c 01FB03F3 		mul	r3, r1, r3
+ 504              		.loc 1 179 32
+ 505 0080 1A44     		add	r2, r2, r3
+ 506 0082 7B68     		ldr	r3, [r7, #4]
+ 507 0084 9A60     		str	r2, [r3, #8]
+ 508              	.L25:
+ARM GAS  /tmp/ccilE5UX.s 			page 13
+
+
+ 180:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 181:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** }
+ 509              		.loc 1 181 1
+ 510 0086 00BF     		nop
+ 511 0088 1C37     		adds	r7, r7, #28
+ 512              	.LCFI19:
+ 513              		.cfi_def_cfa_offset 20
+ 514 008a BD46     		mov	sp, r7
+ 515              	.LCFI20:
+ 516              		.cfi_def_cfa_register 13
+ 517              		@ sp needed
+ 518 008c F0BD     		pop	{r4, r5, r6, r7, pc}
+ 519              	.L27:
+ 520 008e 00BF     		.align	3
+ 521              	.L26:
+ 522 0090 A12FB844 		.word	1152921505
+ 523 0094 00CA9A3B 		.word	1000000000
+ 524 0098 00CA9A3B 		.word	1000000000
+ 525 009c 00000000 		.word	0
+ 526              		.cfi_endproc
+ 527              	.LFE7:
+ 529              		.section	.text.UTILS_TimespecAdd,"ax",%progbits
+ 530              		.align	1
+ 531              		.global	UTILS_TimespecAdd
+ 532              		.syntax unified
+ 533              		.thumb
+ 534              		.thumb_func
+ 535              		.fpu fpv4-sp-d16
+ 537              	UTILS_TimespecAdd:
+ 538              	.LFB8:
+ 182:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 183:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /*-----------------------------------------------------------*/
+ 184:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 185:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** int UTILS_TimespecAdd( const struct timespec * const x,
+ 186:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                        const struct timespec * const y,
+ 187:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                        struct timespec * const pxResult )
+ 188:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** {
+ 539              		.loc 1 188 1
+ 540              		.cfi_startproc
+ 541              		@ args = 0, pretend = 0, frame = 32
+ 542              		@ frame_needed = 1, uses_anonymous_args = 0
+ 543              		@ link register save eliminated.
+ 544 0000 2DE9F003 		push	{r4, r5, r6, r7, r8, r9}
+ 545              	.LCFI21:
+ 546              		.cfi_def_cfa_offset 24
+ 547              		.cfi_offset 4, -24
+ 548              		.cfi_offset 5, -20
+ 549              		.cfi_offset 6, -16
+ 550              		.cfi_offset 7, -12
+ 551              		.cfi_offset 8, -8
+ 552              		.cfi_offset 9, -4
+ 553 0004 88B0     		sub	sp, sp, #32
+ 554              	.LCFI22:
+ 555              		.cfi_def_cfa_offset 56
+ 556 0006 00AF     		add	r7, sp, #0
+ 557              	.LCFI23:
+ 558              		.cfi_def_cfa_register 7
+ARM GAS  /tmp/ccilE5UX.s 			page 14
+
+
+ 559 0008 F860     		str	r0, [r7, #12]
+ 560 000a B960     		str	r1, [r7, #8]
+ 561 000c 7A60     		str	r2, [r7, #4]
+ 189:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     int64_t llPartialSec = 0;
+ 562              		.loc 1 189 13
+ 563 000e 4FF00001 		mov	r1, #0
+ 564 0012 4FF00002 		mov	r2, #0
+ 565 0016 C7E90412 		strd	r1, [r7, #16]
+ 190:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     int iStatus = 0;
+ 566              		.loc 1 190 9
+ 567 001a 0022     		movs	r2, #0
+ 568 001c FA61     		str	r2, [r7, #28]
+ 191:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 192:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     /* Check parameters. */
+ 193:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( ( pxResult == NULL ) || ( x == NULL ) || ( y == NULL ) )
+ 569              		.loc 1 193 7
+ 570 001e 7A68     		ldr	r2, [r7, #4]
+ 571 0020 002A     		cmp	r2, #0
+ 572 0022 05D0     		beq	.L29
+ 573              		.loc 1 193 30 discriminator 1
+ 574 0024 FA68     		ldr	r2, [r7, #12]
+ 575 0026 002A     		cmp	r2, #0
+ 576 0028 02D0     		beq	.L29
+ 577              		.loc 1 193 47 discriminator 2
+ 578 002a BA68     		ldr	r2, [r7, #8]
+ 579 002c 002A     		cmp	r2, #0
+ 580 002e 02D1     		bne	.L30
+ 581              	.L29:
+ 194:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 195:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = -1;
+ 582              		.loc 1 195 17
+ 583 0030 4FF0FF32 		mov	r2, #-1
+ 584 0034 FA61     		str	r2, [r7, #28]
+ 585              	.L30:
+ 196:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 197:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 198:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( iStatus == 0 )
+ 586              		.loc 1 198 7
+ 587 0036 FA69     		ldr	r2, [r7, #28]
+ 588 0038 002A     		cmp	r2, #0
+ 589 003a 43D1     		bne	.L31
+ 199:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 200:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* Perform addition. */
+ 201:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         pxResult->tv_nsec = x->tv_nsec + y->tv_nsec;
+ 590              		.loc 1 201 30
+ 591 003c FA68     		ldr	r2, [r7, #12]
+ 592 003e 9168     		ldr	r1, [r2, #8]
+ 593              		.loc 1 201 43
+ 594 0040 BA68     		ldr	r2, [r7, #8]
+ 595 0042 9268     		ldr	r2, [r2, #8]
+ 596              		.loc 1 201 40
+ 597 0044 1144     		add	r1, r1, r2
+ 598              		.loc 1 201 27
+ 599 0046 7A68     		ldr	r2, [r7, #4]
+ 600 0048 9160     		str	r1, [r2, #8]
+ 202:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 203:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* check for overflow in case nsec value was invalid */
+ARM GAS  /tmp/ccilE5UX.s 			page 15
+
+
+ 204:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         if( pxResult->tv_nsec < 0 )
+ 601              		.loc 1 204 21
+ 602 004a 7A68     		ldr	r2, [r7, #4]
+ 603 004c 9268     		ldr	r2, [r2, #8]
+ 604              		.loc 1 204 11
+ 605 004e 002A     		cmp	r2, #0
+ 606 0050 02DA     		bge	.L32
+ 205:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 206:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             iStatus = 1;
+ 607              		.loc 1 206 21
+ 608 0052 0123     		movs	r3, #1
+ 609 0054 FB61     		str	r3, [r7, #28]
+ 610 0056 35E0     		b	.L31
+ 611              	.L32:
+ 207:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 208:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         else
+ 209:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 210:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             llPartialSec = ( pxResult->tv_nsec ) / NANOSECONDS_PER_SECOND;
+ 612              		.loc 1 210 38
+ 613 0058 7A68     		ldr	r2, [r7, #4]
+ 614 005a 9268     		ldr	r2, [r2, #8]
+ 615              		.loc 1 210 50
+ 616 005c 1D49     		ldr	r1, .L34
+ 617 005e 81FB0201 		smull	r0, r1, r1, r2
+ 618 0062 0917     		asrs	r1, r1, #28
+ 619 0064 D217     		asrs	r2, r2, #31
+ 620 0066 8A1A     		subs	r2, r1, r2
+ 621              		.loc 1 210 26
+ 622 0068 1146     		mov	r1, r2
+ 623 006a 4FEAE172 		asr	r2, r1, #31
+ 624 006e C7E90412 		strd	r1, [r7, #16]
+ 211:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             pxResult->tv_nsec = ( pxResult->tv_nsec ) % NANOSECONDS_PER_SECOND;
+ 625              		.loc 1 211 43
+ 626 0072 7A68     		ldr	r2, [r7, #4]
+ 627 0074 9168     		ldr	r1, [r2, #8]
+ 628              		.loc 1 211 31
+ 629 0076 174A     		ldr	r2, .L34
+ 630 0078 82FB0102 		smull	r0, r2, r2, r1
+ 631 007c 1017     		asrs	r0, r2, #28
+ 632 007e CA17     		asrs	r2, r1, #31
+ 633 0080 821A     		subs	r2, r0, r2
+ 634 0082 1548     		ldr	r0, .L34+4
+ 635 0084 00FB02F2 		mul	r2, r0, r2
+ 636 0088 8A1A     		subs	r2, r1, r2
+ 637 008a 7968     		ldr	r1, [r7, #4]
+ 638 008c 8A60     		str	r2, [r1, #8]
+ 212:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             pxResult->tv_sec = x->tv_sec + y->tv_sec + llPartialSec;
+ 639              		.loc 1 212 33
+ 640 008e FA68     		ldr	r2, [r7, #12]
+ 641 0090 D2E90056 		ldrd	r5, [r2]
+ 642              		.loc 1 212 45
+ 643 0094 BA68     		ldr	r2, [r7, #8]
+ 644 0096 D2E90012 		ldrd	r1, [r2]
+ 645              		.loc 1 212 42
+ 646 009a 6B18     		adds	r3, r5, r1
+ 647 009c 46EB0204 		adc	r4, r6, r2
+ 648              		.loc 1 212 54
+ARM GAS  /tmp/ccilE5UX.s 			page 16
+
+
+ 649 00a0 D7E90412 		ldrd	r1, [r7, #16]
+ 650 00a4 13EB0108 		adds	r8, r3, r1
+ 651 00a8 44EB0209 		adc	r9, r4, r2
+ 652              		.loc 1 212 30
+ 653 00ac 7B68     		ldr	r3, [r7, #4]
+ 654 00ae C3E90089 		strd	r8, [r3]
+ 213:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 214:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             /* check for overflow */
+ 215:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             if( pxResult->tv_sec < 0 )
+ 655              		.loc 1 215 25
+ 656 00b2 7B68     		ldr	r3, [r7, #4]
+ 657 00b4 D3E90034 		ldrd	r3, [r3]
+ 658              		.loc 1 215 15
+ 659 00b8 002B     		cmp	r3, #0
+ 660 00ba 74F10003 		sbcs	r3, r4, #0
+ 661 00be 01DA     		bge	.L31
+ 216:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             {
+ 217:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                 iStatus = 1;
+ 662              		.loc 1 217 25
+ 663 00c0 0123     		movs	r3, #1
+ 664 00c2 FB61     		str	r3, [r7, #28]
+ 665              	.L31:
+ 218:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             }
+ 219:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 220:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 221:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 222:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     return iStatus;
+ 666              		.loc 1 222 12
+ 667 00c4 FB69     		ldr	r3, [r7, #28]
+ 223:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** }
+ 668              		.loc 1 223 1
+ 669 00c6 1846     		mov	r0, r3
+ 670 00c8 2037     		adds	r7, r7, #32
+ 671              	.LCFI24:
+ 672              		.cfi_def_cfa_offset 24
+ 673 00ca BD46     		mov	sp, r7
+ 674              	.LCFI25:
+ 675              		.cfi_def_cfa_register 13
+ 676              		@ sp needed
+ 677 00cc BDE8F003 		pop	{r4, r5, r6, r7, r8, r9}
+ 678              	.LCFI26:
+ 679              		.cfi_restore 9
+ 680              		.cfi_restore 8
+ 681              		.cfi_restore 7
+ 682              		.cfi_restore 6
+ 683              		.cfi_restore 5
+ 684              		.cfi_restore 4
+ 685              		.cfi_def_cfa_offset 0
+ 686 00d0 7047     		bx	lr
+ 687              	.L35:
+ 688 00d2 00BF     		.align	2
+ 689              	.L34:
+ 690 00d4 A12FB844 		.word	1152921505
+ 691 00d8 00CA9A3B 		.word	1000000000
+ 692              		.cfi_endproc
+ 693              	.LFE8:
+ 695              		.section	.text.UTILS_TimespecAddNanoseconds,"ax",%progbits
+ARM GAS  /tmp/ccilE5UX.s 			page 17
+
+
+ 696              		.align	1
+ 697              		.global	UTILS_TimespecAddNanoseconds
+ 698              		.syntax unified
+ 699              		.thumb
+ 700              		.thumb_func
+ 701              		.fpu fpv4-sp-d16
+ 703              	UTILS_TimespecAddNanoseconds:
+ 704              	.LFB9:
+ 224:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 225:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /*-----------------------------------------------------------*/
+ 226:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 227:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** int UTILS_TimespecAddNanoseconds( const struct timespec * const x,
+ 228:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                                   int64_t llNanoseconds,
+ 229:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                                   struct timespec * const pxResult )
+ 230:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** {
+ 705              		.loc 1 230 1
+ 706              		.cfi_startproc
+ 707              		@ args = 4, pretend = 0, frame = 32
+ 708              		@ frame_needed = 1, uses_anonymous_args = 0
+ 709 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 710              	.LCFI27:
+ 711              		.cfi_def_cfa_offset 28
+ 712              		.cfi_offset 4, -28
+ 713              		.cfi_offset 5, -24
+ 714              		.cfi_offset 6, -20
+ 715              		.cfi_offset 7, -16
+ 716              		.cfi_offset 8, -12
+ 717              		.cfi_offset 9, -8
+ 718              		.cfi_offset 14, -4
+ 719 0004 89B0     		sub	sp, sp, #36
+ 720              	.LCFI28:
+ 721              		.cfi_def_cfa_offset 64
+ 722 0006 00AF     		add	r7, sp, #0
+ 723              	.LCFI29:
+ 724              		.cfi_def_cfa_register 7
+ 725 0008 F860     		str	r0, [r7, #12]
+ 726 000a C7E90023 		strd	r2, [r7]
+ 231:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     int64_t llTotalNSec = 0;
+ 727              		.loc 1 231 13
+ 728 000e 4FF00003 		mov	r3, #0
+ 729 0012 4FF00004 		mov	r4, #0
+ 730 0016 C7E90434 		strd	r3, [r7, #16]
+ 232:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     int iStatus = 0;
+ 731              		.loc 1 232 9
+ 732 001a 0023     		movs	r3, #0
+ 733 001c FB61     		str	r3, [r7, #28]
+ 233:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 234:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     /* Check parameters. */
+ 235:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( ( pxResult == NULL ) || ( x == NULL ) )
+ 734              		.loc 1 235 7
+ 735 001e 3B6C     		ldr	r3, [r7, #64]
+ 736 0020 002B     		cmp	r3, #0
+ 737 0022 02D0     		beq	.L37
+ 738              		.loc 1 235 30 discriminator 1
+ 739 0024 FB68     		ldr	r3, [r7, #12]
+ 740 0026 002B     		cmp	r3, #0
+ 741 0028 02D1     		bne	.L38
+ARM GAS  /tmp/ccilE5UX.s 			page 18
+
+
+ 742              	.L37:
+ 236:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 237:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = -1;
+ 743              		.loc 1 237 17
+ 744 002a 4FF0FF33 		mov	r3, #-1
+ 745 002e FB61     		str	r3, [r7, #28]
+ 746              	.L38:
+ 238:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 239:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 240:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( iStatus == 0 )
+ 747              		.loc 1 240 7
+ 748 0030 FB69     		ldr	r3, [r7, #28]
+ 749 0032 002B     		cmp	r3, #0
+ 750 0034 3BD1     		bne	.L39
+ 241:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 242:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* add nano seconds */
+ 243:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         llTotalNSec = x->tv_nsec + llNanoseconds;
+ 751              		.loc 1 243 24
+ 752 0036 FB68     		ldr	r3, [r7, #12]
+ 753 0038 9B68     		ldr	r3, [r3, #8]
+ 754 003a 4FEAE374 		asr	r4, r3, #31
+ 755              		.loc 1 243 21
+ 756 003e D7E90012 		ldrd	r1, [r7]
+ 757 0042 CD18     		adds	r5, r1, r3
+ 758 0044 42EB0406 		adc	r6, r2, r4
+ 759 0048 C7E90456 		strd	r5, [r7, #16]
+ 244:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 245:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* check for nano seconds overflow */
+ 246:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         if( llTotalNSec < 0 )
+ 760              		.loc 1 246 11
+ 761 004c D7E90434 		ldrd	r3, [r7, #16]
+ 762 0050 002B     		cmp	r3, #0
+ 763 0052 74F10003 		sbcs	r3, r4, #0
+ 764 0056 02DA     		bge	.L40
+ 247:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 248:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             iStatus = 1;
+ 765              		.loc 1 248 21
+ 766 0058 0123     		movs	r3, #1
+ 767 005a FB61     		str	r3, [r7, #28]
+ 768 005c 27E0     		b	.L39
+ 769              	.L40:
+ 249:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 250:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         else
+ 251:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 252:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             pxResult->tv_nsec = llTotalNSec % NANOSECONDS_PER_SECOND;
+ 770              		.loc 1 252 45
+ 771 005e D7E90401 		ldrd	r0, [r7, #16]
+ 772 0062 17A3     		adr	r3, .L42
+ 773 0064 D3E90023 		ldrd	r2, [r3]
+ 774 0068 FFF7FEFF 		bl	__aeabi_ldivmod
+ 775              	.LVL2:
+ 776 006c 1C46     		mov	r4, r3
+ 777 006e 1346     		mov	r3, r2
+ 778              		.loc 1 252 31
+ 779 0070 1A46     		mov	r2, r3
+ 780 0072 3B6C     		ldr	r3, [r7, #64]
+ 781 0074 9A60     		str	r2, [r3, #8]
+ARM GAS  /tmp/ccilE5UX.s 			page 19
+
+
+ 253:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             pxResult->tv_sec = x->tv_sec + ( llTotalNSec / NANOSECONDS_PER_SECOND );
+ 782              		.loc 1 253 33
+ 783 0076 FB68     		ldr	r3, [r7, #12]
+ 784 0078 D3E90045 		ldrd	r4, [r3]
+ 785              		.loc 1 253 58
+ 786 007c D7E90401 		ldrd	r0, [r7, #16]
+ 787 0080 0FA3     		adr	r3, .L42
+ 788 0082 D3E90023 		ldrd	r2, [r3]
+ 789 0086 FFF7FEFF 		bl	__aeabi_ldivmod
+ 790              	.LVL3:
+ 791 008a 0246     		mov	r2, r0
+ 792 008c 0B46     		mov	r3, r1
+ 793              		.loc 1 253 42
+ 794 008e 14EB0208 		adds	r8, r4, r2
+ 795 0092 45EB0309 		adc	r9, r5, r3
+ 796              		.loc 1 253 30
+ 797 0096 3B6C     		ldr	r3, [r7, #64]
+ 798 0098 C3E90089 		strd	r8, [r3]
+ 254:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 255:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             /* check for seconds overflow */
+ 256:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             if( pxResult->tv_sec < 0 )
+ 799              		.loc 1 256 25
+ 800 009c 3B6C     		ldr	r3, [r7, #64]
+ 801 009e D3E90034 		ldrd	r3, [r3]
+ 802              		.loc 1 256 15
+ 803 00a2 002B     		cmp	r3, #0
+ 804 00a4 74F10003 		sbcs	r3, r4, #0
+ 805 00a8 01DA     		bge	.L39
+ 257:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             {
+ 258:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                 iStatus = 1;
+ 806              		.loc 1 258 25
+ 807 00aa 0123     		movs	r3, #1
+ 808 00ac FB61     		str	r3, [r7, #28]
+ 809              	.L39:
+ 259:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             }
+ 260:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 261:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 262:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 263:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     return iStatus;
+ 810              		.loc 1 263 12
+ 811 00ae FB69     		ldr	r3, [r7, #28]
+ 264:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** }
+ 812              		.loc 1 264 1
+ 813 00b0 1846     		mov	r0, r3
+ 814 00b2 2437     		adds	r7, r7, #36
+ 815              	.LCFI30:
+ 816              		.cfi_def_cfa_offset 28
+ 817 00b4 BD46     		mov	sp, r7
+ 818              	.LCFI31:
+ 819              		.cfi_def_cfa_register 13
+ 820              		@ sp needed
+ 821 00b6 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 822              	.L43:
+ 823 00ba 00BFAFF3 		.align	3
+ 823      0080
+ 824              	.L42:
+ 825 00c0 00CA9A3B 		.word	1000000000
+ARM GAS  /tmp/ccilE5UX.s 			page 20
+
+
+ 826 00c4 00000000 		.word	0
+ 827              		.cfi_endproc
+ 828              	.LFE9:
+ 830              		.section	.text.UTILS_TimespecSubtract,"ax",%progbits
+ 831              		.align	1
+ 832              		.global	UTILS_TimespecSubtract
+ 833              		.syntax unified
+ 834              		.thumb
+ 835              		.thumb_func
+ 836              		.fpu fpv4-sp-d16
+ 838              	UTILS_TimespecSubtract:
+ 839              	.LFB10:
+ 265:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 266:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /*-----------------------------------------------------------*/
+ 267:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 268:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** int UTILS_TimespecSubtract( const struct timespec * const x,
+ 269:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                             const struct timespec * const y,
+ 270:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                             struct timespec * const pxResult )
+ 271:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** {
+ 840              		.loc 1 271 1
+ 841              		.cfi_startproc
+ 842              		@ args = 0, pretend = 0, frame = 24
+ 843              		@ frame_needed = 1, uses_anonymous_args = 0
+ 844 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 845              	.LCFI32:
+ 846              		.cfi_def_cfa_offset 28
+ 847              		.cfi_offset 4, -28
+ 848              		.cfi_offset 5, -24
+ 849              		.cfi_offset 6, -20
+ 850              		.cfi_offset 7, -16
+ 851              		.cfi_offset 8, -12
+ 852              		.cfi_offset 9, -8
+ 853              		.cfi_offset 14, -4
+ 854 0004 87B0     		sub	sp, sp, #28
+ 855              	.LCFI33:
+ 856              		.cfi_def_cfa_offset 56
+ 857 0006 00AF     		add	r7, sp, #0
+ 858              	.LCFI34:
+ 859              		.cfi_def_cfa_register 7
+ 860 0008 F860     		str	r0, [r7, #12]
+ 861 000a B960     		str	r1, [r7, #8]
+ 862 000c 7A60     		str	r2, [r7, #4]
+ 272:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     int iCompareResult = 0;
+ 863              		.loc 1 272 9
+ 864 000e 0023     		movs	r3, #0
+ 865 0010 3B61     		str	r3, [r7, #16]
+ 273:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     int iStatus = 0;
+ 866              		.loc 1 273 9
+ 867 0012 0023     		movs	r3, #0
+ 868 0014 7B61     		str	r3, [r7, #20]
+ 274:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 275:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     /* Check parameters. */
+ 276:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( ( pxResult == NULL ) || ( x == NULL ) || ( y == NULL ) )
+ 869              		.loc 1 276 7
+ 870 0016 7B68     		ldr	r3, [r7, #4]
+ 871 0018 002B     		cmp	r3, #0
+ 872 001a 05D0     		beq	.L45
+ARM GAS  /tmp/ccilE5UX.s 			page 21
+
+
+ 873              		.loc 1 276 30 discriminator 1
+ 874 001c FB68     		ldr	r3, [r7, #12]
+ 875 001e 002B     		cmp	r3, #0
+ 876 0020 02D0     		beq	.L45
+ 877              		.loc 1 276 47 discriminator 2
+ 878 0022 BB68     		ldr	r3, [r7, #8]
+ 879 0024 002B     		cmp	r3, #0
+ 880 0026 02D1     		bne	.L46
+ 881              	.L45:
+ 277:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 278:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = -1;
+ 882              		.loc 1 278 17
+ 883 0028 4FF0FF33 		mov	r3, #-1
+ 884 002c 7B61     		str	r3, [r7, #20]
+ 885              	.L46:
+ 279:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 280:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 281:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( iStatus == 0 )
+ 886              		.loc 1 281 7
+ 887 002e 7B69     		ldr	r3, [r7, #20]
+ 888 0030 002B     		cmp	r3, #0
+ 889 0032 48D1     		bne	.L47
+ 282:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 283:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iCompareResult = UTILS_TimespecCompare( x, y );
+ 890              		.loc 1 283 26
+ 891 0034 B968     		ldr	r1, [r7, #8]
+ 892 0036 F868     		ldr	r0, [r7, #12]
+ 893 0038 FFF7FEFF 		bl	UTILS_TimespecCompare
+ 894 003c 3861     		str	r0, [r7, #16]
+ 284:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 285:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* if x < y then result would be negative, return 1 */
+ 286:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         if( iCompareResult == -1 )
+ 895              		.loc 1 286 11
+ 896 003e 3B69     		ldr	r3, [r7, #16]
+ 897 0040 B3F1FF3F 		cmp	r3, #-1
+ 898 0044 02D1     		bne	.L48
+ 287:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 288:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             iStatus = 1;
+ 899              		.loc 1 288 21
+ 900 0046 0123     		movs	r3, #1
+ 901 0048 7B61     		str	r3, [r7, #20]
+ 902 004a 3CE0     		b	.L47
+ 903              	.L48:
+ 289:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 290:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         else if( iCompareResult == 0 )
+ 904              		.loc 1 290 16
+ 905 004c 3B69     		ldr	r3, [r7, #16]
+ 906 004e 002B     		cmp	r3, #0
+ 907 0050 0AD1     		bne	.L49
+ 291:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 292:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             /* if times are the same return zero */
+ 293:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             pxResult->tv_sec = 0;
+ 908              		.loc 1 293 30
+ 909 0052 7A68     		ldr	r2, [r7, #4]
+ 910 0054 4FF00003 		mov	r3, #0
+ 911 0058 4FF00004 		mov	r4, #0
+ 912 005c C2E90034 		strd	r3, [r2]
+ARM GAS  /tmp/ccilE5UX.s 			page 22
+
+
+ 294:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             pxResult->tv_nsec = 0;
+ 913              		.loc 1 294 31
+ 914 0060 7B68     		ldr	r3, [r7, #4]
+ 915 0062 0022     		movs	r2, #0
+ 916 0064 9A60     		str	r2, [r3, #8]
+ 917 0066 2EE0     		b	.L47
+ 918              	.L49:
+ 295:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 296:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         else
+ 297:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 298:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             /* If x > y Perform subtraction. */
+ 299:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             pxResult->tv_sec = x->tv_sec - y->tv_sec;
+ 919              		.loc 1 299 33
+ 920 0068 FB68     		ldr	r3, [r7, #12]
+ 921 006a D3E90012 		ldrd	r1, [r3]
+ 922              		.loc 1 299 45
+ 923 006e BB68     		ldr	r3, [r7, #8]
+ 924 0070 D3E90034 		ldrd	r3, [r3]
+ 925              		.loc 1 299 42
+ 926 0074 B1EB0308 		subs	r8, r1, r3
+ 927 0078 62EB0409 		sbc	r9, r2, r4
+ 928              		.loc 1 299 30
+ 929 007c 7B68     		ldr	r3, [r7, #4]
+ 930 007e C3E90089 		strd	r8, [r3]
+ 300:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             pxResult->tv_nsec = x->tv_nsec - y->tv_nsec;
+ 931              		.loc 1 300 34
+ 932 0082 FB68     		ldr	r3, [r7, #12]
+ 933 0084 9A68     		ldr	r2, [r3, #8]
+ 934              		.loc 1 300 47
+ 935 0086 BB68     		ldr	r3, [r7, #8]
+ 936 0088 9B68     		ldr	r3, [r3, #8]
+ 937              		.loc 1 300 44
+ 938 008a D21A     		subs	r2, r2, r3
+ 939              		.loc 1 300 31
+ 940 008c 7B68     		ldr	r3, [r7, #4]
+ 941 008e 9A60     		str	r2, [r3, #8]
+ 301:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 302:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             /* check if nano seconds value needs to borrow */
+ 303:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             if( pxResult->tv_nsec < 0 )
+ 942              		.loc 1 303 25
+ 943 0090 7B68     		ldr	r3, [r7, #4]
+ 944 0092 9B68     		ldr	r3, [r3, #8]
+ 945              		.loc 1 303 15
+ 946 0094 002B     		cmp	r3, #0
+ 947 0096 0FDA     		bge	.L50
+ 304:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             {
+ 305:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                 /* Based on comparison, tv_sec > 0 */
+ 306:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                 pxResult->tv_sec--;
+ 948              		.loc 1 306 25
+ 949 0098 7B68     		ldr	r3, [r7, #4]
+ 950 009a D3E90034 		ldrd	r3, [r3]
+ 951              		.loc 1 306 33
+ 952 009e 13F1FF35 		adds	r5, r3, #-1
+ 953 00a2 44F1FF36 		adc	r6, r4, #-1
+ 954 00a6 7B68     		ldr	r3, [r7, #4]
+ 955 00a8 C3E90056 		strd	r5, [r3]
+ 307:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                 pxResult->tv_nsec += ( long ) NANOSECONDS_PER_SECOND;
+ARM GAS  /tmp/ccilE5UX.s 			page 23
+
+
+ 956              		.loc 1 307 35
+ 957 00ac 7B68     		ldr	r3, [r7, #4]
+ 958 00ae 9A68     		ldr	r2, [r3, #8]
+ 959 00b0 084B     		ldr	r3, .L52
+ 960 00b2 1344     		add	r3, r3, r2
+ 961 00b4 7A68     		ldr	r2, [r7, #4]
+ 962 00b6 9360     		str	r3, [r2, #8]
+ 963              	.L50:
+ 308:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             }
+ 309:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 310:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             /* if nano second is negative after borrow, it is an overflow error */
+ 311:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             if( pxResult->tv_nsec < 0 )
+ 964              		.loc 1 311 25
+ 965 00b8 7B68     		ldr	r3, [r7, #4]
+ 966 00ba 9B68     		ldr	r3, [r3, #8]
+ 967              		.loc 1 311 15
+ 968 00bc 002B     		cmp	r3, #0
+ 969 00be 02DA     		bge	.L47
+ 312:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             {
+ 313:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                 iStatus = -1;
+ 970              		.loc 1 313 25
+ 971 00c0 4FF0FF33 		mov	r3, #-1
+ 972 00c4 7B61     		str	r3, [r7, #20]
+ 973              	.L47:
+ 314:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             }
+ 315:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 316:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 317:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 318:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     return iStatus;
+ 974              		.loc 1 318 12
+ 975 00c6 7B69     		ldr	r3, [r7, #20]
+ 319:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** }
+ 976              		.loc 1 319 1
+ 977 00c8 1846     		mov	r0, r3
+ 978 00ca 1C37     		adds	r7, r7, #28
+ 979              	.LCFI35:
+ 980              		.cfi_def_cfa_offset 28
+ 981 00cc BD46     		mov	sp, r7
+ 982              	.LCFI36:
+ 983              		.cfi_def_cfa_register 13
+ 984              		@ sp needed
+ 985 00ce BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 986              	.L53:
+ 987 00d2 00BF     		.align	2
+ 988              	.L52:
+ 989 00d4 00CA9A3B 		.word	1000000000
+ 990              		.cfi_endproc
+ 991              	.LFE10:
+ 993              		.section	.text.UTILS_TimespecCompare,"ax",%progbits
+ 994              		.align	1
+ 995              		.global	UTILS_TimespecCompare
+ 996              		.syntax unified
+ 997              		.thumb
+ 998              		.thumb_func
+ 999              		.fpu fpv4-sp-d16
+ 1001              	UTILS_TimespecCompare:
+ 1002              	.LFB11:
+ARM GAS  /tmp/ccilE5UX.s 			page 24
+
+
+ 320:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 321:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /*-----------------------------------------------------------*/
+ 322:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 323:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** int UTILS_TimespecCompare( const struct timespec * const x,
+ 324:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****                            const struct timespec * const y )
+ 325:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** {
+ 1003              		.loc 1 325 1
+ 1004              		.cfi_startproc
+ 1005              		@ args = 0, pretend = 0, frame = 16
+ 1006              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1007              		@ link register save eliminated.
+ 1008 0000 90B4     		push	{r4, r7}
+ 1009              	.LCFI37:
+ 1010              		.cfi_def_cfa_offset 8
+ 1011              		.cfi_offset 4, -8
+ 1012              		.cfi_offset 7, -4
+ 1013 0002 84B0     		sub	sp, sp, #16
+ 1014              	.LCFI38:
+ 1015              		.cfi_def_cfa_offset 24
+ 1016 0004 00AF     		add	r7, sp, #0
+ 1017              	.LCFI39:
+ 1018              		.cfi_def_cfa_register 7
+ 1019 0006 7860     		str	r0, [r7, #4]
+ 1020 0008 3960     		str	r1, [r7]
+ 326:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     int iStatus = 0;
+ 1021              		.loc 1 326 9
+ 1022 000a 0023     		movs	r3, #0
+ 1023 000c FB60     		str	r3, [r7, #12]
+ 327:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 328:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     /* Check parameters */
+ 329:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( ( x == NULL ) && ( y == NULL ) )
+ 1024              		.loc 1 329 7
+ 1025 000e 7B68     		ldr	r3, [r7, #4]
+ 1026 0010 002B     		cmp	r3, #0
+ 1027 0012 05D1     		bne	.L55
+ 1028              		.loc 1 329 23 discriminator 1
+ 1029 0014 3B68     		ldr	r3, [r7]
+ 1030 0016 002B     		cmp	r3, #0
+ 1031 0018 02D1     		bne	.L55
+ 330:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 331:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = 0;
+ 1032              		.loc 1 331 17
+ 1033 001a 0023     		movs	r3, #0
+ 1034 001c FB60     		str	r3, [r7, #12]
+ 1035 001e 3CE0     		b	.L56
+ 1036              	.L55:
+ 332:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 333:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     else if( y == NULL )
+ 1037              		.loc 1 333 12
+ 1038 0020 3B68     		ldr	r3, [r7]
+ 1039 0022 002B     		cmp	r3, #0
+ 1040 0024 02D1     		bne	.L57
+ 334:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 335:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = 1;
+ 1041              		.loc 1 335 17
+ 1042 0026 0123     		movs	r3, #1
+ 1043 0028 FB60     		str	r3, [r7, #12]
+ARM GAS  /tmp/ccilE5UX.s 			page 25
+
+
+ 1044 002a 36E0     		b	.L56
+ 1045              	.L57:
+ 336:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 337:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     else if( x == NULL )
+ 1046              		.loc 1 337 12
+ 1047 002c 7B68     		ldr	r3, [r7, #4]
+ 1048 002e 002B     		cmp	r3, #0
+ 1049 0030 03D1     		bne	.L58
+ 338:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 339:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = -1;
+ 1050              		.loc 1 339 17
+ 1051 0032 4FF0FF33 		mov	r3, #-1
+ 1052 0036 FB60     		str	r3, [r7, #12]
+ 1053 0038 2FE0     		b	.L56
+ 1054              	.L58:
+ 340:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 341:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     else if( x->tv_sec > y->tv_sec )
+ 1055              		.loc 1 341 15
+ 1056 003a 7B68     		ldr	r3, [r7, #4]
+ 1057 003c D3E90034 		ldrd	r3, [r3]
+ 1058              		.loc 1 341 27
+ 1059 0040 3A68     		ldr	r2, [r7]
+ 1060 0042 D2E90012 		ldrd	r1, [r2]
+ 1061              		.loc 1 341 12
+ 1062 0046 9942     		cmp	r1, r3
+ 1063 0048 72EB0403 		sbcs	r3, r2, r4
+ 1064 004c 02DA     		bge	.L59
+ 342:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 343:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = 1;
+ 1065              		.loc 1 343 17
+ 1066 004e 0123     		movs	r3, #1
+ 1067 0050 FB60     		str	r3, [r7, #12]
+ 1068 0052 22E0     		b	.L56
+ 1069              	.L59:
+ 344:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 345:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     else if( x->tv_sec < y->tv_sec )
+ 1070              		.loc 1 345 15
+ 1071 0054 7B68     		ldr	r3, [r7, #4]
+ 1072 0056 D3E90012 		ldrd	r1, [r3]
+ 1073              		.loc 1 345 27
+ 1074 005a 3B68     		ldr	r3, [r7]
+ 1075 005c D3E90034 		ldrd	r3, [r3]
+ 1076              		.loc 1 345 12
+ 1077 0060 9942     		cmp	r1, r3
+ 1078 0062 72EB0403 		sbcs	r3, r2, r4
+ 1079 0066 03DA     		bge	.L60
+ 346:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 347:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         iStatus = -1;
+ 1080              		.loc 1 347 17
+ 1081 0068 4FF0FF33 		mov	r3, #-1
+ 1082 006c FB60     		str	r3, [r7, #12]
+ 1083 006e 14E0     		b	.L56
+ 1084              	.L60:
+ 348:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 349:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     else
+ 350:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 351:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* seconds are equal compare nano seconds */
+ARM GAS  /tmp/ccilE5UX.s 			page 26
+
+
+ 352:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         if( x->tv_nsec > y->tv_nsec )
+ 1085              		.loc 1 352 14
+ 1086 0070 7B68     		ldr	r3, [r7, #4]
+ 1087 0072 9A68     		ldr	r2, [r3, #8]
+ 1088              		.loc 1 352 27
+ 1089 0074 3B68     		ldr	r3, [r7]
+ 1090 0076 9B68     		ldr	r3, [r3, #8]
+ 1091              		.loc 1 352 11
+ 1092 0078 9A42     		cmp	r2, r3
+ 1093 007a 02DD     		ble	.L61
+ 353:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 354:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             iStatus = 1;
+ 1094              		.loc 1 354 21
+ 1095 007c 0123     		movs	r3, #1
+ 1096 007e FB60     		str	r3, [r7, #12]
+ 1097 0080 0BE0     		b	.L56
+ 1098              	.L61:
+ 355:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 356:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         else if( x->tv_nsec < y->tv_nsec )
+ 1099              		.loc 1 356 19
+ 1100 0082 7B68     		ldr	r3, [r7, #4]
+ 1101 0084 9A68     		ldr	r2, [r3, #8]
+ 1102              		.loc 1 356 32
+ 1103 0086 3B68     		ldr	r3, [r7]
+ 1104 0088 9B68     		ldr	r3, [r3, #8]
+ 1105              		.loc 1 356 16
+ 1106 008a 9A42     		cmp	r2, r3
+ 1107 008c 03DA     		bge	.L62
+ 357:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 358:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             iStatus = -1;
+ 1108              		.loc 1 358 21
+ 1109 008e 4FF0FF33 		mov	r3, #-1
+ 1110 0092 FB60     		str	r3, [r7, #12]
+ 1111 0094 01E0     		b	.L56
+ 1112              	.L62:
+ 359:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 360:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         else
+ 361:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 362:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             iStatus = 0;
+ 1113              		.loc 1 362 21
+ 1114 0096 0023     		movs	r3, #0
+ 1115 0098 FB60     		str	r3, [r7, #12]
+ 1116              	.L56:
+ 363:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 364:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 365:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 366:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     return iStatus;
+ 1117              		.loc 1 366 12
+ 1118 009a FB68     		ldr	r3, [r7, #12]
+ 367:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** }
+ 1119              		.loc 1 367 1
+ 1120 009c 1846     		mov	r0, r3
+ 1121 009e 1037     		adds	r7, r7, #16
+ 1122              	.LCFI40:
+ 1123              		.cfi_def_cfa_offset 8
+ 1124 00a0 BD46     		mov	sp, r7
+ 1125              	.LCFI41:
+ARM GAS  /tmp/ccilE5UX.s 			page 27
+
+
+ 1126              		.cfi_def_cfa_register 13
+ 1127              		@ sp needed
+ 1128 00a2 90BC     		pop	{r4, r7}
+ 1129              	.LCFI42:
+ 1130              		.cfi_restore 7
+ 1131              		.cfi_restore 4
+ 1132              		.cfi_def_cfa_offset 0
+ 1133 00a4 7047     		bx	lr
+ 1134              		.cfi_endproc
+ 1135              	.LFE11:
+ 1137              		.section	.text.UTILS_ValidateTimespec,"ax",%progbits
+ 1138              		.align	1
+ 1139              		.global	UTILS_ValidateTimespec
+ 1140              		.syntax unified
+ 1141              		.thumb
+ 1142              		.thumb_func
+ 1143              		.fpu fpv4-sp-d16
+ 1145              	UTILS_ValidateTimespec:
+ 1146              	.LFB12:
+ 368:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 369:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** /*-----------------------------------------------------------*/
+ 370:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 371:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** bool UTILS_ValidateTimespec( const struct timespec * const pxTimespec )
+ 372:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** {
+ 1147              		.loc 1 372 1
+ 1148              		.cfi_startproc
+ 1149              		@ args = 0, pretend = 0, frame = 16
+ 1150              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1151              		@ link register save eliminated.
+ 1152 0000 80B4     		push	{r7}
+ 1153              	.LCFI43:
+ 1154              		.cfi_def_cfa_offset 4
+ 1155              		.cfi_offset 7, -4
+ 1156 0002 85B0     		sub	sp, sp, #20
+ 1157              	.LCFI44:
+ 1158              		.cfi_def_cfa_offset 24
+ 1159 0004 00AF     		add	r7, sp, #0
+ 1160              	.LCFI45:
+ 1161              		.cfi_def_cfa_register 7
+ 1162 0006 7860     		str	r0, [r7, #4]
+ 373:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     bool xReturn = false;
+ 1163              		.loc 1 373 10
+ 1164 0008 0023     		movs	r3, #0
+ 1165 000a FB73     		strb	r3, [r7, #15]
+ 374:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 375:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     if( pxTimespec != NULL )
+ 1166              		.loc 1 375 7
+ 1167 000c 7B68     		ldr	r3, [r7, #4]
+ 1168 000e 002B     		cmp	r3, #0
+ 1169 0010 0AD0     		beq	.L65
+ 376:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     {
+ 377:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         /* Verify 0 <= tv_nsec < 1000000000. */
+ 378:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         if( ( pxTimespec->tv_nsec >= 0 ) &&
+ 1170              		.loc 1 378 25
+ 1171 0012 7B68     		ldr	r3, [r7, #4]
+ 1172 0014 9B68     		ldr	r3, [r3, #8]
+ 1173              		.loc 1 378 11
+ARM GAS  /tmp/ccilE5UX.s 			page 28
+
+
+ 1174 0016 002B     		cmp	r3, #0
+ 1175 0018 06DB     		blt	.L65
+ 379:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             ( pxTimespec->tv_nsec < NANOSECONDS_PER_SECOND ) )
+ 1176              		.loc 1 379 25 discriminator 1
+ 1177 001a 7B68     		ldr	r3, [r7, #4]
+ 1178 001c 9B68     		ldr	r3, [r3, #8]
+ 378:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             ( pxTimespec->tv_nsec < NANOSECONDS_PER_SECOND ) )
+ 1179              		.loc 1 378 42 discriminator 1
+ 1180 001e 064A     		ldr	r2, .L67
+ 1181 0020 9342     		cmp	r3, r2
+ 1182 0022 01DC     		bgt	.L65
+ 380:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         {
+ 381:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****             xReturn = true;
+ 1183              		.loc 1 381 21
+ 1184 0024 0123     		movs	r3, #1
+ 1185 0026 FB73     		strb	r3, [r7, #15]
+ 1186              	.L65:
+ 382:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****         }
+ 383:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     }
+ 384:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** 
+ 385:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c ****     return xReturn;
+ 1187              		.loc 1 385 12
+ 1188 0028 FB7B     		ldrb	r3, [r7, #15]	@ zero_extendqisi2
+ 386:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_utils.c **** }
+ 1189              		.loc 1 386 1
+ 1190 002a 1846     		mov	r0, r3
+ 1191 002c 1437     		adds	r7, r7, #20
+ 1192              	.LCFI46:
+ 1193              		.cfi_def_cfa_offset 4
+ 1194 002e BD46     		mov	sp, r7
+ 1195              	.LCFI47:
+ 1196              		.cfi_def_cfa_register 13
+ 1197              		@ sp needed
+ 1198 0030 5DF8047B 		ldr	r7, [sp], #4
+ 1199              	.LCFI48:
+ 1200              		.cfi_restore 7
+ 1201              		.cfi_def_cfa_offset 0
+ 1202 0034 7047     		bx	lr
+ 1203              	.L68:
+ 1204 0036 00BF     		.align	2
+ 1205              	.L67:
+ 1206 0038 FFC99A3B 		.word	999999999
+ 1207              		.cfi_endproc
+ 1208              	.LFE12:
+ 1210              		.text
+ 1211              	.Letext0:
+ 1212              		.file 2 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/lib/gcc/arm-none-eabi/8.3.1/include/std
+ 1213              		.file 3 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/machine/_default_
+ 1214              		.file 4 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_stdint.h"
+ 1215              		.file 5 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h"
+ 1216              		.file 6 "lib/include/FreeRTOS_POSIX/sys/types.h"
+ 1217              		.file 7 "Inc/FreeRTOSConfig.h"
+ 1218              		.file 8 "lib/include/FreeRTOS_POSIX/errno.h"
+ 1219              		.file 9 "lib/include/FreeRTOS_POSIX/time.h"
+ARM GAS  /tmp/ccilE5UX.s 			page 29
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 FreeRTOS_POSIX_utils.c
+     /tmp/ccilE5UX.s:18     .text.UTILS_strnlen:0000000000000000 $t
+     /tmp/ccilE5UX.s:26     .text.UTILS_strnlen:0000000000000000 UTILS_strnlen
+     /tmp/ccilE5UX.s:100    .text.UTILS_AbsoluteTimespecToDeltaTicks:0000000000000000 $t
+     /tmp/ccilE5UX.s:107    .text.UTILS_AbsoluteTimespecToDeltaTicks:0000000000000000 UTILS_AbsoluteTimespecToDeltaTicks
+     /tmp/ccilE5UX.s:838    .text.UTILS_TimespecSubtract:0000000000000000 UTILS_TimespecSubtract
+     /tmp/ccilE5UX.s:216    .text.UTILS_TimespecToTicks:0000000000000000 UTILS_TimespecToTicks
+     /tmp/ccilE5UX.s:209    .text.UTILS_TimespecToTicks:0000000000000000 $t
+     /tmp/ccilE5UX.s:1145   .text.UTILS_ValidateTimespec:0000000000000000 UTILS_ValidateTimespec
+     /tmp/ccilE5UX.s:405    .text.UTILS_TimespecToTicks:0000000000000134 $d
+     /tmp/ccilE5UX.s:412    .text.UTILS_NanosecondsToTimespec:0000000000000000 $t
+     /tmp/ccilE5UX.s:419    .text.UTILS_NanosecondsToTimespec:0000000000000000 UTILS_NanosecondsToTimespec
+     /tmp/ccilE5UX.s:522    .text.UTILS_NanosecondsToTimespec:0000000000000090 $d
+     /tmp/ccilE5UX.s:530    .text.UTILS_TimespecAdd:0000000000000000 $t
+     /tmp/ccilE5UX.s:537    .text.UTILS_TimespecAdd:0000000000000000 UTILS_TimespecAdd
+     /tmp/ccilE5UX.s:690    .text.UTILS_TimespecAdd:00000000000000d4 $d
+     /tmp/ccilE5UX.s:696    .text.UTILS_TimespecAddNanoseconds:0000000000000000 $t
+     /tmp/ccilE5UX.s:703    .text.UTILS_TimespecAddNanoseconds:0000000000000000 UTILS_TimespecAddNanoseconds
+     /tmp/ccilE5UX.s:825    .text.UTILS_TimespecAddNanoseconds:00000000000000c0 $d
+     /tmp/ccilE5UX.s:831    .text.UTILS_TimespecSubtract:0000000000000000 $t
+     /tmp/ccilE5UX.s:1001   .text.UTILS_TimespecCompare:0000000000000000 UTILS_TimespecCompare
+     /tmp/ccilE5UX.s:989    .text.UTILS_TimespecSubtract:00000000000000d4 $d
+     /tmp/ccilE5UX.s:994    .text.UTILS_TimespecCompare:0000000000000000 $t
+     /tmp/ccilE5UX.s:1138   .text.UTILS_ValidateTimespec:0000000000000000 $t
+     /tmp/ccilE5UX.s:1206   .text.UTILS_ValidateTimespec:0000000000000038 $d
+
+UNDEFINED SYMBOLS
+__aeabi_ldivmod

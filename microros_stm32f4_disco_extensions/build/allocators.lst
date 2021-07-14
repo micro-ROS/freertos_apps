@@ -1,0 +1,438 @@
+ARM GAS  /tmp/cclvJgvg.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"allocators.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	absoluteUsedMemory
+  18              		.section	.bss.absoluteUsedMemory,"aw",%nobits
+  19              		.align	2
+  22              	absoluteUsedMemory:
+  23 0000 00000000 		.space	4
+  24              		.global	usedMemory
+  25              		.section	.bss.usedMemory,"aw",%nobits
+  26              		.align	2
+  29              	usedMemory:
+  30 0000 00000000 		.space	4
+  31              		.section	.text.__freertos_allocate,"ax",%progbits
+  32              		.align	1
+  33              		.global	__freertos_allocate
+  34              		.arch armv7e-m
+  35              		.syntax unified
+  36              		.thumb
+  37              		.thumb_func
+  38              		.fpu fpv4-sp-d16
+  40              	__freertos_allocate:
+  41              	.LFB0:
+  42              		.file 1 "Src/allocators.c"
+   1:Src/allocators.c **** #include <allocators.h>
+   2:Src/allocators.c **** 
+   3:Src/allocators.c **** int absoluteUsedMemory = 0;
+   4:Src/allocators.c **** int usedMemory = 0;
+   5:Src/allocators.c **** 
+   6:Src/allocators.c **** void * __freertos_allocate(size_t size, void * state){
+  43              		.loc 1 6 54
+  44              		.cfi_startproc
+  45              		@ args = 0, pretend = 0, frame = 8
+  46              		@ frame_needed = 1, uses_anonymous_args = 0
+  47 0000 80B5     		push	{r7, lr}
+  48              	.LCFI0:
+  49              		.cfi_def_cfa_offset 8
+  50              		.cfi_offset 7, -8
+  51              		.cfi_offset 14, -4
+  52 0002 82B0     		sub	sp, sp, #8
+  53              	.LCFI1:
+  54              		.cfi_def_cfa_offset 16
+  55 0004 00AF     		add	r7, sp, #0
+  56              	.LCFI2:
+ARM GAS  /tmp/cclvJgvg.s 			page 2
+
+
+  57              		.cfi_def_cfa_register 7
+  58 0006 7860     		str	r0, [r7, #4]
+  59 0008 3960     		str	r1, [r7]
+   7:Src/allocators.c ****   (void) state;
+   8:Src/allocators.c ****   // printf("-- Alloc %d (prev: %d B)\n",size, xPortGetFreeHeapSize());
+   9:Src/allocators.c ****   absoluteUsedMemory += size;
+  60              		.loc 1 9 22
+  61 000a 0C4B     		ldr	r3, .L3
+  62 000c 1B68     		ldr	r3, [r3]
+  63 000e 1A46     		mov	r2, r3
+  64 0010 7B68     		ldr	r3, [r7, #4]
+  65 0012 1344     		add	r3, r3, r2
+  66 0014 1A46     		mov	r2, r3
+  67 0016 094B     		ldr	r3, .L3
+  68 0018 1A60     		str	r2, [r3]
+  10:Src/allocators.c ****   usedMemory += size;
+  69              		.loc 1 10 14
+  70 001a 094B     		ldr	r3, .L3+4
+  71 001c 1B68     		ldr	r3, [r3]
+  72 001e 1A46     		mov	r2, r3
+  73 0020 7B68     		ldr	r3, [r7, #4]
+  74 0022 1344     		add	r3, r3, r2
+  75 0024 1A46     		mov	r2, r3
+  76 0026 064B     		ldr	r3, .L3+4
+  77 0028 1A60     		str	r2, [r3]
+  11:Src/allocators.c ****   return pvPortMalloc(size);
+  78              		.loc 1 11 10
+  79 002a 7868     		ldr	r0, [r7, #4]
+  80 002c FFF7FEFF 		bl	pvPortMalloc
+  81 0030 0346     		mov	r3, r0
+  12:Src/allocators.c **** }
+  82              		.loc 1 12 1
+  83 0032 1846     		mov	r0, r3
+  84 0034 0837     		adds	r7, r7, #8
+  85              	.LCFI3:
+  86              		.cfi_def_cfa_offset 8
+  87 0036 BD46     		mov	sp, r7
+  88              	.LCFI4:
+  89              		.cfi_def_cfa_register 13
+  90              		@ sp needed
+  91 0038 80BD     		pop	{r7, pc}
+  92              	.L4:
+  93 003a 00BF     		.align	2
+  94              	.L3:
+  95 003c 00000000 		.word	absoluteUsedMemory
+  96 0040 00000000 		.word	usedMemory
+  97              		.cfi_endproc
+  98              	.LFE0:
+ 100              		.section	.text.__freertos_deallocate,"ax",%progbits
+ 101              		.align	1
+ 102              		.global	__freertos_deallocate
+ 103              		.syntax unified
+ 104              		.thumb
+ 105              		.thumb_func
+ 106              		.fpu fpv4-sp-d16
+ 108              	__freertos_deallocate:
+ 109              	.LFB1:
+ARM GAS  /tmp/cclvJgvg.s 			page 3
+
+
+  13:Src/allocators.c **** 
+  14:Src/allocators.c **** void __freertos_deallocate(void * pointer, void * state){
+ 110              		.loc 1 14 57
+ 111              		.cfi_startproc
+ 112              		@ args = 0, pretend = 0, frame = 8
+ 113              		@ frame_needed = 1, uses_anonymous_args = 0
+ 114 0000 80B5     		push	{r7, lr}
+ 115              	.LCFI5:
+ 116              		.cfi_def_cfa_offset 8
+ 117              		.cfi_offset 7, -8
+ 118              		.cfi_offset 14, -4
+ 119 0002 82B0     		sub	sp, sp, #8
+ 120              	.LCFI6:
+ 121              		.cfi_def_cfa_offset 16
+ 122 0004 00AF     		add	r7, sp, #0
+ 123              	.LCFI7:
+ 124              		.cfi_def_cfa_register 7
+ 125 0006 7860     		str	r0, [r7, #4]
+ 126 0008 3960     		str	r1, [r7]
+  15:Src/allocators.c ****   (void) state;
+  16:Src/allocators.c ****  if( NULL != pointer){
+ 127              		.loc 1 16 4
+ 128 000a 7B68     		ldr	r3, [r7, #4]
+ 129 000c 002B     		cmp	r3, #0
+ 130 000e 0BD0     		beq	.L7
+ 131              	.LBB2:
+  17:Src/allocators.c ****     // printf("-- Free %d (prev: %d B)\n",getBlockSize(pointer), xPortGetFreeHeapSize());
+  18:Src/allocators.c ****     usedMemory -= getBlockSize(pointer);
+ 132              		.loc 1 18 19
+ 133 0010 7868     		ldr	r0, [r7, #4]
+ 134 0012 FFF7FEFF 		bl	getBlockSize
+ 135 0016 0246     		mov	r2, r0
+ 136              		.loc 1 18 16
+ 137 0018 054B     		ldr	r3, .L8
+ 138 001a 1B68     		ldr	r3, [r3]
+ 139 001c 9B1A     		subs	r3, r3, r2
+ 140 001e 044A     		ldr	r2, .L8
+ 141 0020 1360     		str	r3, [r2]
+  19:Src/allocators.c ****     vPortFree(pointer);
+ 142              		.loc 1 19 5
+ 143 0022 7868     		ldr	r0, [r7, #4]
+ 144 0024 FFF7FEFF 		bl	vPortFree
+ 145              	.L7:
+ 146              	.LBE2:
+  20:Src/allocators.c ****  }
+  21:Src/allocators.c **** }
+ 147              		.loc 1 21 1
+ 148 0028 00BF     		nop
+ 149 002a 0837     		adds	r7, r7, #8
+ 150              	.LCFI8:
+ 151              		.cfi_def_cfa_offset 8
+ 152 002c BD46     		mov	sp, r7
+ 153              	.LCFI9:
+ 154              		.cfi_def_cfa_register 13
+ 155              		@ sp needed
+ 156 002e 80BD     		pop	{r7, pc}
+ 157              	.L9:
+ARM GAS  /tmp/cclvJgvg.s 			page 4
+
+
+ 158              		.align	2
+ 159              	.L8:
+ 160 0030 00000000 		.word	usedMemory
+ 161              		.cfi_endproc
+ 162              	.LFE1:
+ 164              		.section	.text.__freertos_reallocate,"ax",%progbits
+ 165              		.align	1
+ 166              		.global	__freertos_reallocate
+ 167              		.syntax unified
+ 168              		.thumb
+ 169              		.thumb_func
+ 170              		.fpu fpv4-sp-d16
+ 172              	__freertos_reallocate:
+ 173              	.LFB2:
+  22:Src/allocators.c **** 
+  23:Src/allocators.c **** void * __freertos_reallocate(void * pointer, size_t size, void * state){
+ 174              		.loc 1 23 72
+ 175              		.cfi_startproc
+ 176              		@ args = 0, pretend = 0, frame = 16
+ 177              		@ frame_needed = 1, uses_anonymous_args = 0
+ 178 0000 80B5     		push	{r7, lr}
+ 179              	.LCFI10:
+ 180              		.cfi_def_cfa_offset 8
+ 181              		.cfi_offset 7, -8
+ 182              		.cfi_offset 14, -4
+ 183 0002 84B0     		sub	sp, sp, #16
+ 184              	.LCFI11:
+ 185              		.cfi_def_cfa_offset 24
+ 186 0004 00AF     		add	r7, sp, #0
+ 187              	.LCFI12:
+ 188              		.cfi_def_cfa_register 7
+ 189 0006 F860     		str	r0, [r7, #12]
+ 190 0008 B960     		str	r1, [r7, #8]
+ 191 000a 7A60     		str	r2, [r7, #4]
+  24:Src/allocators.c ****   (void) state;
+  25:Src/allocators.c ****   // printf("-- Realloc %d -> %d (prev: %d B)\n",getBlockSize(pointer),size, xPortGetFreeHeapSize()
+  26:Src/allocators.c ****   if (NULL != pointer){
+ 192              		.loc 1 26 6
+ 193 000c FB68     		ldr	r3, [r7, #12]
+ 194 000e 002B     		cmp	r3, #0
+ 195 0010 1ED0     		beq	.L11
+ 196              	.LBB3:
+  27:Src/allocators.c ****     absoluteUsedMemory += size;
+ 197              		.loc 1 27 24
+ 198 0012 1B4B     		ldr	r3, .L13
+ 199 0014 1B68     		ldr	r3, [r3]
+ 200 0016 1A46     		mov	r2, r3
+ 201 0018 BB68     		ldr	r3, [r7, #8]
+ 202 001a 1344     		add	r3, r3, r2
+ 203 001c 1A46     		mov	r2, r3
+ 204 001e 184B     		ldr	r3, .L13
+ 205 0020 1A60     		str	r2, [r3]
+  28:Src/allocators.c ****     usedMemory += size;
+ 206              		.loc 1 28 16
+ 207 0022 184B     		ldr	r3, .L13+4
+ 208 0024 1B68     		ldr	r3, [r3]
+ 209 0026 1A46     		mov	r2, r3
+ARM GAS  /tmp/cclvJgvg.s 			page 5
+
+
+ 210 0028 BB68     		ldr	r3, [r7, #8]
+ 211 002a 1344     		add	r3, r3, r2
+ 212 002c 1A46     		mov	r2, r3
+ 213 002e 154B     		ldr	r3, .L13+4
+ 214 0030 1A60     		str	r2, [r3]
+  29:Src/allocators.c ****     usedMemory -= getBlockSize(pointer);
+ 215              		.loc 1 29 19
+ 216 0032 F868     		ldr	r0, [r7, #12]
+ 217 0034 FFF7FEFF 		bl	getBlockSize
+ 218 0038 0246     		mov	r2, r0
+ 219              		.loc 1 29 16
+ 220 003a 124B     		ldr	r3, .L13+4
+ 221 003c 1B68     		ldr	r3, [r3]
+ 222 003e 9B1A     		subs	r3, r3, r2
+ 223 0040 104A     		ldr	r2, .L13+4
+ 224 0042 1360     		str	r3, [r2]
+  30:Src/allocators.c ****     return pvPortRealloc(pointer,size);
+ 225              		.loc 1 30 12
+ 226 0044 B968     		ldr	r1, [r7, #8]
+ 227 0046 F868     		ldr	r0, [r7, #12]
+ 228 0048 FFF7FEFF 		bl	pvPortRealloc
+ 229 004c 0346     		mov	r3, r0
+ 230 004e 13E0     		b	.L12
+ 231              	.L11:
+ 232              	.LBE3:
+ 233              	.LBB4:
+  31:Src/allocators.c ****   }
+  32:Src/allocators.c ****   else {
+  33:Src/allocators.c ****       absoluteUsedMemory += size;
+ 234              		.loc 1 33 26
+ 235 0050 0B4B     		ldr	r3, .L13
+ 236 0052 1B68     		ldr	r3, [r3]
+ 237 0054 1A46     		mov	r2, r3
+ 238 0056 BB68     		ldr	r3, [r7, #8]
+ 239 0058 1344     		add	r3, r3, r2
+ 240 005a 1A46     		mov	r2, r3
+ 241 005c 084B     		ldr	r3, .L13
+ 242 005e 1A60     		str	r2, [r3]
+  34:Src/allocators.c ****       usedMemory += size;
+ 243              		.loc 1 34 18
+ 244 0060 084B     		ldr	r3, .L13+4
+ 245 0062 1B68     		ldr	r3, [r3]
+ 246 0064 1A46     		mov	r2, r3
+ 247 0066 BB68     		ldr	r3, [r7, #8]
+ 248 0068 1344     		add	r3, r3, r2
+ 249 006a 1A46     		mov	r2, r3
+ 250 006c 054B     		ldr	r3, .L13+4
+ 251 006e 1A60     		str	r2, [r3]
+  35:Src/allocators.c ****       return pvPortMalloc(size);
+ 252              		.loc 1 35 14
+ 253 0070 B868     		ldr	r0, [r7, #8]
+ 254 0072 FFF7FEFF 		bl	pvPortMalloc
+ 255 0076 0346     		mov	r3, r0
+ 256              	.L12:
+ 257              	.LBE4:
+  36:Src/allocators.c ****   }
+  37:Src/allocators.c **** }
+ARM GAS  /tmp/cclvJgvg.s 			page 6
+
+
+ 258              		.loc 1 37 1
+ 259 0078 1846     		mov	r0, r3
+ 260 007a 1037     		adds	r7, r7, #16
+ 261              	.LCFI13:
+ 262              		.cfi_def_cfa_offset 8
+ 263 007c BD46     		mov	sp, r7
+ 264              	.LCFI14:
+ 265              		.cfi_def_cfa_register 13
+ 266              		@ sp needed
+ 267 007e 80BD     		pop	{r7, pc}
+ 268              	.L14:
+ 269              		.align	2
+ 270              	.L13:
+ 271 0080 00000000 		.word	absoluteUsedMemory
+ 272 0084 00000000 		.word	usedMemory
+ 273              		.cfi_endproc
+ 274              	.LFE2:
+ 276              		.section	.text.__freertos_zero_allocate,"ax",%progbits
+ 277              		.align	1
+ 278              		.global	__freertos_zero_allocate
+ 279              		.syntax unified
+ 280              		.thumb
+ 281              		.thumb_func
+ 282              		.fpu fpv4-sp-d16
+ 284              	__freertos_zero_allocate:
+ 285              	.LFB3:
+  38:Src/allocators.c **** 
+  39:Src/allocators.c **** void * __freertos_zero_allocate(size_t number_of_elements, size_t size_of_element, void * state){
+ 286              		.loc 1 39 97
+ 287              		.cfi_startproc
+ 288              		@ args = 0, pretend = 0, frame = 16
+ 289              		@ frame_needed = 1, uses_anonymous_args = 0
+ 290 0000 80B5     		push	{r7, lr}
+ 291              	.LCFI15:
+ 292              		.cfi_def_cfa_offset 8
+ 293              		.cfi_offset 7, -8
+ 294              		.cfi_offset 14, -4
+ 295 0002 84B0     		sub	sp, sp, #16
+ 296              	.LCFI16:
+ 297              		.cfi_def_cfa_offset 24
+ 298 0004 00AF     		add	r7, sp, #0
+ 299              	.LCFI17:
+ 300              		.cfi_def_cfa_register 7
+ 301 0006 F860     		str	r0, [r7, #12]
+ 302 0008 B960     		str	r1, [r7, #8]
+ 303 000a 7A60     		str	r2, [r7, #4]
+  40:Src/allocators.c ****   (void) state;
+  41:Src/allocators.c ****   // printf("-- Calloc %d x %d = %d -> (prev: %d B)\n",number_of_elements,size_of_element, number_o
+  42:Src/allocators.c ****   absoluteUsedMemory += number_of_elements*size_of_element;
+ 304              		.loc 1 42 43
+ 305 000c FB68     		ldr	r3, [r7, #12]
+ 306 000e BA68     		ldr	r2, [r7, #8]
+ 307 0010 02FB03F3 		mul	r3, r2, r3
+ 308              		.loc 1 42 22
+ 309 0014 0C4A     		ldr	r2, .L17
+ 310 0016 1268     		ldr	r2, [r2]
+ 311 0018 1344     		add	r3, r3, r2
+ARM GAS  /tmp/cclvJgvg.s 			page 7
+
+
+ 312 001a 1A46     		mov	r2, r3
+ 313 001c 0A4B     		ldr	r3, .L17
+ 314 001e 1A60     		str	r2, [r3]
+  43:Src/allocators.c ****   usedMemory += number_of_elements*size_of_element;
+ 315              		.loc 1 43 35
+ 316 0020 FB68     		ldr	r3, [r7, #12]
+ 317 0022 BA68     		ldr	r2, [r7, #8]
+ 318 0024 02FB03F3 		mul	r3, r2, r3
+ 319              		.loc 1 43 14
+ 320 0028 084A     		ldr	r2, .L17+4
+ 321 002a 1268     		ldr	r2, [r2]
+ 322 002c 1344     		add	r3, r3, r2
+ 323 002e 1A46     		mov	r2, r3
+ 324 0030 064B     		ldr	r3, .L17+4
+ 325 0032 1A60     		str	r2, [r3]
+  44:Src/allocators.c ****   return pvPortCalloc(number_of_elements,size_of_element);
+ 326              		.loc 1 44 10
+ 327 0034 B968     		ldr	r1, [r7, #8]
+ 328 0036 F868     		ldr	r0, [r7, #12]
+ 329 0038 FFF7FEFF 		bl	pvPortCalloc
+ 330 003c 0346     		mov	r3, r0
+  45:Src/allocators.c **** }
+ 331              		.loc 1 45 1
+ 332 003e 1846     		mov	r0, r3
+ 333 0040 1037     		adds	r7, r7, #16
+ 334              	.LCFI18:
+ 335              		.cfi_def_cfa_offset 8
+ 336 0042 BD46     		mov	sp, r7
+ 337              	.LCFI19:
+ 338              		.cfi_def_cfa_register 13
+ 339              		@ sp needed
+ 340 0044 80BD     		pop	{r7, pc}
+ 341              	.L18:
+ 342 0046 00BF     		.align	2
+ 343              	.L17:
+ 344 0048 00000000 		.word	absoluteUsedMemory
+ 345 004c 00000000 		.word	usedMemory
+ 346              		.cfi_endproc
+ 347              	.LFE3:
+ 349              		.text
+ 350              	.Letext0:
+ 351              		.file 2 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/lib/gcc/arm-none-eabi/8.3.1/include/std
+ 352              		.file 3 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_types.h"
+ 353              		.file 4 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/reent.h"
+ 354              		.file 5 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/lock.h"
+ 355              		.file 6 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/stdlib.h"
+ 356              		.file 7 "Inc/allocators.h"
+ARM GAS  /tmp/cclvJgvg.s 			page 8
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 allocators.c
+     /tmp/cclvJgvg.s:22     .bss.absoluteUsedMemory:0000000000000000 absoluteUsedMemory
+     /tmp/cclvJgvg.s:19     .bss.absoluteUsedMemory:0000000000000000 $d
+     /tmp/cclvJgvg.s:29     .bss.usedMemory:0000000000000000 usedMemory
+     /tmp/cclvJgvg.s:26     .bss.usedMemory:0000000000000000 $d
+     /tmp/cclvJgvg.s:32     .text.__freertos_allocate:0000000000000000 $t
+     /tmp/cclvJgvg.s:40     .text.__freertos_allocate:0000000000000000 __freertos_allocate
+     /tmp/cclvJgvg.s:95     .text.__freertos_allocate:000000000000003c $d
+     /tmp/cclvJgvg.s:101    .text.__freertos_deallocate:0000000000000000 $t
+     /tmp/cclvJgvg.s:108    .text.__freertos_deallocate:0000000000000000 __freertos_deallocate
+     /tmp/cclvJgvg.s:160    .text.__freertos_deallocate:0000000000000030 $d
+     /tmp/cclvJgvg.s:165    .text.__freertos_reallocate:0000000000000000 $t
+     /tmp/cclvJgvg.s:172    .text.__freertos_reallocate:0000000000000000 __freertos_reallocate
+     /tmp/cclvJgvg.s:271    .text.__freertos_reallocate:0000000000000080 $d
+     /tmp/cclvJgvg.s:277    .text.__freertos_zero_allocate:0000000000000000 $t
+     /tmp/cclvJgvg.s:284    .text.__freertos_zero_allocate:0000000000000000 __freertos_zero_allocate
+     /tmp/cclvJgvg.s:344    .text.__freertos_zero_allocate:0000000000000048 $d
+
+UNDEFINED SYMBOLS
+pvPortMalloc
+getBlockSize
+vPortFree
+pvPortRealloc
+pvPortCalloc
