@@ -197,6 +197,10 @@ void app_main(void)
         esp32_serial_read);  
 #endif
 
+#if defined(CONFIG_ESP_WIFI_AP)
     // start microROS task
+    xTaskCreate(appMain, "uros_task", 12*2048, &is_sta, 5, NULL);
+#else // defined(CONFIG_ESP_WIFI_AP)
     xTaskCreate(appMain, "uros_task", 12*2048, NULL, 5, NULL);
+#endif // defined(CONFIG_ESP_WIFI_AP)
 }
