@@ -71,16 +71,8 @@ void appMain(){
     STATIC_MEM_TASK_CREATE(microros_secondary, microros_secondary, "microROSsecondary", NULL, 3);
 }
 
-typedef struct rmw_init_options_impl_t rmw_init_options_impl_t;
-
-struct  rmw_init_options_impl_t
-{
-  struct rmw_uxrce_transport_params_t transport_params;
-};
-
 void microros_primary(void * params){
     while(1){
-
         // ####################### MICROROS INIT #######################
         DEBUG_PRINT("Free heap pre uROS: %d bytes\n", xPortGetFreeHeapSize());
         vTaskDelay(50);
@@ -92,7 +84,7 @@ void microros_primary(void * params){
         RCCHECK(rcl_init_options_init(&init_options, allocator));
         rmw_init_options_t * rmw_options = rcl_init_options_get_rmw_init_options(&init_options);
 
-        transport_args secondary_args = { .radio_channel = 65, .radio_port = 10, .initialized = false };
+        transport_args secondary_args = { .radio_channel = 65, .radio_port = 9, .initialized = false };
         RCCHECK(rmw_uros_options_set_custom_transport(
             true,
             (void *) &secondary_args,
@@ -223,7 +215,6 @@ void microros_secondary(void * params){
 
     while(1){
         // ####################### MICROROS INIT #######################
-
         DEBUG_PRINT("Free heap pre uROS: %d bytes\n", xPortGetFreeHeapSize());
         vTaskDelay(50);
 
@@ -234,7 +225,7 @@ void microros_secondary(void * params){
         RCCHECK(rcl_init_options_init(&init_options, allocator));
         rmw_init_options_t * rmw_options = rcl_init_options_get_rmw_init_options(&init_options);
 
-        transport_args secondary_args = { .radio_channel = 30, .radio_port = 9, .initialized=false };
+        transport_args secondary_args = { .radio_channel = 30, .radio_port = 10, .initialized=false };
         RCCHECK(rmw_uros_options_set_custom_transport(
             true,
             (void *) &secondary_args,
@@ -275,8 +266,6 @@ void microros_secondary(void * params){
         DEBUG_PRINT("uROS Absolute Used Memory %d bytes\n", absoluteUsedMemory);
 
         // ####################### MAIN LOOP #######################
-
-
         while(1)
         {
             rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
