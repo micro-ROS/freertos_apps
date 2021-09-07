@@ -25,6 +25,17 @@ bool crazyflie_serial_close(struct uxrCustomTransport * transport);
 size_t crazyflie_serial_write(struct uxrCustomTransport* transport, const uint8_t * buf, size_t len, uint8_t * err);
 size_t crazyflie_serial_read(struct uxrCustomTransport* transport, uint8_t* buf, size_t len, int timeout, uint8_t* err);
 
+typedef struct transport_args
+{
+    const uint8_t radio_channel;
+    const uint8_t radio_port;
+    bool initialized;
+
+    // Populated inside crazyflie_serial_open
+    uint8_t * crtp_buffer;
+    size_t crtp_index;
+} transport_args;
+
 #ifdef __cplusplus
 }
 #endif
