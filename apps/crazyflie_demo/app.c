@@ -95,7 +95,7 @@ void microros_primary(void * params){
             rmw_options));
         
         // Wait for agent connection
-        while(RMW_RET_OK != rmw_uros_ping_agent_options(50, 100, rmw_options))
+        while(RMW_RET_OK != rmw_uros_ping_agent_options(50, 1, rmw_options))
         {
             vTaskDelay(250/portTICK_RATE_MS);
         }
@@ -235,7 +235,7 @@ void microros_secondary(void * params){
             crazyflie_serial_read,
             rmw_options));
 
-        while(RMW_RET_OK != rmw_uros_ping_agent_options(50, 100, rmw_options))
+        while(RMW_RET_OK != rmw_uros_ping_agent_options(50, 1, rmw_options))
         {
             vTaskDelay(250/portTICK_RATE_MS);
         }
@@ -255,7 +255,6 @@ void microros_secondary(void * params){
             ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, LaserEcho),
             "Float__Sequence"));
 
-        // Create wait set
         // create executor and add subscription
         rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
         RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));

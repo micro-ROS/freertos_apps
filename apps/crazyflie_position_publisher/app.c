@@ -79,10 +79,9 @@ void appMain(){
 	RCCHECK(rclc_node_init_default(&node, "crazyflie_node", "", &support));
 
 	// create publishers
-    // TODO (pablogs9): these publishers must be best effort
-	RCCHECK(rclc_publisher_init_default(&publisher_odometry, &node,
+	RCCHECK(rclc_publisher_init_best_effort(&publisher_odometry, &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32), "/drone/odometry"));
-	RCCHECK(rclc_publisher_init_default(&publisher_attitude, &node,
+	RCCHECK(rclc_publisher_init_best_effort(&publisher_attitude, &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32), "/drone/attitude"));
 
     // Init messages
