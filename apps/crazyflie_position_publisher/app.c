@@ -8,6 +8,7 @@
 
 #include <rcutils/allocator.h>
 #include <rmw_microros/rmw_microros.h>
+#include <rmw_microros/ping.h>
 
 #include "config.h"
 #include "log.h"
@@ -19,8 +20,8 @@
 
 #include "microrosapp.h"
 
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
-#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
+#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){DEBUG_PRINT("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
+#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){DEBUG_PRINT("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
 rcl_publisher_t publisher_odometry;
 rcl_publisher_t publisher_attitude;
@@ -35,13 +36,6 @@ float sign(float x){
 void appMain(){
     absoluteUsedMemory = 0;
     usedMemory = 0;
-
-    // ####################### RADIO INIT #######################
-
-    vTaskDelay(2000);
-    int radio_connected = logGetVarId("radio", "isConnected");
-    while(!logGetUint(radio_connected)) vTaskDelay(100);
-    DEBUG_PRINT("Radio connected\n");
 
     // ####################### MICROROS INIT #######################
     DEBUG_PRINT("Free heap pre uROS: %d bytes\n", xPortGetFreeHeapSize());
@@ -58,15 +52,21 @@ void appMain(){
         vTaskSuspend( NULL );
     }
 
-    const uint8_t radio_channel = 65;
+    transport_args custom_args = { .radio_channel = 65, .radio_port = 9, .initialized=false };
     rmw_uros_set_custom_transport( 
         true, 
-        (void *) &radio_channel, 
+        (void *) &custom_args, 
         crazyflie_serial_open, 
         crazyflie_serial_close, 
         crazyflie_serial_write, 
         crazyflie_serial_read
     ); 
+
+    // Wait for available agent
+    while(RMW_RET_OK != rmw_uros_ping_agent(1000, 10))
+    {
+        vTaskDelay(100/portTICK_RATE_MS);
+    }
 
     rcl_allocator_t allocator = rcl_get_default_allocator();
 	rclc_support_t support;
@@ -85,7 +85,8 @@ void appMain(){
 	RCCHECK(rclc_publisher_init_default(&publisher_attitude, &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32), "/drone/attitude"));
 
-    // // Init messages
+    // Init messages
+    // TODO: use microros utilities
     geometry_msgs__msg__Point32 pose;
     geometry_msgs__msg__Point32__init(&pose);
     geometry_msgs__msg__Point32 odom;
@@ -106,15 +107,14 @@ void appMain(){
     DEBUG_PRINT("uROS Absolute Used Memory %d bytes\n", absoluteUsedMemory);
 
 	while(1){
-        pose.x     = logGetFloat(pitchid);
-        pose.y     = logGetFloat(rollid);
-        pose.z     = logGetFloat(yawid);
-        odom.x     = logGetFloat(Xid);
-        odom.y     = logGetFloat(Yid);
-        odom.z     = logGetFloat(Zid);
+        pose.x = logGetFloat(pitchid);
+        pose.y = logGetFloat(rollid);
+        pose.z = logGetFloat(yawid);
+        odom.x = logGetFloat(Xid);
+        odom.y = logGetFloat(Yid);
+        odom.z = logGetFloat(Zid);
 
         RCSOFTCHECK(rcl_publish( &publisher_attitude, (const void *) &pose, NULL));
-
         RCSOFTCHECK(rcl_publish( &publisher_odometry, (const void *) &odom, NULL));
 
         vTaskDelay(10/portTICK_RATE_MS);

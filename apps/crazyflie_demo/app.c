@@ -28,8 +28,8 @@
 #include "crtp.h"
 #include "configblock.h"
 
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
-#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
+#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){DEBUG_PRINT("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
+#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){DEBUG_PRINT("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
 void microros_primary(void * params);
 void microros_secondary(void * params);
@@ -84,10 +84,10 @@ void microros_primary(void * params){
         RCCHECK(rcl_init_options_init(&init_options, allocator));
         rmw_init_options_t * rmw_options = rcl_init_options_get_rmw_init_options(&init_options);
 
-        transport_args secondary_args = { .radio_channel = 65, .radio_port = 9, .initialized = false };
+        transport_args primary_args = { .radio_channel = 65, .radio_port = 9, .initialized = false };
         RCCHECK(rmw_uros_options_set_custom_transport(
             true,
-            (void *) &secondary_args,
+            (void *) &primary_args,
             crazyflie_serial_open,
             crazyflie_serial_close,
             crazyflie_serial_write,
