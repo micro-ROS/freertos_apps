@@ -5,13 +5,14 @@
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 #include <geometry_msgs/msg/point32.h>
+#include <micro_ros_utilities/type_utilities.h>
 
 #include <rcutils/allocator.h>
 #include <rmw_microros/rmw_microros.h>
+#include <rmw_microros/ping.h>
 
 #include "config.h"
 #include "log.h"
-#include "crc.h"
 #include "worker.h"
 #include "num.h"
 #include "debug.h"
@@ -19,8 +20,10 @@
 
 #include "microrosapp.h"
 
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
-#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
+#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){DEBUG_PRINT("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
+#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){DEBUG_PRINT("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
+
+static uint8_t crtp_buffer[CRTP_BUFFER_SIZE];
 
 rcl_publisher_t publisher_odometry;
 rcl_publisher_t publisher_attitude;
@@ -35,13 +38,6 @@ float sign(float x){
 void appMain(){
     absoluteUsedMemory = 0;
     usedMemory = 0;
-
-    // ####################### RADIO INIT #######################
-
-    vTaskDelay(2000);
-    int radio_connected = logGetVarId("radio", "isConnected");
-    while(!logGetUint(radio_connected)) vTaskDelay(100);
-    DEBUG_PRINT("Radio connected\n");
 
     // ####################### MICROROS INIT #######################
     DEBUG_PRINT("Free heap pre uROS: %d bytes\n", xPortGetFreeHeapSize());
@@ -58,15 +54,21 @@ void appMain(){
         vTaskSuspend( NULL );
     }
 
-    const uint8_t radio_channel = 65;
+    transport_args custom_args = { .radio_channel = 65, .radio_port = 9, .crtp_buffer = &crtp_buffer[0] };
     rmw_uros_set_custom_transport( 
         true, 
-        (void *) &radio_channel, 
+        (void *) &custom_args, 
         crazyflie_serial_open, 
         crazyflie_serial_close, 
         crazyflie_serial_write, 
         crazyflie_serial_read
     ); 
+
+    // Wait for available agent
+    while(RMW_RET_OK != rmw_uros_ping_agent(1000, 10))
+    {
+        vTaskDelay(100/portTICK_RATE_MS);
+    }
 
     rcl_allocator_t allocator = rcl_get_default_allocator();
 	rclc_support_t support;
@@ -79,17 +81,32 @@ void appMain(){
 	RCCHECK(rclc_node_init_default(&node, "crazyflie_node", "", &support));
 
 	// create publishers
-    // TODO (pablogs9): these publishers must be best effort
-	RCCHECK(rclc_publisher_init_default(&publisher_odometry, &node,
+	RCCHECK(rclc_publisher_init_best_effort(&publisher_odometry, &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32), "/drone/odometry"));
-	RCCHECK(rclc_publisher_init_default(&publisher_attitude, &node,
+	RCCHECK(rclc_publisher_init_best_effort(&publisher_attitude, &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32), "/drone/attitude"));
 
-    // // Init messages
+    // Init messages
     geometry_msgs__msg__Point32 pose;
-    geometry_msgs__msg__Point32__init(&pose);
     geometry_msgs__msg__Point32 odom;
-    geometry_msgs__msg__Point32__init(&odom);
+
+    static micro_ros_utilities_memory_conf_t conf = {0};
+
+    bool success = micro_ros_utilities_create_message_memory(
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
+        &pose,
+        conf);
+
+    success &= micro_ros_utilities_create_message_memory(
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
+        &odom,
+        conf);
+
+    if (!success)
+    {
+        DEBUG_PRINT("Memory allocation for /drone messages failed\n");
+        return;
+    }
 
     //Get pitch, roll and yaw value
     pitchid = logGetVarId("stateEstimate", "pitch");
@@ -106,19 +123,36 @@ void appMain(){
     DEBUG_PRINT("uROS Absolute Used Memory %d bytes\n", absoluteUsedMemory);
 
 	while(1){
-        pose.x     = logGetFloat(pitchid);
-        pose.y     = logGetFloat(rollid);
-        pose.z     = logGetFloat(yawid);
-        odom.x     = logGetFloat(Xid);
-        odom.y     = logGetFloat(Yid);
-        odom.z     = logGetFloat(Zid);
+        pose.x = logGetFloat(pitchid);
+        pose.y = logGetFloat(rollid);
+        pose.z = logGetFloat(yawid);
+        odom.x = logGetFloat(Xid);
+        odom.y = logGetFloat(Yid);
+        odom.z = logGetFloat(Zid);
 
         RCSOFTCHECK(rcl_publish( &publisher_attitude, (const void *) &pose, NULL));
-
         RCSOFTCHECK(rcl_publish( &publisher_odometry, (const void *) &odom, NULL));
 
         vTaskDelay(10/portTICK_RATE_MS);
 	}
+
+    success = micro_ros_utilities_destroy_message_memory(
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
+        &pose,
+        conf
+    );
+
+    success &= micro_ros_utilities_destroy_message_memory(
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
+        &odom,
+        conf
+    );
+
+    if (!success)
+    {
+        DEBUG_PRINT("Memory release for /drone messages failed\n");
+        return;
+    }
 
 	RCCHECK(rcl_publisher_fini(&publisher_attitude, &node))
 	RCCHECK(rcl_publisher_fini(&publisher_odometry, &node))

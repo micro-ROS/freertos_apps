@@ -20,10 +20,24 @@ extern "C"
 {
 #endif
 
+#define CRTP_BUFFER_SIZE 1000
+#define SEND_TIMEOUT_MS 25
+
 bool crazyflie_serial_open(struct uxrCustomTransport * transport);
 bool crazyflie_serial_close(struct uxrCustomTransport * transport);
 size_t crazyflie_serial_write(struct uxrCustomTransport* transport, const uint8_t * buf, size_t len, uint8_t * err);
 size_t crazyflie_serial_read(struct uxrCustomTransport* transport, uint8_t* buf, size_t len, int timeout, uint8_t* err);
+
+typedef struct transport_args
+{
+    const uint8_t radio_channel;
+    const uint8_t radio_port;
+    uint8_t * crtp_buffer;
+
+    // Populated inside crazyflie_serial_open
+    bool initialized;
+    size_t crtp_index;
+} transport_args;
 
 #ifdef __cplusplus
 }

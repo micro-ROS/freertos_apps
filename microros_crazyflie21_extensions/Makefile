@@ -37,6 +37,10 @@ MICROROS_POSIX_FREERTOS_OBJECTS += FreeRTOS_POSIX_sched.o
 MICROROS_POSIX_FREERTOS_OBJECTS += FreeRTOS_POSIX_unistd.o 
 MICROROS_POSIX_FREERTOS_OBJECTS += FreeRTOS_POSIX_utils.o 
 
+# Set Micro-XRCE as RMW implementation
+RMW_IMPLEMENTATION := rmw_microxrcedds
+export RMW_IMPLEMENTATION
+
 # Crazyflie 2.1 app configuration
 
 APP = 1
