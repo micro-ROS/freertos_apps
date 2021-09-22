@@ -5,6 +5,7 @@
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 #include <geometry_msgs/msg/point32.h>
+#include <micro_ros_utilities/type_utilities.h>
 
 #include <rcutils/allocator.h>
 #include <rmw_microros/rmw_microros.h>
@@ -12,7 +13,6 @@
 
 #include "config.h"
 #include "log.h"
-#include "crc.h"
 #include "worker.h"
 #include "num.h"
 #include "debug.h"
@@ -22,6 +22,8 @@
 
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){DEBUG_PRINT("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){DEBUG_PRINT("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
+
+static uint8_t crtp_buffer[CRTP_BUFFER_SIZE];
 
 rcl_publisher_t publisher_odometry;
 rcl_publisher_t publisher_attitude;
@@ -52,7 +54,7 @@ void appMain(){
         vTaskSuspend( NULL );
     }
 
-    transport_args custom_args = { .radio_channel = 65, .radio_port = 9, .initialized=false };
+    transport_args custom_args = { .radio_channel = 65, .radio_port = 9, .crtp_buffer = &crtp_buffer[0] };
     rmw_uros_set_custom_transport( 
         true, 
         (void *) &custom_args, 
@@ -85,11 +87,26 @@ void appMain(){
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32), "/drone/attitude"));
 
     // Init messages
-    // TODO: use microros utilities
     geometry_msgs__msg__Point32 pose;
-    geometry_msgs__msg__Point32__init(&pose);
     geometry_msgs__msg__Point32 odom;
-    geometry_msgs__msg__Point32__init(&odom);
+
+    static micro_ros_utilities_memory_conf_t conf = {0};
+
+    bool success = micro_ros_utilities_create_message_memory(
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
+        &pose,
+        conf);
+
+    success &= micro_ros_utilities_create_message_memory(
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
+        &odom,
+        conf);
+
+    if (!success)
+    {
+        DEBUG_PRINT("Memory allocation for /drone messages failed\n");
+        return;
+    }
 
     //Get pitch, roll and yaw value
     pitchid = logGetVarId("stateEstimate", "pitch");
@@ -118,6 +135,24 @@ void appMain(){
 
         vTaskDelay(10/portTICK_RATE_MS);
 	}
+
+    success = micro_ros_utilities_destroy_message_memory(
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
+        &pose,
+        conf
+    );
+
+    success &= micro_ros_utilities_destroy_message_memory(
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
+        &odom,
+        conf
+    );
+
+    if (!success)
+    {
+        DEBUG_PRINT("Memory release for /drone messages failed\n");
+        return;
+    }
 
 	RCCHECK(rcl_publisher_fini(&publisher_attitude, &node))
 	RCCHECK(rcl_publisher_fini(&publisher_odometry, &node))
