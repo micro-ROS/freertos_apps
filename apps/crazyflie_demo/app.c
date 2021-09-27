@@ -243,11 +243,7 @@ void microros_primary(void * params)
         posX = logGetFloat(Xid);
         posY = logGetFloat(Yid);
         posZ = logGetFloat(Zid);
-/*
-        posX = roundf(logGetFloat(Xid) * 100) / 100.0;
-        posY = roundf(logGetFloat(Yid) * 100) / 100.0;
-        posZ = roundf(logGetFloat(Zid) * 100) / 100.0;
-*/
+
         tf.transform.translation.x = posX;
         tf.transform.translation.y = posY;
         tf.transform.translation.z = posZ;
