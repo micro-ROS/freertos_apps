@@ -9,8 +9,10 @@
 #include <rclc/executor.h>
 #include <sensor_msgs/msg/laser_echo.h>
 #include <std_msgs/msg/float32.h>
-#include <geometry_msgs/msg/point32.h>
+#include <geometry_msgs/msg/transform_stamped.h>
+#include <geometry_msgs/msg/pose_stamped.h>
 #include <micro_ros_utilities/type_utilities.h>
+#include <micro_ros_utilities/string_utilities.h>
 
 #include <rosidl_typesupport_microxrcedds_c/identifier.h>
 #include "rosidl_typesupport_microxrcedds_c/message_type_support.h"
@@ -48,7 +50,8 @@ void microros_secondary(void * params);
 sensor_msgs__msg__LaserEcho sensor_topic;
 static bool sensor_data_ready = false;
 
-static int pitchid, rollid, yawid;
+static float posX, posY, posZ; 
+static int qxid, qyid, qzid, qwid;
 static int Xid, Yid, Zid;
 
 // Note: please set APP_STACKSIZE = 100 and CFLAGS += -DFREERTOS_HEAP_SIZE=12100 in Makefile before build
@@ -62,7 +65,7 @@ static bool created_primary = false;
 SemaphoreHandle_t xMutex;
 StaticSemaphore_t xMutexBuffer;
 
-void appMain(){ 
+void appMain(){
     // TaskHandle_t task_primary, task_secondary;
     absoluteUsedMemory = 0;
     usedMemory = 0;
@@ -74,7 +77,7 @@ void appMain(){
     freeRTOS_allocator.zero_allocate = __crazyflie_zero_allocate;
 
     if (!rcutils_set_default_allocator(&freeRTOS_allocator)) {
-        DEBUG_PRINT("Error on default allocators (line %d)\n",__LINE__); 
+        DEBUG_PRINT("Error on default allocators (line %d)\n",__LINE__);
         vTaskSuspend( NULL );
     }
 
@@ -119,7 +122,7 @@ void microros_primary(void * params)
         crazyflie_serial_write,
         crazyflie_serial_read,
         rmw_options));
-    
+
     // Wait for agent connection
     while(RMW_RET_OK != rmw_uros_ping_agent_options(100, 1, rmw_options))
     {
@@ -135,34 +138,34 @@ void microros_primary(void * params)
     // Create publisher 1
     rcl_publisher_t pub_sensors_temp;
     RCCHECK(rclc_publisher_init_best_effort(
-        &pub_sensors_temp, 
+        &pub_sensors_temp,
         &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32), 
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
         "/weather_station/temperature"));
 
     // Create publisher 2
     rcl_publisher_t pub_sensors_hum;
     RCCHECK(rclc_publisher_init_best_effort(
-        &pub_sensors_hum, 
+        &pub_sensors_hum,
         &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32), 
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
         "/weather_station/humidity"));
 
     // Create publisher 3
-    rcl_publisher_t pub_odom;
+    rcl_publisher_t pub_tf;
     RCCHECK(rclc_publisher_init_best_effort(
-        &pub_odom, 
+        &pub_tf,
         &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
-        "/drone/odometry"));
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TransformStamped),
+        "/drone/tf"));
 
     // Create publisher 4
-    rcl_publisher_t pub_attitude;
+    rcl_publisher_t pub_pose;
     RCCHECK(rclc_publisher_init_best_effort(
-        &pub_attitude, 
+        &pub_pose,
         &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
-        "/drone/attitude"));
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, PoseStamped),
+        "/drone/pose"));
 
     DEBUG_PRINT("Free heap post uROS configuration: %d bytes\n", xPortGetFreeHeapSize());
     DEBUG_PRINT("uROS Used Memory %d bytes\n", usedMemory);
@@ -173,33 +176,45 @@ void microros_primary(void * params)
     // ####################### MAIN LOOP #######################
 
     // Init messages
-    geometry_msgs__msg__Point32 pose;
-    geometry_msgs__msg__Point32 odom;
+    DEBUG_PRINT("Allocating memory for TF\n");
 
+    geometry_msgs__msg__TransformStamped tf;
     static micro_ros_utilities_memory_conf_t conf = {0};
 
-    bool success = micro_ros_utilities_create_message_memory(
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
-        &pose,
-        conf);
-
-    success &= micro_ros_utilities_create_message_memory(
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Point32),
-        &odom,
-        conf);
-
-    if (!success)
+    if (!micro_ros_utilities_create_message_memory(
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TransformStamped),
+        &tf,
+        conf))
     {
         DEBUG_PRINT("Memory allocation for /drone messages failed\n");
         return;
     }
 
-    //Get pitch, roll and yaw value
-    pitchid = logGetVarId("stateEstimate", "pitch");
-    rollid = logGetVarId("stateEstimate", "roll");
-    yawid = logGetVarId("stateEstimate", "yaw");
+    DEBUG_PRINT("Allocating memory for Path\n");
+    geometry_msgs__msg__PoseStamped pose;
 
-    //Get X,Y and Z value
+    if (!micro_ros_utilities_create_message_memory(
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, PoseStamped),
+        &pose,
+        conf))
+    {
+        DEBUG_PRINT("Memory allocation for /drone messages failed\n");
+        return;
+    }
+
+    DEBUG_PRINT("Memory allocated!\n");
+
+    tf.child_frame_id = micro_ros_string_utilities_set(tf.child_frame_id, "/base_footprint_drone");
+    tf.header.frame_id = micro_ros_string_utilities_set(tf.header.frame_id, "/map");
+    pose.header.frame_id = micro_ros_string_utilities_set(pose.header.frame_id, "/map");
+
+    // Get quaternion
+    qxid = logGetVarId("stateEstimate", "qx");
+    qyid = logGetVarId("stateEstimate", "qy");
+    qzid = logGetVarId("stateEstimate", "qz");
+    qwid = logGetVarId("stateEstimate", "qw");
+
+    // Get X,Y and Z value
     Xid = logGetVarId("stateEstimate", "x");
     Yid = logGetVarId("stateEstimate", "y");
     Zid = logGetVarId("stateEstimate", "z");
@@ -217,18 +232,38 @@ void microros_primary(void * params)
             aux_msg.data = sensor_topic.echoes.data[1];
             RCSOFTCHECK(rcl_publish( &pub_sensors_hum, (const void *) &aux_msg, NULL));
             sensor_data_ready = 0;
-            xSemaphoreGive(xMutex);            
+            xSemaphoreGive(xMutex);
         }
 
-        pose.x = logGetFloat(pitchid);
-        pose.y = logGetFloat(rollid);
-        pose.z = logGetFloat(yawid);
-        odom.x = logGetFloat(Xid);
-        odom.y = logGetFloat(Yid);
-        odom.z = logGetFloat(Zid);
+        tf.transform.rotation.x = logGetFloat(qxid);
+        tf.transform.rotation.y = logGetFloat(qyid);
+        tf.transform.rotation.z = logGetFloat(qzid);
+        tf.transform.rotation.w = logGetFloat(qwid);
 
-        RCSOFTCHECK(rcl_publish( &pub_attitude, &pose, NULL));
-        RCSOFTCHECK(rcl_publish( &pub_odom, &odom, NULL));
+        posX = logGetFloat(Xid);
+        posY = logGetFloat(Yid);
+        posZ = logGetFloat(Zid);
+/*
+        posX = roundf(logGetFloat(Xid) * 100) / 100.0;
+        posY = roundf(logGetFloat(Yid) * 100) / 100.0;
+        posZ = roundf(logGetFloat(Zid) * 100) / 100.0;
+*/
+        tf.transform.translation.x = posX;
+        tf.transform.translation.y = posY;
+        tf.transform.translation.z = posZ;
+
+        pose.pose.position.x = posX;
+        pose.pose.position.y = posY;
+        pose.pose.position.z = posZ;
+
+        // Fill the message timestamp.
+		struct timespec ts;
+		clock_gettime(CLOCK_REALTIME, &ts);
+        pose.header.stamp.sec = ts.tv_sec;
+        pose.header.stamp.nanosec = ts.tv_nsec;
+
+        RCSOFTCHECK(rcl_publish( &pub_tf, &tf, NULL));
+        RCSOFTCHECK(rcl_publish( &pub_pose, &pose, NULL));
 
         vTaskDelay(100/portTICK_RATE_MS);
     }
