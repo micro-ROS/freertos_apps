@@ -32,7 +32,8 @@ void timer_callback(rcl_timer_t * timer, int64_t last_call_time)
   		msg.data.capacity = PUB_MSG_CAPACITY;	
   		snprintf(msg.data.data, msg.data.capacity, "Hello World %d", counter++);
   		msg.data.size = strlen(msg.data.data);
-		RCSOFTCHECK(rcl_publish(&publisher, &msg, NULL));					
+		RCSOFTCHECK(rcl_publish(&publisher, &msg, NULL));
+		free(msg.data.data);
 	}	
 }
 
