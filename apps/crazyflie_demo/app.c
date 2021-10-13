@@ -7,10 +7,9 @@
 #include <rcl/rcl.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
-#include <sensor_msgs/msg/laser_echo.h>
+#include <std_msgs/msg/int32.h>
 #include <std_msgs/msg/float32.h>
 #include <geometry_msgs/msg/transform_stamped.h>
-#include <geometry_msgs/msg/pose_stamped.h>
 #include <micro_ros_utilities/type_utilities.h>
 #include <micro_ros_utilities/string_utilities.h>
 
@@ -31,6 +30,7 @@
 #include "num.h"
 #include "debug.h"
 #include "radiolink.h"
+#include "param.h"
 #include <time.h>
 
 #include "microrosapp.h"
@@ -47,10 +47,10 @@
 void microros_primary(void * params);
 void microros_secondary(void * params);
 
-sensor_msgs__msg__LaserEcho sensor_topic;
+std_msgs__msg__Int32 sensor_topic;
 static bool sensor_data_ready = false;
+static bool connection_established = false;
 
-static float posX, posY, posZ; 
 static int qxid, qyid, qzid, qwid;
 static int Xid, Yid, Zid;
 
@@ -64,6 +64,10 @@ static bool created_primary = false;
 
 SemaphoreHandle_t xMutex;
 StaticSemaphore_t xMutexBuffer;
+
+static paramVarId_t paramIdCommanderEnHighLevel, paramIdxyVelMax;
+
+static void enableHighlevelCommander() { paramSetInt(paramIdCommanderEnHighLevel, 1); }
 
 void appMain(){
     // TaskHandle_t task_primary, task_secondary;
@@ -84,17 +88,13 @@ void appMain(){
     xMutex = xSemaphoreCreateBinaryStatic(&xMutexBuffer);
     xSemaphoreGive(xMutex);
 
-    static micro_ros_utilities_memory_conf_t conf = {0};
-    conf.max_basic_type_sequence_capacity = 2;
+    // Enable high level controller
+    paramIdCommanderEnHighLevel = paramGetVarId("commander", "enHighLevel");
+    enableHighlevelCommander();
 
-    if (!micro_ros_utilities_create_message_memory(
-        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, LaserEcho),
-        &sensor_topic,
-        conf))
-    {
-        DEBUG_PRINT("Memory allocation for /weather_station message failed\n");
-        return;
-    }
+    // Set PID max speed
+    paramIdxyVelMax = paramGetVarId("posCtlPid", "xyVelMax");
+    paramSetFloat(paramIdxyVelMax, 0.5);
 
     STATIC_MEM_TASK_CREATE(microros_primary, microros_primary, "microROSprimary", NULL, 3);
     STATIC_MEM_TASK_CREATE(microros_secondary, microros_secondary, "microROSsecondary", NULL, 3);
@@ -123,13 +123,15 @@ void microros_primary(void * params)
         crazyflie_serial_read,
         rmw_options));
 
+    DEBUG_PRINT("Waiting for main Agent\n");
     // Wait for agent connection
     while(RMW_RET_OK != rmw_uros_ping_agent_options(100, 1, rmw_options))
     {
         vTaskDelay(250/portTICK_RATE_MS);
     }
 
-    rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
+    RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator));
+    DEBUG_PRINT("Connected to Agent!\n");
 
     // create node
     rcl_node_t node;
@@ -159,14 +161,6 @@ void microros_primary(void * params)
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TransformStamped),
         "/drone/tf"));
 
-    // Create publisher 4
-    rcl_publisher_t pub_pose;
-    RCCHECK(rclc_publisher_init_best_effort(
-        &pub_pose,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, PoseStamped),
-        "/drone/pose"));
-
     DEBUG_PRINT("Free heap post uROS configuration: %d bytes\n", xPortGetFreeHeapSize());
     DEBUG_PRINT("uROS Used Memory %d bytes\n", usedMemory);
     DEBUG_PRINT("uROS Absolute Used Memory %d bytes\n", absoluteUsedMemory);
@@ -175,9 +169,7 @@ void microros_primary(void * params)
 
     // ####################### MAIN LOOP #######################
 
-    // Init messages
-    DEBUG_PRINT("Allocating memory for TF\n");
-
+    // Init tf message memory
     geometry_msgs__msg__TransformStamped tf;
     static micro_ros_utilities_memory_conf_t conf = {0};
 
@@ -190,23 +182,8 @@ void microros_primary(void * params)
         return;
     }
 
-    DEBUG_PRINT("Allocating memory for Path\n");
-    geometry_msgs__msg__PoseStamped pose;
-
-    if (!micro_ros_utilities_create_message_memory(
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, PoseStamped),
-        &pose,
-        conf))
-    {
-        DEBUG_PRINT("Memory allocation for /drone messages failed\n");
-        return;
-    }
-
-    DEBUG_PRINT("Memory allocated!\n");
-
     tf.child_frame_id = micro_ros_string_utilities_set(tf.child_frame_id, "/base_footprint_drone");
     tf.header.frame_id = micro_ros_string_utilities_set(tf.header.frame_id, "/map");
-    pose.header.frame_id = micro_ros_string_utilities_set(pose.header.frame_id, "/map");
 
     // Get quaternion
     qxid = logGetVarId("stateEstimate", "qx");
@@ -227,9 +204,9 @@ void microros_primary(void * params)
 
             xSemaphoreTake(xMutex, portMAX_DELAY);
             DEBUG_PRINT("Publishing sensor data\n");
-            aux_msg.data = sensor_topic.echoes.data[0];
+            aux_msg.data = (sensor_topic.data & 0x0000FFFF)/1000.0;
             RCSOFTCHECK(rcl_publish( &pub_sensors_temp, (const void *) &aux_msg, NULL));
-            aux_msg.data = sensor_topic.echoes.data[1];
+            aux_msg.data = ((uint32_t) sensor_topic.data >> 16)/1000.0;
             RCSOFTCHECK(rcl_publish( &pub_sensors_hum, (const void *) &aux_msg, NULL));
             sensor_data_ready = 0;
             xSemaphoreGive(xMutex);
@@ -240,26 +217,17 @@ void microros_primary(void * params)
         tf.transform.rotation.z = logGetFloat(qzid);
         tf.transform.rotation.w = logGetFloat(qwid);
 
-        posX = logGetFloat(Xid);
-        posY = logGetFloat(Yid);
-        posZ = logGetFloat(Zid);
-
-        tf.transform.translation.x = posX;
-        tf.transform.translation.y = posY;
-        tf.transform.translation.z = posZ;
-
-        pose.pose.position.x = posX;
-        pose.pose.position.y = posY;
-        pose.pose.position.z = posZ;
+        tf.transform.translation.x = logGetFloat(Xid);
+        tf.transform.translation.y = logGetFloat(Yid);
+        tf.transform.translation.z = logGetFloat(Zid);
 
         // Fill the message timestamp.
 		struct timespec ts;
 		clock_gettime(CLOCK_REALTIME, &ts);
-        pose.header.stamp.sec = ts.tv_sec;
-        pose.header.stamp.nanosec = ts.tv_nsec;
+        tf.header.stamp.sec = ts.tv_sec;
+        tf.header.stamp.nanosec = ts.tv_nsec;
 
         RCSOFTCHECK(rcl_publish( &pub_tf, &tf, NULL));
-        RCSOFTCHECK(rcl_publish( &pub_pose, &pose, NULL));
 
         vTaskDelay(100/portTICK_RATE_MS);
     }
@@ -280,13 +248,14 @@ void on_topic_secondary(
     (void) session; (void) object_id; (void) request_id; (void) stream_id; (void) args; (void) length;
 
     const rosidl_message_type_support_t * type_support_xrce = get_message_typesupport_handle(
-      ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, LaserEcho), ROSIDL_TYPESUPPORT_MICROXRCEDDS_C__IDENTIFIER_VALUE);
+      ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32), ROSIDL_TYPESUPPORT_MICROXRCEDDS_C__IDENTIFIER_VALUE);
     const message_type_support_callbacks_t * cdr_callbacks = (message_type_support_callbacks_t*) type_support_xrce->data;
 
     xSemaphoreTake(xMutex, portMAX_DELAY);
     if (cdr_callbacks->cdr_deserialize(ub, &sensor_topic))
     {
         sensor_data_ready = 1;
+        connection_established = true;
     }
     xSemaphoreGive(xMutex);
 }
@@ -315,32 +284,37 @@ void microros_secondary(void * params){
         vTaskDelete(NULL);
     }
 
-    while(1)
+    // Reduce radio power for sensor demo
+    radiolinkSetPowerDbm(-6);
+
+    // Session
+    uxrSession session;
+    uint32_t session_key = 0x12345678;
+    uxr_init_session(&session, &transport.comm, session_key);
+    uxr_set_topic_callback(&session, on_topic_secondary, NULL);
+
+    // Stream
+    uint8_t output_stream_buffer[BUFFER_SIZE];
+    uxrStreamId stream_out = uxr_create_output_best_effort_stream(&session, output_stream_buffer, BUFFER_SIZE);
+    uxrStreamId stream_in = uxr_create_input_best_effort_stream(&session);
+
+    // Request topics
+    uxrDeliveryControl delivery_control = {0};
+    delivery_control.max_samples = UXR_MAX_SAMPLES_UNLIMITED;
+
+    uint16_t datareader_key = 0x01;
+    uxrObjectId datareader_id = uxr_object_id(datareader_key, UXR_DATAREADER_ID);
+
+    DEBUG_PRINT("Secondary task started!\n");
+    while (1)
     {
-        // Session
-        uxrSession session;
-        uint32_t session_key = 0x12345678;
-        uxr_init_session(&session, &transport.comm, session_key);
-        uxr_set_topic_callback(&session, on_topic_secondary, NULL);
-
-        // Stream
-        uint8_t output_stream_buffer[BUFFER_SIZE];
-        uxrStreamId reliable_out = uxr_create_output_reliable_stream(&session, output_stream_buffer, BUFFER_SIZE, STREAM_HISTORY);
-        uxrStreamId stream_in = uxr_create_input_best_effort_stream(&session);
-
-        // Request topics
-        uxrDeliveryControl delivery_control = {0};
-        delivery_control.max_samples = UXR_MAX_SAMPLES_UNLIMITED;
-
-        uint16_t datareader_key = 0x01;
-        uxrObjectId datareader_id = uxr_object_id(datareader_key, UXR_DATAREADER_ID);
-        uxr_buffer_request_data(&session, reliable_out, datareader_id, stream_in, &delivery_control);
-
-        while (1)
+        if (!connection_established)
         {
-            uxr_run_session_until_data(&session, 100);
-            vTaskDelay(250/portTICK_RATE_MS);
+            uxr_buffer_request_data(&session, stream_out, datareader_id, stream_in, &delivery_control);
         }
+
+        uxr_run_session_until_data(&session, 100);
+        vTaskDelay(250/portTICK_RATE_MS);
     }
 
     vTaskSuspend( NULL );
