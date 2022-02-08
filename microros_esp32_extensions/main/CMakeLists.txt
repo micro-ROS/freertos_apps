@@ -45,7 +45,7 @@ set_target_properties(microros PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${MICROR
 
 set(INCLUDE_ROS2_PACKAGES rmw;rcl;rcl_action;rcl_lifecycle;rcl_logging_interface)
 foreach(pkg ${INCLUDE_ROS2_PACKAGES})
-    set_target_properties(microros PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${MICROROS_INCLUDE_DIR}/${pkg})
+    target_include_directories(microros INTERFACE ${MICROROS_INCLUDE_DIR}/${pkg})
 endforeach()
 
 set_directory_properties( PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
