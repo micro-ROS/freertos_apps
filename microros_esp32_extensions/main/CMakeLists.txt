@@ -43,6 +43,11 @@ target_link_libraries(microros INTERFACE c idf::lwip)
 set_target_properties(microros PROPERTIES IMPORTED_LOCATION             ${CMAKE_BINARY_DIR}/libmicroros.a)
 set_target_properties(microros PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${MICROROS_INCLUDE_DIR})
 
+set(INCLUDE_ROS2_PACKAGES rmw;rcl;rcl_action;rcl_lifecycle;rcl_logging_interface)
+foreach(pkg ${INCLUDE_ROS2_PACKAGES})
+    set_target_properties(microros PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${MICROROS_INCLUDE_DIR}/${pkg})
+endforeach()
+
 set_directory_properties( PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
     "${UROS_DIR}/install;${UROS_DIR}/build;${UROS_DIR}/log" )
 
