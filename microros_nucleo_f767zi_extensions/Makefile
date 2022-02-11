@@ -263,7 +263,7 @@ C_INCLUDES =  \
 -I$(UROS_APP_FOLDER)
 
 MICROROS_INCLUDES += $(shell find $(UROS_DIR)/install -name 'include' | sed -E "s/(.*)/-I\1/")
-INCLUDE_ROS2_PACKAGES = rmw rcl rcl_action rcl_lifecycle rcl_logging_interface
+INCLUDE_ROS2_PACKAGES = rmw rcl rcl_action rcl_lifecycle rcl_logging_interface rosidl_runtime_c rosidl_typesupport_interface
 MICROROS_INCLUDES += $(foreach pkg, $(INCLUDE_ROS2_PACKAGES), -I$(UROS_DIR)/install/$(pkg)/include/$(pkg))
 MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include
 MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include/FreeRTOS_POSIX
