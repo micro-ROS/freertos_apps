@@ -18,13 +18,14 @@
 
 //initialization
 rcl_publisher_t publisher;
-std_msgs__msg__String msg;
 int counter = 1;
 
 void timer_callback(rcl_timer_t * timer, int64_t last_call_time)
 {
 	RCLC_UNUSED(last_call_time);
 	if (timer != NULL) {
+		//initialization of msg
+		std_msgs__msg__String msg;
 		// assign message to publisher
   		std_msgs__msg__String__init(&msg);
   		const unsigned int PUB_MSG_CAPACITY = 30;
