@@ -26,8 +26,8 @@ void timer_callback(rcl_timer_t * timer, int64_t last_call_time)
 	if (timer != NULL) {
 		//initialization of msg
 		std_msgs__msg__String msg;
-		// assign message to publisher
-  		std_msgs__msg__String__init(&msg);
+		std_msgs__msg__String__init(&msg);
+		// assign message to publisher  		
   		const unsigned int PUB_MSG_CAPACITY = 30;
   		msg.data.data = malloc(PUB_MSG_CAPACITY);
   		msg.data.capacity = PUB_MSG_CAPACITY;	
