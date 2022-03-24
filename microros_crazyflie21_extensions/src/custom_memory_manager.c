@@ -300,7 +300,7 @@ void *pvPortRealloc( void *pv, size_t xWantedSize )
 
 	void * newmem = pvPortMalloc(xWantedSize);
 
-	if (newmem != NULL)
+	if (newmem != NULL && pv != NULL)
 	{
 		uint8_t *puc = ( uint8_t * ) pv;
 		BlockLink_t *pxLink;
