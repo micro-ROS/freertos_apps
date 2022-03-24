@@ -313,10 +313,7 @@ void *pvPortRealloc( void *pv, size_t xWantedSize )
 		char *in_dest = (char*)newmem;
 
 		size_t count = (pxLink->xBlockSize & ~xBlockAllocatedBit) - xHeapStructSize;
-		if (xWantedSize < count)
-		{
-			count = xWantedSize;
-		}
+		if (xWantedSize < count) count = xWantedSize;
 
 		while (count--) *in_dest++ = *in_src++;
 
