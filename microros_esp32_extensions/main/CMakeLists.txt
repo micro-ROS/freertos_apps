@@ -43,7 +43,16 @@ target_link_libraries(microros INTERFACE c idf::lwip)
 set_target_properties(microros PROPERTIES IMPORTED_LOCATION             ${CMAKE_BINARY_DIR}/libmicroros.a)
 set_target_properties(microros PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${MICROROS_INCLUDE_DIR})
 
-set(INCLUDE_ROS2_PACKAGES rmw;rcl;rcl_action;rcl_lifecycle;rcl_logging_interface;rosidl_runtime_c;rosidl_typesupport_interface)
+execute_process(
+    COMMAND
+        make -f libmicroros.mk get_package_names
+            COMPONENT_PATH=${MICROROS_DIR}
+    WORKING_DIRECTORY
+        ${MICROROS_DIR}
+    OUTPUT_VARIABLE
+        INCLUDE_ROS2_PACKAGES
+    )
+
 foreach(pkg ${INCLUDE_ROS2_PACKAGES})
     file(MAKE_DIRECTORY ${MICROROS_INCLUDE_DIR}/${pkg})
     target_include_directories(microros INTERFACE ${MICROROS_INCLUDE_DIR}/${pkg})

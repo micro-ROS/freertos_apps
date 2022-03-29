@@ -45,6 +45,10 @@ colcon_compile: esp32_toolchain
 		-DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN) \
 		-DCMAKE_VERBOSE_MAKEFILE=ON; \
 
+get_package_names:
+	@cd $(UROS_DIR); \
+	colcon list | awk '{print $$1}' | awk -v d=";" '{s=(NR==1?s:s d)$$0}END{print s}'
+
 libmicroros: colcon_compile
 	mkdir -p $(UROS_DIR)/libmicroros; cd $(UROS_DIR)/libmicroros; \
 	for file in $$(find $(UROS_DIR)/install/lib/ -name '*.a'); do \
