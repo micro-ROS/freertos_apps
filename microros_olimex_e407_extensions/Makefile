@@ -265,7 +265,7 @@ C_INCLUDES =  \
 -IMiddlewares/Third_Party/LwIP/src/include/compat/stdc
 
 MICROROS_INCLUDES += $(shell find $(UROS_DIR)/install -name 'include' | sed -E "s/(.*)/-I\1/")
-INCLUDE_ROS2_PACKAGES = rmw rcl rcl_action rcl_lifecycle rcl_logging_interface rosidl_runtime_c rosidl_typesupport_interface
+INCLUDE_ROS2_PACKAGES = $(shell cd $(UROS_DIR) && colcon list | awk '{print $$1}' | awk -v d=" " '{s=(NR==1?s:s d)$$0}END{print s}')
 MICROROS_INCLUDES += $(foreach pkg, $(INCLUDE_ROS2_PACKAGES), -I$(UROS_DIR)/install/$(pkg)/include/$(pkg))
 MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include
 MICROROS_INCLUDES += -I$(EXTENSIONS_DIR)/include/FreeRTOS_POSIX
