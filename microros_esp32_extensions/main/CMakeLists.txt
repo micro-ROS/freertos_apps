@@ -46,9 +46,8 @@ set_target_properties(microros PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${MICROR
 execute_process(
     COMMAND
         make -f libmicroros.mk get_package_names
-            COMPONENT_PATH=${MICROROS_DIR}
     WORKING_DIRECTORY
-        ${MICROROS_DIR}
+        ${EXTENSIONS_DIR}
     OUTPUT_VARIABLE
         INCLUDE_ROS2_PACKAGES
     )
