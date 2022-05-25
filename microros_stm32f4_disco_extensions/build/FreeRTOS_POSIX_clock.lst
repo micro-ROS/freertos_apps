@@ -1,0 +1,993 @@
+ARM GAS  /tmp/ccTpNi03.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"FreeRTOS_POSIX_clock.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.clock,"ax",%progbits
+  18              		.align	1
+  19              		.global	clock
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	clock:
+  27              	.LFB4:
+  28              		.file 1 "lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c"
+   1:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /*
+   2:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * Amazon FreeRTOS POSIX V1.1.0
+   3:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * Copyright (C) 2018 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+   4:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  *
+   5:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+   6:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * this software and associated documentation files (the "Software"), to deal in
+   7:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * the Software without restriction, including without limitation the rights to
+   8:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+   9:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * the Software, and to permit persons to whom the Software is furnished to do so,
+  10:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * subject to the following conditions:
+  11:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  *
+  12:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * The above copyright notice and this permission notice shall be included in all
+  13:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * copies or substantial portions of the Software.
+  14:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  *
+  15:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  16:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+  17:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+  18:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+  19:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  20:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  21:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  *
+  22:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * http://aws.amazon.com/freertos
+  23:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * http://www.FreeRTOS.org
+  24:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  */
+  25:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  26:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /**
+  27:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * @file FreeRTOS_POSIX_clock.c
+  28:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * @brief Implementation of clock functions in time.h
+  29:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  */
+  30:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ARM GAS  /tmp/ccTpNi03.s 			page 2
+
+
+  31:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /* C standard library includes. */
+  32:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** #include <stddef.h>
+  33:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** #include <string.h>
+  34:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  35:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /* FreeRTOS+POSIX includes. */
+  36:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** #include "FreeRTOS_POSIX.h"
+  37:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** #include "FreeRTOS_POSIX/errno.h"
+  38:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** #include "FreeRTOS_POSIX/time.h"
+  39:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** #include "FreeRTOS_POSIX/utils.h"
+  40:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  41:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /* Declaration of snprintf. The header stdio.h is not included because it
+  42:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****  * includes conflicting symbols on some platforms. */
+  43:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** extern int snprintf( char * s,
+  44:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                      size_t n,
+  45:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                      const char * format,
+  46:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                      ... );
+  47:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  48:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /*-----------------------------------------------------------*/
+  49:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  50:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** clock_t clock( void )
+  51:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** {
+  29              		.loc 1 51 1
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 1, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34 0000 80B4     		push	{r7}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 4
+  37              		.cfi_offset 7, -4
+  38 0002 00AF     		add	r7, sp, #0
+  39              	.LCFI1:
+  40              		.cfi_def_cfa_register 7
+  52:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* This function is currently unsupported. It will always return -1. */
+  53:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  54:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     return ( clock_t ) -1;
+  41              		.loc 1 54 12
+  42 0004 4FF0FF33 		mov	r3, #-1
+  55:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** }
+  43              		.loc 1 55 1
+  44 0008 1846     		mov	r0, r3
+  45 000a BD46     		mov	sp, r7
+  46              	.LCFI2:
+  47              		.cfi_def_cfa_register 13
+  48              		@ sp needed
+  49 000c 5DF8047B 		ldr	r7, [sp], #4
+  50              	.LCFI3:
+  51              		.cfi_restore 7
+  52              		.cfi_def_cfa_offset 0
+  53 0010 7047     		bx	lr
+  54              		.cfi_endproc
+  55              	.LFE4:
+  57              		.section	.text.clock_getcpuclockid,"ax",%progbits
+  58              		.align	1
+  59              		.global	clock_getcpuclockid
+  60              		.syntax unified
+  61              		.thumb
+ARM GAS  /tmp/ccTpNi03.s 			page 3
+
+
+  62              		.thumb_func
+  63              		.fpu fpv4-sp-d16
+  65              	clock_getcpuclockid:
+  66              	.LFB5:
+  56:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  57:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /*-----------------------------------------------------------*/
+  58:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  59:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** int clock_getcpuclockid( pid_t pid,
+  60:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                          clockid_t * clock_id )
+  61:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** {
+  67              		.loc 1 61 1
+  68              		.cfi_startproc
+  69              		@ args = 0, pretend = 0, frame = 8
+  70              		@ frame_needed = 1, uses_anonymous_args = 0
+  71              		@ link register save eliminated.
+  72 0000 80B4     		push	{r7}
+  73              	.LCFI4:
+  74              		.cfi_def_cfa_offset 4
+  75              		.cfi_offset 7, -4
+  76 0002 83B0     		sub	sp, sp, #12
+  77              	.LCFI5:
+  78              		.cfi_def_cfa_offset 16
+  79 0004 00AF     		add	r7, sp, #0
+  80              	.LCFI6:
+  81              		.cfi_def_cfa_register 7
+  82 0006 7860     		str	r0, [r7, #4]
+  83 0008 3960     		str	r1, [r7]
+  62:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Silence warnings about unused parameters. */
+  63:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ( void ) pid;
+  64:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ( void ) clock_id;
+  65:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  66:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* This function is currently unsupported. It will always return EPERM. */
+  67:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     return EPERM;
+  84              		.loc 1 67 12
+  85 000a 0123     		movs	r3, #1
+  68:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** }
+  86              		.loc 1 68 1
+  87 000c 1846     		mov	r0, r3
+  88 000e 0C37     		adds	r7, r7, #12
+  89              	.LCFI7:
+  90              		.cfi_def_cfa_offset 4
+  91 0010 BD46     		mov	sp, r7
+  92              	.LCFI8:
+  93              		.cfi_def_cfa_register 13
+  94              		@ sp needed
+  95 0012 5DF8047B 		ldr	r7, [sp], #4
+  96              	.LCFI9:
+  97              		.cfi_restore 7
+  98              		.cfi_def_cfa_offset 0
+  99 0016 7047     		bx	lr
+ 100              		.cfi_endproc
+ 101              	.LFE5:
+ 103              		.section	.text.clock_getres,"ax",%progbits
+ 104              		.align	1
+ 105              		.global	clock_getres
+ 106              		.syntax unified
+ 107              		.thumb
+ARM GAS  /tmp/ccTpNi03.s 			page 4
+
+
+ 108              		.thumb_func
+ 109              		.fpu fpv4-sp-d16
+ 111              	clock_getres:
+ 112              	.LFB6:
+  69:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  70:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /*-----------------------------------------------------------*/
+  71:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  72:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** int clock_getres( clockid_t clock_id,
+  73:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                   struct timespec * res )
+  74:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** {
+ 113              		.loc 1 74 1
+ 114              		.cfi_startproc
+ 115              		@ args = 0, pretend = 0, frame = 8
+ 116              		@ frame_needed = 1, uses_anonymous_args = 0
+ 117              		@ link register save eliminated.
+ 118 0000 90B4     		push	{r4, r7}
+ 119              	.LCFI10:
+ 120              		.cfi_def_cfa_offset 8
+ 121              		.cfi_offset 4, -8
+ 122              		.cfi_offset 7, -4
+ 123 0002 82B0     		sub	sp, sp, #8
+ 124              	.LCFI11:
+ 125              		.cfi_def_cfa_offset 16
+ 126 0004 00AF     		add	r7, sp, #0
+ 127              	.LCFI12:
+ 128              		.cfi_def_cfa_register 7
+ 129 0006 7860     		str	r0, [r7, #4]
+ 130 0008 3960     		str	r1, [r7]
+  75:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Silence warnings about unused parameters. */
+  76:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ( void ) clock_id;
+  77:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  78:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Convert FreeRTOS tick resolution as timespec. */
+  79:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     if( res != NULL )
+ 131              		.loc 1 79 7
+ 132 000a 3B68     		ldr	r3, [r7]
+ 133 000c 002B     		cmp	r3, #0
+ 134 000e 09D0     		beq	.L6
+  80:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     {
+  81:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         res->tv_sec = 0;
+ 135              		.loc 1 81 21
+ 136 0010 3A68     		ldr	r2, [r7]
+ 137 0012 4FF00003 		mov	r3, #0
+ 138 0016 4FF00004 		mov	r4, #0
+ 139 001a C2E90034 		strd	r3, [r2]
+  82:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         res->tv_nsec = NANOSECONDS_PER_TICK;
+ 140              		.loc 1 82 22
+ 141 001e 3B68     		ldr	r3, [r7]
+ 142 0020 034A     		ldr	r2, .L8
+ 143 0022 9A60     		str	r2, [r3, #8]
+ 144              	.L6:
+  83:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     }
+  84:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  85:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     return 0;
+ 145              		.loc 1 85 12
+ 146 0024 0023     		movs	r3, #0
+  86:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** }
+ 147              		.loc 1 86 1
+ARM GAS  /tmp/ccTpNi03.s 			page 5
+
+
+ 148 0026 1846     		mov	r0, r3
+ 149 0028 0837     		adds	r7, r7, #8
+ 150              	.LCFI13:
+ 151              		.cfi_def_cfa_offset 8
+ 152 002a BD46     		mov	sp, r7
+ 153              	.LCFI14:
+ 154              		.cfi_def_cfa_register 13
+ 155              		@ sp needed
+ 156 002c 90BC     		pop	{r4, r7}
+ 157              	.LCFI15:
+ 158              		.cfi_restore 7
+ 159              		.cfi_restore 4
+ 160              		.cfi_def_cfa_offset 0
+ 161 002e 7047     		bx	lr
+ 162              	.L9:
+ 163              		.align	2
+ 164              	.L8:
+ 165 0030 40420F00 		.word	1000000
+ 166              		.cfi_endproc
+ 167              	.LFE6:
+ 169              		.section	.text.clock_gettime,"ax",%progbits
+ 170              		.align	1
+ 171              		.global	clock_gettime
+ 172              		.syntax unified
+ 173              		.thumb
+ 174              		.thumb_func
+ 175              		.fpu fpv4-sp-d16
+ 177              	clock_gettime:
+ 178              	.LFB7:
+  87:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  88:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /*-----------------------------------------------------------*/
+  89:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  90:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** int clock_gettime( clockid_t clock_id,
+  91:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                    struct timespec * tp )
+  92:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** {
+ 179              		.loc 1 92 1
+ 180              		.cfi_startproc
+ 181              		@ args = 0, pretend = 0, frame = 24
+ 182              		@ frame_needed = 1, uses_anonymous_args = 0
+ 183 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 184              	.LCFI16:
+ 185              		.cfi_def_cfa_offset 28
+ 186              		.cfi_offset 4, -28
+ 187              		.cfi_offset 5, -24
+ 188              		.cfi_offset 6, -20
+ 189              		.cfi_offset 7, -16
+ 190              		.cfi_offset 8, -12
+ 191              		.cfi_offset 9, -8
+ 192              		.cfi_offset 14, -4
+ 193 0004 87B0     		sub	sp, sp, #28
+ 194              	.LCFI17:
+ 195              		.cfi_def_cfa_offset 56
+ 196 0006 00AF     		add	r7, sp, #0
+ 197              	.LCFI18:
+ 198              		.cfi_def_cfa_register 7
+ 199 0008 7860     		str	r0, [r7, #4]
+ 200 000a 3960     		str	r1, [r7]
+ARM GAS  /tmp/ccTpNi03.s 			page 6
+
+
+  93:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     TimeOut_t xCurrentTime = { 0 };
+ 201              		.loc 1 93 15
+ 202 000c 07F10803 		add	r3, r7, #8
+ 203 0010 0022     		movs	r2, #0
+ 204 0012 1A60     		str	r2, [r3]
+ 205 0014 5A60     		str	r2, [r3, #4]
+  94:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+  95:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Intermediate variable used to convert TimeOut_t to struct timespec.
+  96:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****      * Also used to detect overflow issues. It must be unsigned because the
+  97:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****      * behavior of signed integer overflow is undefined. */
+  98:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     uint64_t ullTickCount = 0ULL;
+ 206              		.loc 1 98 14
+ 207 0016 4FF00003 		mov	r3, #0
+ 208 001a 4FF00004 		mov	r4, #0
+ 209 001e C7E90434 		strd	r3, [r7, #16]
+  99:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 100:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Silence warnings about unused parameters. */
+ 101:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ( void ) clock_id;
+ 102:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 103:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Get the current tick count and overflow count. vTaskSetTimeOutState()
+ 104:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****      * is used to get these values because they are both static in tasks.c. */
+ 105:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     vTaskSetTimeOutState( &xCurrentTime );
+ 210              		.loc 1 105 5
+ 211 0022 07F10803 		add	r3, r7, #8
+ 212 0026 1846     		mov	r0, r3
+ 213 0028 FFF7FEFF 		bl	vTaskSetTimeOutState
+ 106:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 107:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Adjust the tick count for the number of times a TickType_t has overflowed.
+ 108:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****      * portMAX_DELAY should be the maximum value of a TickType_t. */
+ 109:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ullTickCount = ( uint64_t ) ( xCurrentTime.xOverflowCount ) << ( sizeof( TickType_t ) * 8 );
+ 214              		.loc 1 109 47
+ 215 002c BB68     		ldr	r3, [r7, #8]
+ 216              		.loc 1 109 20
+ 217 002e 1946     		mov	r1, r3
+ 218 0030 4FEAE172 		asr	r2, r1, #31
+ 219              		.loc 1 109 18
+ 220 0034 4FF00003 		mov	r3, #0
+ 221 0038 4FF00004 		mov	r4, #0
+ 222 003c 0C00     		movs	r4, r1
+ 223 003e 0023     		movs	r3, #0
+ 224 0040 C7E90434 		strd	r3, [r7, #16]
+ 110:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 111:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Add the current tick count. */
+ 112:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ullTickCount += xCurrentTime.xTimeOnEntering;
+ 225              		.loc 1 112 33
+ 226 0044 FB68     		ldr	r3, [r7, #12]
+ 227 0046 4FF00004 		mov	r4, #0
+ 228              		.loc 1 112 18
+ 229 004a D7E90412 		ldrd	r1, [r7, #16]
+ 230 004e CD18     		adds	r5, r1, r3
+ 231 0050 42EB0406 		adc	r6, r2, r4
+ 232 0054 C7E90456 		strd	r5, [r7, #16]
+ 113:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 114:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Convert ullTickCount to timespec. */
+ 115:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     UTILS_NanosecondsToTimespec( ( int64_t ) ullTickCount * NANOSECONDS_PER_TICK, tp );
+ 233              		.loc 1 115 34
+ 234 0058 D7E90456 		ldrd	r5, [r7, #16]
+ARM GAS  /tmp/ccTpNi03.s 			page 7
+
+
+ 235              		.loc 1 115 5
+ 236 005c 2B46     		mov	r3, r5
+ 237 005e 3446     		mov	r4, r6
+ 238 0060 4FF00001 		mov	r1, #0
+ 239 0064 4FF00002 		mov	r2, #0
+ 240 0068 6201     		lsls	r2, r4, #5
+ 241 006a 42EAD362 		orr	r2, r2, r3, lsr #27
+ 242 006e 5901     		lsls	r1, r3, #5
+ 243 0070 0B46     		mov	r3, r1
+ 244 0072 1446     		mov	r4, r2
+ 245 0074 5B1B     		subs	r3, r3, r5
+ 246 0076 64EB0604 		sbc	r4, r4, r6
+ 247 007a 4FF00001 		mov	r1, #0
+ 248 007e 4FF00002 		mov	r2, #0
+ 249 0082 6202     		lsls	r2, r4, #9
+ 250 0084 42EAD352 		orr	r2, r2, r3, lsr #23
+ 251 0088 5902     		lsls	r1, r3, #9
+ 252 008a 0B46     		mov	r3, r1
+ 253 008c 1446     		mov	r4, r2
+ 254 008e 5B19     		adds	r3, r3, r5
+ 255 0090 46EB0404 		adc	r4, r6, r4
+ 256 0094 4FF00001 		mov	r1, #0
+ 257 0098 4FF00002 		mov	r2, #0
+ 258 009c A201     		lsls	r2, r4, #6
+ 259 009e 42EA9362 		orr	r2, r2, r3, lsr #26
+ 260 00a2 9901     		lsls	r1, r3, #6
+ 261 00a4 C91A     		subs	r1, r1, r3
+ 262 00a6 62EB0402 		sbc	r2, r2, r4
+ 263 00aa 11EB0508 		adds	r8, r1, r5
+ 264 00ae 42EB0609 		adc	r9, r2, r6
+ 265 00b2 3A68     		ldr	r2, [r7]
+ 266 00b4 4046     		mov	r0, r8
+ 267 00b6 4946     		mov	r1, r9
+ 268 00b8 FFF7FEFF 		bl	UTILS_NanosecondsToTimespec
+ 116:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 117:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     return 0;
+ 269              		.loc 1 117 12
+ 270 00bc 0023     		movs	r3, #0
+ 118:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** }
+ 271              		.loc 1 118 1
+ 272 00be 1846     		mov	r0, r3
+ 273 00c0 1C37     		adds	r7, r7, #28
+ 274              	.LCFI19:
+ 275              		.cfi_def_cfa_offset 28
+ 276 00c2 BD46     		mov	sp, r7
+ 277              	.LCFI20:
+ 278              		.cfi_def_cfa_register 13
+ 279              		@ sp needed
+ 280 00c4 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 281              		.cfi_endproc
+ 282              	.LFE7:
+ 284              		.section	.text.clock_nanosleep,"ax",%progbits
+ 285              		.align	1
+ 286              		.global	clock_nanosleep
+ 287              		.syntax unified
+ 288              		.thumb
+ 289              		.thumb_func
+ARM GAS  /tmp/ccTpNi03.s 			page 8
+
+
+ 290              		.fpu fpv4-sp-d16
+ 292              	clock_nanosleep:
+ 293              	.LFB8:
+ 119:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 120:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /*-----------------------------------------------------------*/
+ 121:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 122:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** int clock_nanosleep( clockid_t clock_id,
+ 123:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                      int flags,
+ 124:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                      const struct timespec * rqtp,
+ 125:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                      struct timespec * rmtp )
+ 126:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** {
+ 294              		.loc 1 126 1
+ 295              		.cfi_startproc
+ 296              		@ args = 0, pretend = 0, frame = 48
+ 297              		@ frame_needed = 1, uses_anonymous_args = 0
+ 298 0000 80B5     		push	{r7, lr}
+ 299              	.LCFI21:
+ 300              		.cfi_def_cfa_offset 8
+ 301              		.cfi_offset 7, -8
+ 302              		.cfi_offset 14, -4
+ 303 0002 8CB0     		sub	sp, sp, #48
+ 304              	.LCFI22:
+ 305              		.cfi_def_cfa_offset 56
+ 306 0004 00AF     		add	r7, sp, #0
+ 307              	.LCFI23:
+ 308              		.cfi_def_cfa_register 7
+ 309 0006 F860     		str	r0, [r7, #12]
+ 310 0008 B960     		str	r1, [r7, #8]
+ 311 000a 7A60     		str	r2, [r7, #4]
+ 312 000c 3B60     		str	r3, [r7]
+ 127:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     int iStatus = 0;
+ 313              		.loc 1 127 9
+ 314 000e 0023     		movs	r3, #0
+ 315 0010 FB62     		str	r3, [r7, #44]
+ 128:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     TickType_t xSleepTime = 0;
+ 316              		.loc 1 128 16
+ 317 0012 0023     		movs	r3, #0
+ 318 0014 BB62     		str	r3, [r7, #40]
+ 129:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     struct timespec xCurrentTime = { 0 };
+ 319              		.loc 1 129 21
+ 320 0016 07F11803 		add	r3, r7, #24
+ 321 001a 0022     		movs	r2, #0
+ 322 001c 1A60     		str	r2, [r3]
+ 323 001e 5A60     		str	r2, [r3, #4]
+ 324 0020 9A60     		str	r2, [r3, #8]
+ 325 0022 DA60     		str	r2, [r3, #12]
+ 130:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 131:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Silence warnings about unused parameters. */
+ 132:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ( void ) clock_id;
+ 133:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ( void ) rmtp;
+ 134:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ( void ) flags; /* This is only ignored if INCLUDE_vTaskDelayUntil is 0. */
+ 135:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 136:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Check rqtp. */
+ 137:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     if( UTILS_ValidateTimespec( rqtp ) == false )
+ 326              		.loc 1 137 9
+ 327 0024 7868     		ldr	r0, [r7, #4]
+ 328 0026 FFF7FEFF 		bl	UTILS_ValidateTimespec
+ARM GAS  /tmp/ccTpNi03.s 			page 9
+
+
+ 329 002a 0346     		mov	r3, r0
+ 330              		.loc 1 137 40
+ 331 002c 83F00103 		eor	r3, r3, #1
+ 332 0030 DBB2     		uxtb	r3, r3
+ 333              		.loc 1 137 7
+ 334 0032 002B     		cmp	r3, #0
+ 335 0034 01D0     		beq	.L13
+ 138:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     {
+ 139:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         iStatus = EINVAL;
+ 336              		.loc 1 139 17
+ 337 0036 1623     		movs	r3, #22
+ 338 0038 FB62     		str	r3, [r7, #44]
+ 339              	.L13:
+ 140:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     }
+ 141:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 142:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Get current time */
+ 143:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     if( ( iStatus == 0 ) && ( clock_gettime( CLOCK_REALTIME, &xCurrentTime ) != 0 ) )
+ 340              		.loc 1 143 7
+ 341 003a FB6A     		ldr	r3, [r7, #44]
+ 342 003c 002B     		cmp	r3, #0
+ 343 003e 0AD1     		bne	.L14
+ 344              		.loc 1 143 31 discriminator 1
+ 345 0040 07F11803 		add	r3, r7, #24
+ 346 0044 1946     		mov	r1, r3
+ 347 0046 0020     		movs	r0, #0
+ 348 0048 FFF7FEFF 		bl	clock_gettime
+ 349 004c 0346     		mov	r3, r0
+ 350              		.loc 1 143 26 discriminator 1
+ 351 004e 002B     		cmp	r3, #0
+ 352 0050 01D0     		beq	.L14
+ 144:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     {
+ 145:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         iStatus = EINVAL;
+ 353              		.loc 1 145 17
+ 354 0052 1623     		movs	r3, #22
+ 355 0054 FB62     		str	r3, [r7, #44]
+ 356              	.L14:
+ 146:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     }
+ 147:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 148:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     if( iStatus == 0 )
+ 357              		.loc 1 148 7
+ 358 0056 FB6A     		ldr	r3, [r7, #44]
+ 359 0058 002B     		cmp	r3, #0
+ 360 005a 36D1     		bne	.L15
+ 149:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     {
+ 150:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         /* Check for absolute time sleep. */
+ 151:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         if( ( flags & TIMER_ABSTIME ) == TIMER_ABSTIME )
+ 361              		.loc 1 151 21
+ 362 005c BB68     		ldr	r3, [r7, #8]
+ 363 005e 03F00103 		and	r3, r3, #1
+ 364              		.loc 1 151 11
+ 365 0062 002B     		cmp	r3, #0
+ 366 0064 24D0     		beq	.L16
+ 152:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         {
+ 153:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             /* Get current time */
+ 154:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             if( clock_gettime( CLOCK_REALTIME, &xCurrentTime ) != 0 )
+ 367              		.loc 1 154 17
+ 368 0066 07F11803 		add	r3, r7, #24
+ARM GAS  /tmp/ccTpNi03.s 			page 10
+
+
+ 369 006a 1946     		mov	r1, r3
+ 370 006c 0020     		movs	r0, #0
+ 371 006e FFF7FEFF 		bl	clock_gettime
+ 372 0072 0346     		mov	r3, r0
+ 373              		.loc 1 154 15
+ 374 0074 002B     		cmp	r3, #0
+ 375 0076 01D0     		beq	.L17
+ 155:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             {
+ 156:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                 iStatus = EINVAL;
+ 376              		.loc 1 156 25
+ 377 0078 1623     		movs	r3, #22
+ 378 007a FB62     		str	r3, [r7, #44]
+ 379              	.L17:
+ 157:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             }
+ 158:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 159:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             /* Get number of ticks until absolute time. */
+ 160:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             if( ( iStatus == 0 ) && ( UTILS_AbsoluteTimespecToDeltaTicks( rqtp, &xCurrentTime, &xSl
+ 380              		.loc 1 160 15
+ 381 007c FB6A     		ldr	r3, [r7, #44]
+ 382 007e 002B     		cmp	r3, #0
+ 383 0080 23D1     		bne	.L15
+ 384              		.loc 1 160 39 discriminator 1
+ 385 0082 07F12802 		add	r2, r7, #40
+ 386 0086 07F11803 		add	r3, r7, #24
+ 387 008a 1946     		mov	r1, r3
+ 388 008c 7868     		ldr	r0, [r7, #4]
+ 389 008e FFF7FEFF 		bl	UTILS_AbsoluteTimespecToDeltaTicks
+ 390 0092 0346     		mov	r3, r0
+ 391              		.loc 1 160 34 discriminator 1
+ 392 0094 002B     		cmp	r3, #0
+ 393 0096 18D1     		bne	.L15
+ 394              	.LBB2:
+ 161:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             {
+ 162:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                 /* Delay until absolute time if vTaskDelayUntil is available. */
+ 163:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                 #if ( INCLUDE_vTaskDelayUntil == 1 )
+ 164:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 165:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                     /* Get the current tick count. This variable isn't declared
+ 166:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                      * at the top of the function because it's only used and needed
+ 167:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                      * if vTaskDelayUntil is available. */
+ 168:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                     TickType_t xCurrentTicks = xTaskGetTickCount();
+ 395              		.loc 1 168 48
+ 396 0098 FFF7FEFF 		bl	xTaskGetTickCount
+ 397 009c 0346     		mov	r3, r0
+ 398              		.loc 1 168 32
+ 399 009e 7B61     		str	r3, [r7, #20]
+ 169:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 170:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                     /* Delay until absolute time. */
+ 171:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                     vTaskDelayUntil( &xCurrentTicks, xSleepTime );
+ 400              		.loc 1 171 21
+ 401 00a0 BA6A     		ldr	r2, [r7, #40]
+ 402 00a2 07F11403 		add	r3, r7, #20
+ 403 00a6 1146     		mov	r1, r2
+ 404 00a8 1846     		mov	r0, r3
+ 405 00aa FFF7FEFF 		bl	vTaskDelayUntil
+ 406 00ae 0CE0     		b	.L15
+ 407              	.L16:
+ 408              	.LBE2:
+ARM GAS  /tmp/ccTpNi03.s 			page 11
+
+
+ 172:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                 #else
+ 173:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 174:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                     /* If vTaskDelayUntil isn't available, ignore the TIMER_ABSTIME flag
+ 175:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                      * and sleep for a relative time. */
+ 176:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                     vTaskDelay( xSleepTime );
+ 177:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                 #endif
+ 178:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             }
+ 179:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         }
+ 180:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         else
+ 181:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         {
+ 182:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             /* If TIMER_ABSTIME isn't specified, convert rqtp to ticks and
+ 183:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****              * sleep for a relative time. */
+ 184:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             if( UTILS_TimespecToTicks( rqtp, &xSleepTime ) == 0 )
+ 409              		.loc 1 184 17
+ 410 00b0 07F12803 		add	r3, r7, #40
+ 411 00b4 1946     		mov	r1, r3
+ 412 00b6 7868     		ldr	r0, [r7, #4]
+ 413 00b8 FFF7FEFF 		bl	UTILS_TimespecToTicks
+ 414 00bc 0346     		mov	r3, r0
+ 415              		.loc 1 184 15
+ 416 00be 002B     		cmp	r3, #0
+ 417 00c0 03D1     		bne	.L15
+ 185:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             {
+ 186:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                 vTaskDelay( xSleepTime );
+ 418              		.loc 1 186 17
+ 419 00c2 BB6A     		ldr	r3, [r7, #40]
+ 420 00c4 1846     		mov	r0, r3
+ 421 00c6 FFF7FEFF 		bl	vTaskDelay
+ 422              	.L15:
+ 187:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             }
+ 188:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         }
+ 189:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     }
+ 190:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 191:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     return iStatus;
+ 423              		.loc 1 191 12
+ 424 00ca FB6A     		ldr	r3, [r7, #44]
+ 192:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** }
+ 425              		.loc 1 192 1
+ 426 00cc 1846     		mov	r0, r3
+ 427 00ce 3037     		adds	r7, r7, #48
+ 428              	.LCFI24:
+ 429              		.cfi_def_cfa_offset 8
+ 430 00d0 BD46     		mov	sp, r7
+ 431              	.LCFI25:
+ 432              		.cfi_def_cfa_register 13
+ 433              		@ sp needed
+ 434 00d2 80BD     		pop	{r7, pc}
+ 435              		.cfi_endproc
+ 436              	.LFE8:
+ 438              		.section	.text.clock_settime,"ax",%progbits
+ 439              		.align	1
+ 440              		.global	clock_settime
+ 441              		.syntax unified
+ 442              		.thumb
+ 443              		.thumb_func
+ 444              		.fpu fpv4-sp-d16
+ 446              	clock_settime:
+ARM GAS  /tmp/ccTpNi03.s 			page 12
+
+
+ 447              	.LFB9:
+ 193:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 194:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /*-----------------------------------------------------------*/
+ 195:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 196:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** int clock_settime( clockid_t clock_id,
+ 197:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                    const struct timespec * tp )
+ 198:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** {
+ 448              		.loc 1 198 1
+ 449              		.cfi_startproc
+ 450              		@ args = 0, pretend = 0, frame = 8
+ 451              		@ frame_needed = 1, uses_anonymous_args = 0
+ 452              		@ link register save eliminated.
+ 453 0000 80B4     		push	{r7}
+ 454              	.LCFI26:
+ 455              		.cfi_def_cfa_offset 4
+ 456              		.cfi_offset 7, -4
+ 457 0002 83B0     		sub	sp, sp, #12
+ 458              	.LCFI27:
+ 459              		.cfi_def_cfa_offset 16
+ 460 0004 00AF     		add	r7, sp, #0
+ 461              	.LCFI28:
+ 462              		.cfi_def_cfa_register 7
+ 463 0006 7860     		str	r0, [r7, #4]
+ 464 0008 3960     		str	r1, [r7]
+ 199:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Silence warnings about unused parameters. */
+ 200:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ( void ) clock_id;
+ 201:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ( void ) tp;
+ 202:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 203:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* This function is currently unsupported. It will always return -1 and
+ 204:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****      * set errno to EPERM. */
+ 205:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     errno = EPERM;
+ 465              		.loc 1 205 11
+ 466 000a 054B     		ldr	r3, .L22
+ 467 000c 0122     		movs	r2, #1
+ 468 000e 1A60     		str	r2, [r3]
+ 206:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 207:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     return -1;
+ 469              		.loc 1 207 12
+ 470 0010 4FF0FF33 		mov	r3, #-1
+ 208:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** }
+ 471              		.loc 1 208 1
+ 472 0014 1846     		mov	r0, r3
+ 473 0016 0C37     		adds	r7, r7, #12
+ 474              	.LCFI29:
+ 475              		.cfi_def_cfa_offset 4
+ 476 0018 BD46     		mov	sp, r7
+ 477              	.LCFI30:
+ 478              		.cfi_def_cfa_register 13
+ 479              		@ sp needed
+ 480 001a 5DF8047B 		ldr	r7, [sp], #4
+ 481              	.LCFI31:
+ 482              		.cfi_restore 7
+ 483              		.cfi_def_cfa_offset 0
+ 484 001e 7047     		bx	lr
+ 485              	.L23:
+ 486              		.align	2
+ 487              	.L22:
+ARM GAS  /tmp/ccTpNi03.s 			page 13
+
+
+ 488 0020 00000000 		.word	FreeRTOS_errno
+ 489              		.cfi_endproc
+ 490              	.LFE9:
+ 492              		.section	.text.nanosleep,"ax",%progbits
+ 493              		.align	1
+ 494              		.global	nanosleep
+ 495              		.syntax unified
+ 496              		.thumb
+ 497              		.thumb_func
+ 498              		.fpu fpv4-sp-d16
+ 500              	nanosleep:
+ 501              	.LFB10:
+ 209:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 210:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** /*-----------------------------------------------------------*/
+ 211:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 212:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** int nanosleep( const struct timespec * rqtp,
+ 213:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****                struct timespec * rmtp )
+ 214:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** {
+ 502              		.loc 1 214 1
+ 503              		.cfi_startproc
+ 504              		@ args = 0, pretend = 0, frame = 16
+ 505              		@ frame_needed = 1, uses_anonymous_args = 0
+ 506 0000 80B5     		push	{r7, lr}
+ 507              	.LCFI32:
+ 508              		.cfi_def_cfa_offset 8
+ 509              		.cfi_offset 7, -8
+ 510              		.cfi_offset 14, -4
+ 511 0002 84B0     		sub	sp, sp, #16
+ 512              	.LCFI33:
+ 513              		.cfi_def_cfa_offset 24
+ 514 0004 00AF     		add	r7, sp, #0
+ 515              	.LCFI34:
+ 516              		.cfi_def_cfa_register 7
+ 517 0006 7860     		str	r0, [r7, #4]
+ 518 0008 3960     		str	r1, [r7]
+ 215:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     int iStatus = 0;
+ 519              		.loc 1 215 9
+ 520 000a 0023     		movs	r3, #0
+ 521 000c FB60     		str	r3, [r7, #12]
+ 216:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     TickType_t xSleepTime = 0;
+ 522              		.loc 1 216 16
+ 523 000e 0023     		movs	r3, #0
+ 524 0010 BB60     		str	r3, [r7, #8]
+ 217:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 218:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Silence warnings about unused parameters. */
+ 219:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     ( void ) rmtp;
+ 220:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 221:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     /* Check rqtp. */
+ 222:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     if( UTILS_ValidateTimespec( rqtp ) == false )
+ 525              		.loc 1 222 9
+ 526 0012 7868     		ldr	r0, [r7, #4]
+ 527 0014 FFF7FEFF 		bl	UTILS_ValidateTimespec
+ 528 0018 0346     		mov	r3, r0
+ 529              		.loc 1 222 40
+ 530 001a 83F00103 		eor	r3, r3, #1
+ 531 001e DBB2     		uxtb	r3, r3
+ 532              		.loc 1 222 7
+ARM GAS  /tmp/ccTpNi03.s 			page 14
+
+
+ 533 0020 002B     		cmp	r3, #0
+ 534 0022 05D0     		beq	.L25
+ 223:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     {
+ 224:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         errno = EINVAL;
+ 535              		.loc 1 224 15
+ 536 0024 0D4B     		ldr	r3, .L28
+ 537 0026 1622     		movs	r2, #22
+ 538 0028 1A60     		str	r2, [r3]
+ 225:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         iStatus = -1;
+ 539              		.loc 1 225 17
+ 540 002a 4FF0FF33 		mov	r3, #-1
+ 541 002e FB60     		str	r3, [r7, #12]
+ 542              	.L25:
+ 226:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     }
+ 227:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 228:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     if( iStatus == 0 )
+ 543              		.loc 1 228 7
+ 544 0030 FB68     		ldr	r3, [r7, #12]
+ 545 0032 002B     		cmp	r3, #0
+ 546 0034 0CD1     		bne	.L26
+ 229:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     {
+ 230:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         /* Convert rqtp to ticks and delay. */
+ 231:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         if( UTILS_TimespecToTicks( rqtp, &xSleepTime ) == 0 )
+ 547              		.loc 1 231 13
+ 548 0036 07F10803 		add	r3, r7, #8
+ 549 003a 1946     		mov	r1, r3
+ 550 003c 7868     		ldr	r0, [r7, #4]
+ 551 003e FFF7FEFF 		bl	UTILS_TimespecToTicks
+ 552 0042 0346     		mov	r3, r0
+ 553              		.loc 1 231 11
+ 554 0044 002B     		cmp	r3, #0
+ 555 0046 03D1     		bne	.L26
+ 232:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         {
+ 233:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****             vTaskDelay( xSleepTime );
+ 556              		.loc 1 233 13
+ 557 0048 BB68     		ldr	r3, [r7, #8]
+ 558 004a 1846     		mov	r0, r3
+ 559 004c FFF7FEFF 		bl	vTaskDelay
+ 560              	.L26:
+ 234:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         }
+ 235:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     }
+ 236:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 237:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     return iStatus;
+ 561              		.loc 1 237 12
+ 562 0050 FB68     		ldr	r3, [r7, #12]
+ 238:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** }
+ 563              		.loc 1 238 1
+ 564 0052 1846     		mov	r0, r3
+ 565 0054 1037     		adds	r7, r7, #16
+ 566              	.LCFI35:
+ 567              		.cfi_def_cfa_offset 8
+ 568 0056 BD46     		mov	sp, r7
+ 569              	.LCFI36:
+ 570              		.cfi_def_cfa_register 13
+ 571              		@ sp needed
+ 572 0058 80BD     		pop	{r7, pc}
+ 573              	.L29:
+ARM GAS  /tmp/ccTpNi03.s 			page 15
+
+
+ 574 005a 00BF     		.align	2
+ 575              	.L28:
+ 576 005c 00000000 		.word	FreeRTOS_errno
+ 577              		.cfi_endproc
+ 578              	.LFE10:
+ 580              		.section	.text.time,"ax",%progbits
+ 581              		.align	1
+ 582              		.global	time
+ 583              		.syntax unified
+ 584              		.thumb
+ 585              		.thumb_func
+ 586              		.fpu fpv4-sp-d16
+ 588              	time:
+ 589              	.LFB11:
+ 239:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 240:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 241:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** // TODO(Pablo GS): Where is the place for this function of libc?
+ 242:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 243:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** time_t time(time_t *tloc)
+ 244:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** {
+ 590              		.loc 1 244 1
+ 591              		.cfi_startproc
+ 592              		@ args = 0, pretend = 0, frame = 32
+ 593              		@ frame_needed = 1, uses_anonymous_args = 0
+ 594 0000 90B5     		push	{r4, r7, lr}
+ 595              	.LCFI37:
+ 596              		.cfi_def_cfa_offset 12
+ 597              		.cfi_offset 4, -12
+ 598              		.cfi_offset 7, -8
+ 599              		.cfi_offset 14, -4
+ 600 0002 89B0     		sub	sp, sp, #36
+ 601              	.LCFI38:
+ 602              		.cfi_def_cfa_offset 48
+ 603 0004 00AF     		add	r7, sp, #0
+ 604              	.LCFI39:
+ 605              		.cfi_def_cfa_register 7
+ 606 0006 7860     		str	r0, [r7, #4]
+ 245:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****   struct timespec ts;
+ 246:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****   int ret;
+ 247:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 248:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****   /* Get the current time from the system */
+ 249:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 250:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****   ret = clock_gettime(CLOCK_REALTIME, &ts);
+ 607              		.loc 1 250 9
+ 608 0008 07F10803 		add	r3, r7, #8
+ 609 000c 1946     		mov	r1, r3
+ 610 000e 0020     		movs	r0, #0
+ 611 0010 FFF7FEFF 		bl	clock_gettime
+ 612 0014 F861     		str	r0, [r7, #28]
+ 251:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****   if (ret == 0)
+ 613              		.loc 1 251 6
+ 614 0016 FB69     		ldr	r3, [r7, #28]
+ 615 0018 002B     		cmp	r3, #0
+ 616 001a 0AD1     		bne	.L31
+ 252:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     {
+ 253:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****       /* Return the seconds since the epoch */
+ 254:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ARM GAS  /tmp/ccTpNi03.s 			page 16
+
+
+ 255:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****       if (tloc)
+ 617              		.loc 1 255 10
+ 618 001c 7B68     		ldr	r3, [r7, #4]
+ 619 001e 002B     		cmp	r3, #0
+ 620 0020 04D0     		beq	.L32
+ 256:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         {
+ 257:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****           *tloc = ts.tv_sec;
+ 621              		.loc 1 257 21
+ 622 0022 D7E90234 		ldrd	r3, [r7, #8]
+ 623              		.loc 1 257 17
+ 624 0026 7A68     		ldr	r2, [r7, #4]
+ 625 0028 C2E90034 		strd	r3, [r2]
+ 626              	.L32:
+ 258:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****         }
+ 259:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 260:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****       return ts.tv_sec;
+ 627              		.loc 1 260 16
+ 628 002c D7E90234 		ldrd	r3, [r7, #8]
+ 629 0030 03E0     		b	.L34
+ 630              	.L31:
+ 261:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****     }
+ 262:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** 
+ 263:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c ****   return (time_t)0;
+ 631              		.loc 1 263 10
+ 632 0032 4FF00003 		mov	r3, #0
+ 633 0036 4FF00004 		mov	r4, #0
+ 634              	.L34:
+ 264:lib/FreeRTOS-Plus-POSIX/source/FreeRTOS_POSIX_clock.c **** }
+ 635              		.loc 1 264 1 discriminator 1
+ 636 003a 1846     		mov	r0, r3
+ 637 003c 2146     		mov	r1, r4
+ 638 003e 2437     		adds	r7, r7, #36
+ 639              	.LCFI40:
+ 640              		.cfi_def_cfa_offset 12
+ 641 0040 BD46     		mov	sp, r7
+ 642              	.LCFI41:
+ 643              		.cfi_def_cfa_register 13
+ 644              		@ sp needed
+ 645 0042 90BD     		pop	{r4, r7, pc}
+ 646              		.cfi_endproc
+ 647              	.LFE11:
+ 649              		.text
+ 650              	.Letext0:
+ 651              		.file 2 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/lib/gcc/arm-none-eabi/8.3.1/include/std
+ 652              		.file 3 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/machine/_default_
+ 653              		.file 4 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_types.h"
+ 654              		.file 5 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/reent.h"
+ 655              		.file 6 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/lock.h"
+ 656              		.file 7 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_stdint.h"
+ 657              		.file 8 "Inc/FreeRTOSConfig.h"
+ 658              		.file 9 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h"
+ 659              		.file 10 "Middlewares/Third_Party/FreeRTOS/Source/include/task.h"
+ 660              		.file 11 "lib/include/FreeRTOS_POSIX/sys/types.h"
+ 661              		.file 12 "lib/include/FreeRTOS_POSIX/errno.h"
+ 662              		.file 13 "lib/include/FreeRTOS_POSIX/time.h"
+ARM GAS  /tmp/ccTpNi03.s 			page 17
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 FreeRTOS_POSIX_clock.c
+     /tmp/ccTpNi03.s:18     .text.clock:0000000000000000 $t
+     /tmp/ccTpNi03.s:26     .text.clock:0000000000000000 clock
+     /tmp/ccTpNi03.s:58     .text.clock_getcpuclockid:0000000000000000 $t
+     /tmp/ccTpNi03.s:65     .text.clock_getcpuclockid:0000000000000000 clock_getcpuclockid
+     /tmp/ccTpNi03.s:104    .text.clock_getres:0000000000000000 $t
+     /tmp/ccTpNi03.s:111    .text.clock_getres:0000000000000000 clock_getres
+     /tmp/ccTpNi03.s:165    .text.clock_getres:0000000000000030 $d
+     /tmp/ccTpNi03.s:170    .text.clock_gettime:0000000000000000 $t
+     /tmp/ccTpNi03.s:177    .text.clock_gettime:0000000000000000 clock_gettime
+     /tmp/ccTpNi03.s:285    .text.clock_nanosleep:0000000000000000 $t
+     /tmp/ccTpNi03.s:292    .text.clock_nanosleep:0000000000000000 clock_nanosleep
+     /tmp/ccTpNi03.s:439    .text.clock_settime:0000000000000000 $t
+     /tmp/ccTpNi03.s:446    .text.clock_settime:0000000000000000 clock_settime
+     /tmp/ccTpNi03.s:488    .text.clock_settime:0000000000000020 $d
+     /tmp/ccTpNi03.s:493    .text.nanosleep:0000000000000000 $t
+     /tmp/ccTpNi03.s:500    .text.nanosleep:0000000000000000 nanosleep
+     /tmp/ccTpNi03.s:576    .text.nanosleep:000000000000005c $d
+     /tmp/ccTpNi03.s:581    .text.time:0000000000000000 $t
+     /tmp/ccTpNi03.s:588    .text.time:0000000000000000 time
+
+UNDEFINED SYMBOLS
+vTaskSetTimeOutState
+UTILS_NanosecondsToTimespec
+UTILS_ValidateTimespec
+UTILS_AbsoluteTimespecToDeltaTicks
+xTaskGetTickCount
+vTaskDelayUntil
+UTILS_TimespecToTicks
+vTaskDelay
+FreeRTOS_errno

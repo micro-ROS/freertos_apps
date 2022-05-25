@@ -1,0 +1,39 @@
+ARM GAS  /tmp/cce6KsGl.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"FreeRTOS-openocd.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	uxTopUsedPriority
+  18              		.section	.rodata.uxTopUsedPriority,"a"
+  19              		.align	2
+  22              	uxTopUsedPriority:
+  23 0000 37000000 		.word	55
+  24              		.text
+  25              	.Letext0:
+  26              		.file 1 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/machine/_default_
+  27              		.file 2 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_stdint.h"
+  28              		.file 3 "Inc/FreeRTOSConfig.h"
+  29              		.file 4 "Src/FreeRTOS-openocd.c"
+ARM GAS  /tmp/cce6KsGl.s 			page 2
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 FreeRTOS-openocd.c
+     /tmp/cce6KsGl.s:22     .rodata.uxTopUsedPriority:0000000000000000 uxTopUsedPriority
+     /tmp/cce6KsGl.s:19     .rodata.uxTopUsedPriority:0000000000000000 $d
+
+NO UNDEFINED SYMBOLS

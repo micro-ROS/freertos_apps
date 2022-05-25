@@ -1,0 +1,3875 @@
+ARM GAS  /tmp/ccSDQVbU.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 6
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"libatomic.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.__libatomic_flag_for_address,"ax",%progbits
+  18              		.align	1
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	__libatomic_flag_for_address:
+  26              	.LFB0:
+  27              		.file 1 "Src/libatomic.c"
+   1:Src/libatomic.c **** /* Basic implementation of libatomic for GCC.
+   2:Src/libatomic.c ****    This basic implementation currently assumes everything is aligned. 
+   3:Src/libatomic.c **** 
+   4:Src/libatomic.c ****    Copyright (C) 2010, 2011
+   5:Src/libatomic.c ****    Free Software Foundation, Inc.
+   6:Src/libatomic.c **** 
+   7:Src/libatomic.c ****    This file is part of GCC.
+   8:Src/libatomic.c **** 
+   9:Src/libatomic.c ****    GCC is free software; you can redistribute it and/or modify it
+  10:Src/libatomic.c ****    under the terms of the GNU General Public License as published by the
+  11:Src/libatomic.c ****    Free Software Foundation; either version 3, or (at your option) any
+  12:Src/libatomic.c ****    later version.
+  13:Src/libatomic.c **** 
+  14:Src/libatomic.c ****    GCC is distributed in the hope that it will be useful, but WITHOUT
+  15:Src/libatomic.c ****    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  16:Src/libatomic.c ****    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+  17:Src/libatomic.c ****    for more details.
+  18:Src/libatomic.c **** 
+  19:Src/libatomic.c ****    You should have received a copy of the GNU General Public License
+  20:Src/libatomic.c ****    along with GCC; see the file COPYING3.  If not see
+  21:Src/libatomic.c ****    <http://www.gnu.org/licenses/>.  */
+  22:Src/libatomic.c **** 
+  23:Src/libatomic.c **** 
+  24:Src/libatomic.c **** #include <stdbool.h>
+  25:Src/libatomic.c **** #include <string.h>
+  26:Src/libatomic.c **** #include <stdint.h>
+  27:Src/libatomic.c **** #include <stddef.h>
+  28:Src/libatomic.c **** 
+  29:Src/libatomic.c **** /* These defines should be defined based on configuration of what the target
+  30:Src/libatomic.c ****    supports.  Changing these #defines is all that is required to use this
+  31:Src/libatomic.c ****    file.  If your target supports unsigned int type of the appropriate
+ARM GAS  /tmp/ccSDQVbU.s 			page 2
+
+
+  32:Src/libatomic.c ****    number of bytes, simply define it as 1.  Note that for I16 you may 
+  33:Src/libatomic.c ****    also have to change the type from __int128_t to int128_t if approriate.  
+  34:Src/libatomic.c **** 
+  35:Src/libatomic.c ****    Also note that you can expect to see warning from compiler similar to :
+  36:Src/libatomic.c **** warning: conflicting types for built-in function ‘__atomic_compare_exchange_1’
+  37:Src/libatomic.c ****    This is expected behaviour.  */
+  38:Src/libatomic.c **** 
+  39:Src/libatomic.c **** 
+  40:Src/libatomic.c **** 
+  41:Src/libatomic.c **** #ifndef  __LIBATOMIC_SUPPORTS_I1
+  42:Src/libatomic.c **** #define __LIBATOMIC_SUPPORTS_I1		1
+  43:Src/libatomic.c **** #endif
+  44:Src/libatomic.c **** 
+  45:Src/libatomic.c **** #ifndef  __LIBATOMIC_SUPPORTS_I2
+  46:Src/libatomic.c **** #define __LIBATOMIC_SUPPORTS_I2		1
+  47:Src/libatomic.c **** #endif
+  48:Src/libatomic.c **** 
+  49:Src/libatomic.c **** #ifndef  __LIBATOMIC_SUPPORTS_I4
+  50:Src/libatomic.c **** #define __LIBATOMIC_SUPPORTS_I4		1
+  51:Src/libatomic.c **** #endif
+  52:Src/libatomic.c **** 
+  53:Src/libatomic.c **** /* not sure about 64 bit support, but to be on the safe side... */
+  54:Src/libatomic.c **** 
+  55:Src/libatomic.c **** #ifndef  __LIBATOMIC_SUPPORTS_I8
+  56:Src/libatomic.c **** #define __LIBATOMIC_SUPPORTS_I8		1
+  57:Src/libatomic.c **** #endif
+  58:Src/libatomic.c **** 
+  59:Src/libatomic.c **** #ifndef  __LIBATOMIC_SUPPORTS_I16
+  60:Src/libatomic.c **** #define __LIBATOMIC_SUPPORTS_I16	0
+  61:Src/libatomic.c **** #endif
+  62:Src/libatomic.c **** 
+  63:Src/libatomic.c **** /* Define types for all supported sizes.  */
+  64:Src/libatomic.c **** 
+  65:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I1	
+  66:Src/libatomic.c **** typedef uint8_t		I1;
+  67:Src/libatomic.c **** #endif
+  68:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I2	
+  69:Src/libatomic.c **** typedef uint16_t	I2;
+  70:Src/libatomic.c **** #endif
+  71:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I4	
+  72:Src/libatomic.c **** typedef uint32_t	I4;
+  73:Src/libatomic.c **** #endif
+  74:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I8	
+  75:Src/libatomic.c **** typedef uint64_t	I8;
+  76:Src/libatomic.c **** #endif
+  77:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I16	
+  78:Src/libatomic.c **** typedef __int128_t	I16;
+  79:Src/libatomic.c **** #endif
+  80:Src/libatomic.c **** 
+  81:Src/libatomic.c **** /* For testing the locked implementation, define this to make all routines use
+  82:Src/libatomic.c ****    locks and run the testsuites.  */
+  83:Src/libatomic.c **** 
+  84:Src/libatomic.c **** #if __LIBATOMIC_ALWAYS_LOCKED
+  85:Src/libatomic.c **** #define __atomic_always_lock_free(S,P)	false
+  86:Src/libatomic.c **** #endif
+  87:Src/libatomic.c **** 
+  88:Src/libatomic.c **** /* This defines the number of unqiue locks which are available for mapping
+ARM GAS  /tmp/ccSDQVbU.s 			page 3
+
+
+  89:Src/libatomic.c ****    an address to.  */
+  90:Src/libatomic.c **** #define __LIBATOMIC_N_LOCKS	(1 << 4)
+  91:Src/libatomic.c **** 
+  92:Src/libatomic.c **** 
+  93:Src/libatomic.c **** /* Return a pointer to a boolean test_and_set flag for ADDR.  */
+  94:Src/libatomic.c **** 
+  95:Src/libatomic.c **** static bool *
+  96:Src/libatomic.c **** __libatomic_flag_for_address (void *addr)
+  97:Src/libatomic.c **** {
+  28              		.loc 1 97 1
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 16
+  31              		@ frame_needed = 1, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33 0000 80B4     		push	{r7}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 4
+  36              		.cfi_offset 7, -4
+  37 0002 85B0     		sub	sp, sp, #20
+  38              	.LCFI1:
+  39              		.cfi_def_cfa_offset 24
+  40 0004 00AF     		add	r7, sp, #0
+  41              	.LCFI2:
+  42              		.cfi_def_cfa_register 7
+  43 0006 7860     		str	r0, [r7, #4]
+  98:Src/libatomic.c ****   static bool flag_table[__LIBATOMIC_N_LOCKS]
+  99:Src/libatomic.c **** 		      = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+ 100:Src/libatomic.c ****   uintptr_t p = (uintptr_t)addr;
+  44              		.loc 1 100 13
+  45 0008 7B68     		ldr	r3, [r7, #4]
+  46 000a FB60     		str	r3, [r7, #12]
+ 101:Src/libatomic.c **** 
+ 102:Src/libatomic.c ****   p += (p >> 2) + (p << 4);
+  47              		.loc 1 102 11
+  48 000c FB68     		ldr	r3, [r7, #12]
+  49 000e 9A08     		lsrs	r2, r3, #2
+  50              		.loc 1 102 22
+  51 0010 FB68     		ldr	r3, [r7, #12]
+  52 0012 1B01     		lsls	r3, r3, #4
+  53              		.loc 1 102 17
+  54 0014 1344     		add	r3, r3, r2
+  55              		.loc 1 102 5
+  56 0016 FA68     		ldr	r2, [r7, #12]
+  57 0018 1344     		add	r3, r3, r2
+  58 001a FB60     		str	r3, [r7, #12]
+ 103:Src/libatomic.c ****   p += (p >> 7) + (p << 5);
+  59              		.loc 1 103 11
+  60 001c FB68     		ldr	r3, [r7, #12]
+  61 001e DA09     		lsrs	r2, r3, #7
+  62              		.loc 1 103 22
+  63 0020 FB68     		ldr	r3, [r7, #12]
+  64 0022 5B01     		lsls	r3, r3, #5
+  65              		.loc 1 103 17
+  66 0024 1344     		add	r3, r3, r2
+  67              		.loc 1 103 5
+  68 0026 FA68     		ldr	r2, [r7, #12]
+  69 0028 1344     		add	r3, r3, r2
+ARM GAS  /tmp/ccSDQVbU.s 			page 4
+
+
+  70 002a FB60     		str	r3, [r7, #12]
+ 104:Src/libatomic.c ****   p += (p >> 17) + (p << 13);
+  71              		.loc 1 104 11
+  72 002c FB68     		ldr	r3, [r7, #12]
+  73 002e 5A0C     		lsrs	r2, r3, #17
+  74              		.loc 1 104 23
+  75 0030 FB68     		ldr	r3, [r7, #12]
+  76 0032 5B03     		lsls	r3, r3, #13
+  77              		.loc 1 104 18
+  78 0034 1344     		add	r3, r3, r2
+  79              		.loc 1 104 5
+  80 0036 FA68     		ldr	r2, [r7, #12]
+  81 0038 1344     		add	r3, r3, r2
+  82 003a FB60     		str	r3, [r7, #12]
+ 105:Src/libatomic.c ****   if (sizeof(void *) > 4)
+ 106:Src/libatomic.c ****     p += (p >> 31);
+ 107:Src/libatomic.c ****   p &= (__LIBATOMIC_N_LOCKS - 1);
+  83              		.loc 1 107 5
+  84 003c FB68     		ldr	r3, [r7, #12]
+  85 003e 03F00F03 		and	r3, r3, #15
+  86 0042 FB60     		str	r3, [r7, #12]
+ 108:Src/libatomic.c ****   return flag_table + p;
+  87              		.loc 1 108 21
+  88 0044 FB68     		ldr	r3, [r7, #12]
+  89 0046 044A     		ldr	r2, .L3
+  90 0048 1344     		add	r3, r3, r2
+ 109:Src/libatomic.c **** }
+  91              		.loc 1 109 1
+  92 004a 1846     		mov	r0, r3
+  93 004c 1437     		adds	r7, r7, #20
+  94              	.LCFI3:
+  95              		.cfi_def_cfa_offset 4
+  96 004e BD46     		mov	sp, r7
+  97              	.LCFI4:
+  98              		.cfi_def_cfa_register 13
+  99              		@ sp needed
+ 100 0050 5DF8047B 		ldr	r7, [sp], #4
+ 101              	.LCFI5:
+ 102              		.cfi_restore 7
+ 103              		.cfi_def_cfa_offset 0
+ 104 0054 7047     		bx	lr
+ 105              	.L4:
+ 106 0056 00BF     		.align	2
+ 107              	.L3:
+ 108 0058 00000000 		.word	flag_table.5961
+ 109              		.cfi_endproc
+ 110              	.LFE0:
+ 112              		.section	.text.maybe_release_fence,"ax",%progbits
+ 113              		.align	1
+ 114              		.syntax unified
+ 115              		.thumb
+ 116              		.thumb_func
+ 117              		.fpu fpv4-sp-d16
+ 119              	maybe_release_fence:
+ 120              	.LFB1:
+ 110:Src/libatomic.c **** 
+ 111:Src/libatomic.c **** /* If the specified memory MODEL can act as a release fence, issue the
+ARM GAS  /tmp/ccSDQVbU.s 			page 5
+
+
+ 112:Src/libatomic.c ****    appropriate barrier.  Specify it such that it is a compile time constant.  */
+ 113:Src/libatomic.c **** 
+ 114:Src/libatomic.c **** static inline void
+ 115:Src/libatomic.c **** maybe_release_fence (int model)
+ 116:Src/libatomic.c **** {
+ 121              		.loc 1 116 1
+ 122              		.cfi_startproc
+ 123              		@ args = 0, pretend = 0, frame = 8
+ 124              		@ frame_needed = 1, uses_anonymous_args = 0
+ 125              		@ link register save eliminated.
+ 126 0000 80B4     		push	{r7}
+ 127              	.LCFI6:
+ 128              		.cfi_def_cfa_offset 4
+ 129              		.cfi_offset 7, -4
+ 130 0002 83B0     		sub	sp, sp, #12
+ 131              	.LCFI7:
+ 132              		.cfi_def_cfa_offset 16
+ 133 0004 00AF     		add	r7, sp, #0
+ 134              	.LCFI8:
+ 135              		.cfi_def_cfa_register 7
+ 136 0006 7860     		str	r0, [r7, #4]
+ 117:Src/libatomic.c ****   switch (model)
+ 137              		.loc 1 117 3
+ 138 0008 7B68     		ldr	r3, [r7, #4]
+ 139 000a 042B     		cmp	r3, #4
+ 140 000c 08D0     		beq	.L6
+ 141 000e 7B68     		ldr	r3, [r7, #4]
+ 142 0010 052B     		cmp	r3, #5
+ 143 0012 08D0     		beq	.L7
+ 144 0014 7B68     		ldr	r3, [r7, #4]
+ 145 0016 032B     		cmp	r3, #3
+ 146 0018 08D1     		bne	.L10
+ 118:Src/libatomic.c ****   {
+ 119:Src/libatomic.c ****     case __ATOMIC_RELEASE:
+ 120:Src/libatomic.c ****       __atomic_thread_fence (__ATOMIC_RELEASE);
+ 147              		.loc 1 120 7
+ 148 001a BFF35B8F 		dmb	ish
+ 121:Src/libatomic.c ****       break;
+ 149              		.loc 1 121 7
+ 150 001e 06E0     		b	.L9
+ 151              	.L6:
+ 122:Src/libatomic.c ****     case __ATOMIC_ACQ_REL:
+ 123:Src/libatomic.c ****       __atomic_thread_fence (__ATOMIC_ACQ_REL);
+ 152              		.loc 1 123 7
+ 153 0020 BFF35B8F 		dmb	ish
+ 124:Src/libatomic.c ****       break;
+ 154              		.loc 1 124 7
+ 155 0024 03E0     		b	.L9
+ 156              	.L7:
+ 125:Src/libatomic.c ****     case __ATOMIC_SEQ_CST:
+ 126:Src/libatomic.c ****       __atomic_thread_fence (__ATOMIC_SEQ_CST);
+ 157              		.loc 1 126 7
+ 158 0026 BFF35B8F 		dmb	ish
+ 127:Src/libatomic.c ****       break;
+ 159              		.loc 1 127 7
+ 160 002a 00E0     		b	.L9
+ 161              	.L10:
+ARM GAS  /tmp/ccSDQVbU.s 			page 6
+
+
+ 128:Src/libatomic.c ****     default:
+ 129:Src/libatomic.c ****       break;
+ 162              		.loc 1 129 7
+ 163 002c 00BF     		nop
+ 164              	.L9:
+ 130:Src/libatomic.c ****   }
+ 131:Src/libatomic.c **** }
+ 165              		.loc 1 131 1
+ 166 002e 00BF     		nop
+ 167 0030 0C37     		adds	r7, r7, #12
+ 168              	.LCFI9:
+ 169              		.cfi_def_cfa_offset 4
+ 170 0032 BD46     		mov	sp, r7
+ 171              	.LCFI10:
+ 172              		.cfi_def_cfa_register 13
+ 173              		@ sp needed
+ 174 0034 5DF8047B 		ldr	r7, [sp], #4
+ 175              	.LCFI11:
+ 176              		.cfi_restore 7
+ 177              		.cfi_def_cfa_offset 0
+ 178 0038 7047     		bx	lr
+ 179              		.cfi_endproc
+ 180              	.LFE1:
+ 182              		.section	.text.maybe_acquire_fence,"ax",%progbits
+ 183              		.align	1
+ 184              		.syntax unified
+ 185              		.thumb
+ 186              		.thumb_func
+ 187              		.fpu fpv4-sp-d16
+ 189              	maybe_acquire_fence:
+ 190              	.LFB2:
+ 132:Src/libatomic.c **** 
+ 133:Src/libatomic.c **** /* If the specified memory MODEL can act as an acquire fence, issue the
+ 134:Src/libatomic.c ****    appropriate barrier.  Specify it such that it is a compile time constant.  */
+ 135:Src/libatomic.c **** 
+ 136:Src/libatomic.c **** static inline void
+ 137:Src/libatomic.c **** maybe_acquire_fence (int model)
+ 138:Src/libatomic.c **** {
+ 191              		.loc 1 138 1
+ 192              		.cfi_startproc
+ 193              		@ args = 0, pretend = 0, frame = 8
+ 194              		@ frame_needed = 1, uses_anonymous_args = 0
+ 195              		@ link register save eliminated.
+ 196 0000 80B4     		push	{r7}
+ 197              	.LCFI12:
+ 198              		.cfi_def_cfa_offset 4
+ 199              		.cfi_offset 7, -4
+ 200 0002 83B0     		sub	sp, sp, #12
+ 201              	.LCFI13:
+ 202              		.cfi_def_cfa_offset 16
+ 203 0004 00AF     		add	r7, sp, #0
+ 204              	.LCFI14:
+ 205              		.cfi_def_cfa_register 7
+ 206 0006 7860     		str	r0, [r7, #4]
+ 139:Src/libatomic.c ****   switch (model)
+ 207              		.loc 1 139 3
+ 208 0008 7B68     		ldr	r3, [r7, #4]
+ARM GAS  /tmp/ccSDQVbU.s 			page 7
+
+
+ 209 000a 042B     		cmp	r3, #4
+ 210 000c 08D0     		beq	.L12
+ 211 000e 7B68     		ldr	r3, [r7, #4]
+ 212 0010 052B     		cmp	r3, #5
+ 213 0012 08D0     		beq	.L13
+ 214 0014 7B68     		ldr	r3, [r7, #4]
+ 215 0016 022B     		cmp	r3, #2
+ 216 0018 08D1     		bne	.L16
+ 140:Src/libatomic.c ****   {
+ 141:Src/libatomic.c ****     case __ATOMIC_ACQUIRE:
+ 142:Src/libatomic.c ****       __atomic_thread_fence (__ATOMIC_ACQUIRE);
+ 217              		.loc 1 142 7
+ 218 001a BFF35B8F 		dmb	ish
+ 143:Src/libatomic.c ****       break;
+ 219              		.loc 1 143 7
+ 220 001e 06E0     		b	.L15
+ 221              	.L12:
+ 144:Src/libatomic.c ****     case __ATOMIC_ACQ_REL:
+ 145:Src/libatomic.c ****       __atomic_thread_fence (__ATOMIC_ACQ_REL);
+ 222              		.loc 1 145 7
+ 223 0020 BFF35B8F 		dmb	ish
+ 146:Src/libatomic.c ****       break;
+ 224              		.loc 1 146 7
+ 225 0024 03E0     		b	.L15
+ 226              	.L13:
+ 147:Src/libatomic.c ****     case __ATOMIC_SEQ_CST:
+ 148:Src/libatomic.c ****       __atomic_thread_fence (__ATOMIC_SEQ_CST);
+ 227              		.loc 1 148 7
+ 228 0026 BFF35B8F 		dmb	ish
+ 149:Src/libatomic.c ****       break;
+ 229              		.loc 1 149 7
+ 230 002a 00E0     		b	.L15
+ 231              	.L16:
+ 150:Src/libatomic.c ****     default:
+ 151:Src/libatomic.c ****       break;
+ 232              		.loc 1 151 7
+ 233 002c 00BF     		nop
+ 234              	.L15:
+ 152:Src/libatomic.c ****   }
+ 153:Src/libatomic.c **** }
+ 235              		.loc 1 153 1
+ 236 002e 00BF     		nop
+ 237 0030 0C37     		adds	r7, r7, #12
+ 238              	.LCFI15:
+ 239              		.cfi_def_cfa_offset 4
+ 240 0032 BD46     		mov	sp, r7
+ 241              	.LCFI16:
+ 242              		.cfi_def_cfa_register 13
+ 243              		@ sp needed
+ 244 0034 5DF8047B 		ldr	r7, [sp], #4
+ 245              	.LCFI17:
+ 246              		.cfi_restore 7
+ 247              		.cfi_def_cfa_offset 0
+ 248 0038 7047     		bx	lr
+ 249              		.cfi_endproc
+ 250              	.LFE2:
+ 252              		.section	.text.get_lock,"ax",%progbits
+ARM GAS  /tmp/ccSDQVbU.s 			page 8
+
+
+ 253              		.align	1
+ 254              		.syntax unified
+ 255              		.thumb
+ 256              		.thumb_func
+ 257              		.fpu fpv4-sp-d16
+ 259              	get_lock:
+ 260              	.LFB3:
+ 154:Src/libatomic.c **** 
+ 155:Src/libatomic.c **** /* Acquire the spin lock for ADDR, and issue any barrier which might be
+ 156:Src/libatomic.c ****    required.  */
+ 157:Src/libatomic.c **** 
+ 158:Src/libatomic.c **** static inline void
+ 159:Src/libatomic.c **** get_lock (void *addr, int model)
+ 160:Src/libatomic.c **** {
+ 261              		.loc 1 160 1
+ 262              		.cfi_startproc
+ 263              		@ args = 0, pretend = 0, frame = 16
+ 264              		@ frame_needed = 1, uses_anonymous_args = 0
+ 265 0000 80B5     		push	{r7, lr}
+ 266              	.LCFI18:
+ 267              		.cfi_def_cfa_offset 8
+ 268              		.cfi_offset 7, -8
+ 269              		.cfi_offset 14, -4
+ 270 0002 84B0     		sub	sp, sp, #16
+ 271              	.LCFI19:
+ 272              		.cfi_def_cfa_offset 24
+ 273 0004 00AF     		add	r7, sp, #0
+ 274              	.LCFI20:
+ 275              		.cfi_def_cfa_register 7
+ 276 0006 7860     		str	r0, [r7, #4]
+ 277 0008 3960     		str	r1, [r7]
+ 161:Src/libatomic.c ****   bool *lock_ptr = __libatomic_flag_for_address (addr);
+ 278              		.loc 1 161 20
+ 279 000a 7868     		ldr	r0, [r7, #4]
+ 280 000c FFF7FEFF 		bl	__libatomic_flag_for_address
+ 281 0010 F860     		str	r0, [r7, #12]
+ 162:Src/libatomic.c **** 
+ 163:Src/libatomic.c ****   maybe_release_fence (model);
+ 282              		.loc 1 163 3
+ 283 0012 3868     		ldr	r0, [r7]
+ 284 0014 FFF7FEFF 		bl	maybe_release_fence
+ 164:Src/libatomic.c ****   while (__atomic_test_and_set (lock_ptr, __ATOMIC_ACQUIRE) == 1)
+ 285              		.loc 1 164 9
+ 286 0018 00BF     		nop
+ 287              	.L18:
+ 288              		.loc 1 164 10 discriminator 1
+ 289 001a FB68     		ldr	r3, [r7, #12]
+ 290 001c 0122     		movs	r2, #1
+ 291 001e 1146     		mov	r1, r2
+ 292              	.L19:
+ 293 0020 D3E84F2F 		ldrexb	r2, [r3]
+ 294 0024 C3E8401F 		strexb	r0, r1, [r3]
+ 295 0028 0028     		cmp	r0, #0
+ 296 002a F9D1     		bne	.L19
+ 297 002c BFF35B8F 		dmb	ish
+ 298 0030 D3B2     		uxtb	r3, r2
+ 299              		.loc 1 164 9 discriminator 1
+ARM GAS  /tmp/ccSDQVbU.s 			page 9
+
+
+ 300 0032 002B     		cmp	r3, #0
+ 301 0034 F1D1     		bne	.L18
+ 165:Src/libatomic.c ****     ;
+ 166:Src/libatomic.c **** }
+ 302              		.loc 1 166 1
+ 303 0036 00BF     		nop
+ 304 0038 1037     		adds	r7, r7, #16
+ 305              	.LCFI21:
+ 306              		.cfi_def_cfa_offset 8
+ 307 003a BD46     		mov	sp, r7
+ 308              	.LCFI22:
+ 309              		.cfi_def_cfa_register 13
+ 310              		@ sp needed
+ 311 003c 80BD     		pop	{r7, pc}
+ 312              		.cfi_endproc
+ 313              	.LFE3:
+ 315              		.section	.text.free_lock,"ax",%progbits
+ 316              		.align	1
+ 317              		.syntax unified
+ 318              		.thumb
+ 319              		.thumb_func
+ 320              		.fpu fpv4-sp-d16
+ 322              	free_lock:
+ 323              	.LFB4:
+ 167:Src/libatomic.c **** 
+ 168:Src/libatomic.c **** /* Release the spin lock for ADDR, and issue any barrier which might be
+ 169:Src/libatomic.c ****    required.  */
+ 170:Src/libatomic.c **** 
+ 171:Src/libatomic.c **** static inline void
+ 172:Src/libatomic.c **** free_lock (void *addr, int model)
+ 173:Src/libatomic.c **** {
+ 324              		.loc 1 173 1
+ 325              		.cfi_startproc
+ 326              		@ args = 0, pretend = 0, frame = 16
+ 327              		@ frame_needed = 1, uses_anonymous_args = 0
+ 328 0000 80B5     		push	{r7, lr}
+ 329              	.LCFI23:
+ 330              		.cfi_def_cfa_offset 8
+ 331              		.cfi_offset 7, -8
+ 332              		.cfi_offset 14, -4
+ 333 0002 84B0     		sub	sp, sp, #16
+ 334              	.LCFI24:
+ 335              		.cfi_def_cfa_offset 24
+ 336 0004 00AF     		add	r7, sp, #0
+ 337              	.LCFI25:
+ 338              		.cfi_def_cfa_register 7
+ 339 0006 7860     		str	r0, [r7, #4]
+ 340 0008 3960     		str	r1, [r7]
+ 174:Src/libatomic.c ****   bool *lock_ptr = __libatomic_flag_for_address (addr);
+ 341              		.loc 1 174 20
+ 342 000a 7868     		ldr	r0, [r7, #4]
+ 343 000c FFF7FEFF 		bl	__libatomic_flag_for_address
+ 344 0010 F860     		str	r0, [r7, #12]
+ 175:Src/libatomic.c **** 
+ 176:Src/libatomic.c ****   __atomic_clear (lock_ptr, __ATOMIC_RELEASE);
+ 345              		.loc 1 176 3
+ 346 0012 FB68     		ldr	r3, [r7, #12]
+ARM GAS  /tmp/ccSDQVbU.s 			page 10
+
+
+ 347 0014 BFF35B8F 		dmb	ish
+ 348 0018 0022     		movs	r2, #0
+ 349 001a 1A70     		strb	r2, [r3]
+ 177:Src/libatomic.c ****   maybe_acquire_fence (model);
+ 350              		.loc 1 177 3
+ 351 001c 3868     		ldr	r0, [r7]
+ 352 001e FFF7FEFF 		bl	maybe_acquire_fence
+ 178:Src/libatomic.c **** }
+ 353              		.loc 1 178 1
+ 354 0022 00BF     		nop
+ 355 0024 1037     		adds	r7, r7, #16
+ 356              	.LCFI26:
+ 357              		.cfi_def_cfa_offset 8
+ 358 0026 BD46     		mov	sp, r7
+ 359              	.LCFI27:
+ 360              		.cfi_def_cfa_register 13
+ 361              		@ sp needed
+ 362 0028 80BD     		pop	{r7, pc}
+ 363              		.cfi_endproc
+ 364              	.LFE4:
+ 366              		.section	.text.__atomic_is_lock_free,"ax",%progbits
+ 367              		.align	1
+ 368              		.global	__atomic_is_lock_free
+ 369              		.syntax unified
+ 370              		.thumb
+ 371              		.thumb_func
+ 372              		.fpu fpv4-sp-d16
+ 374              	__atomic_is_lock_free:
+ 375              	.LFB5:
+ 179:Src/libatomic.c **** 
+ 180:Src/libatomic.c **** 
+ 181:Src/libatomic.c **** /* Return whether a size is lock free or not.  PTR is currently unused since
+ 182:Src/libatomic.c ****    we're assuming alignment for the moment.  */
+ 183:Src/libatomic.c **** 
+ 184:Src/libatomic.c **** bool
+ 185:Src/libatomic.c **** __atomic_is_lock_free (size_t size, void *ptr __attribute__ ((unused)))
+ 186:Src/libatomic.c **** {
+ 376              		.loc 1 186 1
+ 377              		.cfi_startproc
+ 378              		@ args = 0, pretend = 0, frame = 8
+ 379              		@ frame_needed = 1, uses_anonymous_args = 0
+ 380              		@ link register save eliminated.
+ 381 0000 80B4     		push	{r7}
+ 382              	.LCFI28:
+ 383              		.cfi_def_cfa_offset 4
+ 384              		.cfi_offset 7, -4
+ 385 0002 83B0     		sub	sp, sp, #12
+ 386              	.LCFI29:
+ 387              		.cfi_def_cfa_offset 16
+ 388 0004 00AF     		add	r7, sp, #0
+ 389              	.LCFI30:
+ 390              		.cfi_def_cfa_register 7
+ 391 0006 7860     		str	r0, [r7, #4]
+ 392 0008 3960     		str	r1, [r7]
+ 187:Src/libatomic.c ****   /* __atomic_always_lock_free requires a compile time constant to evalutate
+ 188:Src/libatomic.c ****      properly, so provide individual cases and simply fill in the constant.  */
+ 189:Src/libatomic.c ****   switch (size)
+ARM GAS  /tmp/ccSDQVbU.s 			page 11
+
+
+ 393              		.loc 1 189 3
+ 394 000a 7B68     		ldr	r3, [r7, #4]
+ 395 000c 013B     		subs	r3, r3, #1
+ 396 000e 0F2B     		cmp	r3, #15
+ 397 0010 2CD8     		bhi	.L31
+ 398 0012 01A2     		adr	r2, .L24
+ 399 0014 52F823F0 		ldr	pc, [r2, r3, lsl #2]
+ 400              		.p2align 2
+ 401              	.L24:
+ 402 0018 59000000 		.word	.L28+1
+ 403 001c 5D000000 		.word	.L27+1
+ 404 0020 6D000000 		.word	.L31+1
+ 405 0024 61000000 		.word	.L26+1
+ 406 0028 6D000000 		.word	.L31+1
+ 407 002c 6D000000 		.word	.L31+1
+ 408 0030 6D000000 		.word	.L31+1
+ 409 0034 65000000 		.word	.L25+1
+ 410 0038 6D000000 		.word	.L31+1
+ 411 003c 6D000000 		.word	.L31+1
+ 412 0040 6D000000 		.word	.L31+1
+ 413 0044 6D000000 		.word	.L31+1
+ 414 0048 6D000000 		.word	.L31+1
+ 415 004c 6D000000 		.word	.L31+1
+ 416 0050 6D000000 		.word	.L31+1
+ 417 0054 69000000 		.word	.L23+1
+ 418              		.p2align 1
+ 419              	.L28:
+ 190:Src/libatomic.c ****     {
+ 191:Src/libatomic.c ****       case 1:
+ 192:Src/libatomic.c **** 	return __atomic_always_lock_free (1, 0);
+ 420              		.loc 1 192 9
+ 421 0058 0123     		movs	r3, #1
+ 422 005a 09E0     		b	.L29
+ 423              	.L27:
+ 193:Src/libatomic.c ****       case 2:
+ 194:Src/libatomic.c **** 	return __atomic_always_lock_free (2, 0);
+ 424              		.loc 1 194 9
+ 425 005c 0123     		movs	r3, #1
+ 426 005e 07E0     		b	.L29
+ 427              	.L26:
+ 195:Src/libatomic.c ****       case 4:
+ 196:Src/libatomic.c **** 	return __atomic_always_lock_free (4, 0);
+ 428              		.loc 1 196 9
+ 429 0060 0123     		movs	r3, #1
+ 430 0062 05E0     		b	.L29
+ 431              	.L25:
+ 197:Src/libatomic.c ****       case 8:
+ 198:Src/libatomic.c **** 	return __atomic_always_lock_free (8, 0);
+ 432              		.loc 1 198 9
+ 433 0064 0023     		movs	r3, #0
+ 434 0066 03E0     		b	.L29
+ 435              	.L23:
+ 199:Src/libatomic.c ****       case 16:
+ 200:Src/libatomic.c **** 	return __atomic_always_lock_free (16, 0);
+ 436              		.loc 1 200 9
+ 437 0068 0023     		movs	r3, #0
+ 438 006a 01E0     		b	.L29
+ARM GAS  /tmp/ccSDQVbU.s 			page 12
+
+
+ 439              	.L31:
+ 201:Src/libatomic.c ****       default:
+ 202:Src/libatomic.c ****         break;
+ 440              		.loc 1 202 9
+ 441 006c 00BF     		nop
+ 203:Src/libatomic.c ****     }
+ 204:Src/libatomic.c ****   return false;
+ 442              		.loc 1 204 10
+ 443 006e 0023     		movs	r3, #0
+ 444              	.L29:
+ 205:Src/libatomic.c **** }
+ 445              		.loc 1 205 1
+ 446 0070 1846     		mov	r0, r3
+ 447 0072 0C37     		adds	r7, r7, #12
+ 448              	.LCFI31:
+ 449              		.cfi_def_cfa_offset 4
+ 450 0074 BD46     		mov	sp, r7
+ 451              	.LCFI32:
+ 452              		.cfi_def_cfa_register 13
+ 453              		@ sp needed
+ 454 0076 5DF8047B 		ldr	r7, [sp], #4
+ 455              	.LCFI33:
+ 456              		.cfi_restore 7
+ 457              		.cfi_def_cfa_offset 0
+ 458 007a 7047     		bx	lr
+ 459              		.cfi_endproc
+ 460              	.LFE5:
+ 462              		.section	.text.__atomic_load,"ax",%progbits
+ 463              		.align	1
+ 464              		.global	__atomic_load
+ 465              		.syntax unified
+ 466              		.thumb
+ 467              		.thumb_func
+ 468              		.fpu fpv4-sp-d16
+ 470              	__atomic_load:
+ 471              	.LFB6:
+ 206:Src/libatomic.c **** 
+ 207:Src/libatomic.c **** 
+ 208:Src/libatomic.c **** /* If SIZE is lockfree, issue a lockfree sequence for the load, otherwise
+ 209:Src/libatomic.c ****    break from the switch element.  */
+ 210:Src/libatomic.c **** #define LOAD(SIZE)  						\
+ 211:Src/libatomic.c ****   if (__atomic_always_lock_free (SIZE, 0)) 			\
+ 212:Src/libatomic.c ****     { 								\
+ 213:Src/libatomic.c ****       I ## SIZE tmp = __atomic_load_ ## SIZE (mem, model);	\
+ 214:Src/libatomic.c ****       memcpy (ret, &tmp, SIZE); 				\
+ 215:Src/libatomic.c ****       return;							\
+ 216:Src/libatomic.c ****     }								\
+ 217:Src/libatomic.c ****   else								\
+ 218:Src/libatomic.c ****     break;
+ 219:Src/libatomic.c **** 
+ 220:Src/libatomic.c **** 
+ 221:Src/libatomic.c **** /* Implement a generic atomic load for an object of SIZE, copying the value
+ 222:Src/libatomic.c ****    from MEM into RET using MODEL.  */
+ 223:Src/libatomic.c **** 
+ 224:Src/libatomic.c **** void 
+ 225:Src/libatomic.c **** __atomic_load (size_t size, void *mem, void *ret, int model)
+ 226:Src/libatomic.c **** {
+ARM GAS  /tmp/ccSDQVbU.s 			page 13
+
+
+ 472              		.loc 1 226 1
+ 473              		.cfi_startproc
+ 474              		@ args = 0, pretend = 0, frame = 32
+ 475              		@ frame_needed = 1, uses_anonymous_args = 0
+ 476 0000 80B5     		push	{r7, lr}
+ 477              	.LCFI34:
+ 478              		.cfi_def_cfa_offset 8
+ 479              		.cfi_offset 7, -8
+ 480              		.cfi_offset 14, -4
+ 481 0002 88B0     		sub	sp, sp, #32
+ 482              	.LCFI35:
+ 483              		.cfi_def_cfa_offset 40
+ 484 0004 00AF     		add	r7, sp, #0
+ 485              	.LCFI36:
+ 486              		.cfi_def_cfa_register 7
+ 487 0006 F860     		str	r0, [r7, #12]
+ 488 0008 B960     		str	r1, [r7, #8]
+ 489 000a 7A60     		str	r2, [r7, #4]
+ 490 000c 3B60     		str	r3, [r7]
+ 227:Src/libatomic.c ****   switch (size)
+ 491              		.loc 1 227 3
+ 492 000e FB68     		ldr	r3, [r7, #12]
+ 493 0010 013B     		subs	r3, r3, #1
+ 494 0012 072B     		cmp	r3, #7
+ 495 0014 35D8     		bhi	.L44
+ 496 0016 01A2     		adr	r2, .L35
+ 497 0018 52F823F0 		ldr	pc, [r2, r3, lsl #2]
+ 498              		.p2align 2
+ 499              	.L35:
+ 500 001c 3D000000 		.word	.L41+1
+ 501 0020 55000000 		.word	.L42+1
+ 502 0024 83000000 		.word	.L44+1
+ 503 0028 6D000000 		.word	.L43+1
+ 504 002c 83000000 		.word	.L44+1
+ 505 0030 83000000 		.word	.L44+1
+ 506 0034 83000000 		.word	.L44+1
+ 507 0038 83000000 		.word	.L44+1
+ 508              		.p2align 1
+ 509              	.L41:
+ 510              	.LBB2:
+ 228:Src/libatomic.c ****   {	
+ 229:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I1
+ 230:Src/libatomic.c ****     case 1:
+ 231:Src/libatomic.c ****       LOAD (1);
+ 511              		.loc 1 231 7 discriminator 1
+ 512 003c BB68     		ldr	r3, [r7, #8]
+ 513 003e BFF35B8F 		dmb	ish
+ 514 0042 1B78     		ldrb	r3, [r3]
+ 515 0044 BFF35B8F 		dmb	ish
+ 516 0048 DBB2     		uxtb	r3, r3
+ 517 004a FB77     		strb	r3, [r7, #31]
+ 518 004c FA7F     		ldrb	r2, [r7, #31]	@ zero_extendqisi2
+ 519 004e 7B68     		ldr	r3, [r7, #4]
+ 520 0050 1A70     		strb	r2, [r3]
+ 521 0052 24E0     		b	.L32
+ 522              	.L42:
+ 523              	.LBE2:
+ARM GAS  /tmp/ccSDQVbU.s 			page 14
+
+
+ 524              	.LBB3:
+ 232:Src/libatomic.c **** #endif
+ 233:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I2
+ 234:Src/libatomic.c ****     case 2:
+ 235:Src/libatomic.c ****       LOAD (2);
+ 525              		.loc 1 235 7 discriminator 1
+ 526 0054 BB68     		ldr	r3, [r7, #8]
+ 527 0056 BFF35B8F 		dmb	ish
+ 528 005a 1B88     		ldrh	r3, [r3]	@ movhi
+ 529 005c BFF35B8F 		dmb	ish
+ 530 0060 9BB2     		uxth	r3, r3
+ 531 0062 BB83     		strh	r3, [r7, #28]	@ movhi
+ 532 0064 BA8B     		ldrh	r2, [r7, #28]
+ 533 0066 7B68     		ldr	r3, [r7, #4]
+ 534 0068 1A80     		strh	r2, [r3]	@ unaligned
+ 535 006a 18E0     		b	.L32
+ 536              	.L43:
+ 537              	.LBE3:
+ 538              	.LBB4:
+ 236:Src/libatomic.c **** #endif
+ 237:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I4
+ 238:Src/libatomic.c ****     case 4:
+ 239:Src/libatomic.c ****       LOAD (4);
+ 539              		.loc 1 239 7 discriminator 1
+ 540 006c BB68     		ldr	r3, [r7, #8]
+ 541 006e BFF35B8F 		dmb	ish
+ 542 0072 1B68     		ldr	r3, [r3]
+ 543 0074 BFF35B8F 		dmb	ish
+ 544 0078 BB61     		str	r3, [r7, #24]
+ 545 007a BA69     		ldr	r2, [r7, #24]
+ 546 007c 7B68     		ldr	r3, [r7, #4]
+ 547 007e 1A60     		str	r2, [r3]	@ unaligned
+ 548 0080 0DE0     		b	.L32
+ 549              	.L44:
+ 550              	.LBE4:
+ 240:Src/libatomic.c **** #endif
+ 241:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I8
+ 242:Src/libatomic.c ****     case 8:
+ 243:Src/libatomic.c ****       LOAD (8);
+ 244:Src/libatomic.c **** #endif
+ 245:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I16
+ 246:Src/libatomic.c ****     case 16:
+ 247:Src/libatomic.c ****       LOAD (16);
+ 248:Src/libatomic.c **** #endif
+ 249:Src/libatomic.c ****     default:
+ 250:Src/libatomic.c ****       break;
+ 551              		.loc 1 250 7
+ 552 0082 00BF     		nop
+ 251:Src/libatomic.c ****   }
+ 252:Src/libatomic.c **** 
+ 253:Src/libatomic.c ****   /* If control gets here, a lock is needed.  */
+ 254:Src/libatomic.c ****   get_lock (mem, model);
+ 553              		.loc 1 254 3
+ 554 0084 3968     		ldr	r1, [r7]
+ 555 0086 B868     		ldr	r0, [r7, #8]
+ 556 0088 FFF7FEFF 		bl	get_lock
+ 255:Src/libatomic.c ****   memcpy (ret, mem, size);
+ARM GAS  /tmp/ccSDQVbU.s 			page 15
+
+
+ 557              		.loc 1 255 3
+ 558 008c FA68     		ldr	r2, [r7, #12]
+ 559 008e B968     		ldr	r1, [r7, #8]
+ 560 0090 7868     		ldr	r0, [r7, #4]
+ 561 0092 FFF7FEFF 		bl	memcpy
+ 256:Src/libatomic.c ****   free_lock (mem, model);
+ 562              		.loc 1 256 3
+ 563 0096 3968     		ldr	r1, [r7]
+ 564 0098 B868     		ldr	r0, [r7, #8]
+ 565 009a FFF7FEFF 		bl	free_lock
+ 566              	.L32:
+ 257:Src/libatomic.c **** }
+ 567              		.loc 1 257 1
+ 568 009e 2037     		adds	r7, r7, #32
+ 569              	.LCFI37:
+ 570              		.cfi_def_cfa_offset 8
+ 571 00a0 BD46     		mov	sp, r7
+ 572              	.LCFI38:
+ 573              		.cfi_def_cfa_register 13
+ 574              		@ sp needed
+ 575 00a2 80BD     		pop	{r7, pc}
+ 576              		.cfi_endproc
+ 577              	.LFE6:
+ 579              		.section	.text.__atomic_store,"ax",%progbits
+ 580              		.align	1
+ 581              		.global	__atomic_store
+ 582              		.syntax unified
+ 583              		.thumb
+ 584              		.thumb_func
+ 585              		.fpu fpv4-sp-d16
+ 587              	__atomic_store:
+ 588              	.LFB7:
+ 258:Src/libatomic.c **** 
+ 259:Src/libatomic.c **** 
+ 260:Src/libatomic.c **** /* If SIZE is lockfree, issue a lockfree sequence for the store, otherwise
+ 261:Src/libatomic.c ****    break from the switch element.  */
+ 262:Src/libatomic.c **** #define STORE(SIZE)  					\
+ 263:Src/libatomic.c ****   if (__atomic_always_lock_free (SIZE, 0)) 		\
+ 264:Src/libatomic.c ****     { 							\
+ 265:Src/libatomic.c ****       I ## SIZE tmp;					\
+ 266:Src/libatomic.c ****       memcpy (&tmp, val, SIZE); 			\
+ 267:Src/libatomic.c ****       __atomic_store_ ## SIZE (mem, tmp, model); 	\
+ 268:Src/libatomic.c ****       return;						\
+ 269:Src/libatomic.c ****     }							\
+ 270:Src/libatomic.c ****   else							\
+ 271:Src/libatomic.c ****     break;
+ 272:Src/libatomic.c **** 
+ 273:Src/libatomic.c **** /* Perform an atomic store for an object of SIZE.  Store VAL into MEM using 
+ 274:Src/libatomic.c ****    MODEL.  */
+ 275:Src/libatomic.c **** 
+ 276:Src/libatomic.c **** void 
+ 277:Src/libatomic.c **** __atomic_store (size_t size, void *mem, void *val, int model)
+ 278:Src/libatomic.c **** {
+ 589              		.loc 1 278 1
+ 590              		.cfi_startproc
+ 591              		@ args = 0, pretend = 0, frame = 32
+ 592              		@ frame_needed = 1, uses_anonymous_args = 0
+ARM GAS  /tmp/ccSDQVbU.s 			page 16
+
+
+ 593 0000 80B5     		push	{r7, lr}
+ 594              	.LCFI39:
+ 595              		.cfi_def_cfa_offset 8
+ 596              		.cfi_offset 7, -8
+ 597              		.cfi_offset 14, -4
+ 598 0002 88B0     		sub	sp, sp, #32
+ 599              	.LCFI40:
+ 600              		.cfi_def_cfa_offset 40
+ 601 0004 00AF     		add	r7, sp, #0
+ 602              	.LCFI41:
+ 603              		.cfi_def_cfa_register 7
+ 604 0006 F860     		str	r0, [r7, #12]
+ 605 0008 B960     		str	r1, [r7, #8]
+ 606 000a 7A60     		str	r2, [r7, #4]
+ 607 000c 3B60     		str	r3, [r7]
+ 279:Src/libatomic.c ****   switch (size)
+ 608              		.loc 1 279 3
+ 609 000e FB68     		ldr	r3, [r7, #12]
+ 610 0010 013B     		subs	r3, r3, #1
+ 611 0012 072B     		cmp	r3, #7
+ 612 0014 34D8     		bhi	.L57
+ 613 0016 01A2     		adr	r2, .L48
+ 614 0018 52F823F0 		ldr	pc, [r2, r3, lsl #2]
+ 615              		.p2align 2
+ 616              	.L48:
+ 617 001c 3D000000 		.word	.L54+1
+ 618 0020 53000000 		.word	.L55+1
+ 619 0024 81000000 		.word	.L57+1
+ 620 0028 6B000000 		.word	.L56+1
+ 621 002c 81000000 		.word	.L57+1
+ 622 0030 81000000 		.word	.L57+1
+ 623 0034 81000000 		.word	.L57+1
+ 624 0038 81000000 		.word	.L57+1
+ 625              		.p2align 1
+ 626              	.L54:
+ 627              	.LBB5:
+ 280:Src/libatomic.c ****   {
+ 281:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I1
+ 282:Src/libatomic.c ****     case 1:
+ 283:Src/libatomic.c ****       STORE (1);
+ 628              		.loc 1 283 7 discriminator 1
+ 629 003c 7B68     		ldr	r3, [r7, #4]
+ 630 003e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 631 0040 FB77     		strb	r3, [r7, #31]
+ 632 0042 FA7F     		ldrb	r2, [r7, #31]	@ zero_extendqisi2
+ 633 0044 BB68     		ldr	r3, [r7, #8]
+ 634 0046 BFF35B8F 		dmb	ish
+ 635 004a 1A70     		strb	r2, [r3]
+ 636 004c BFF35B8F 		dmb	ish
+ 637 0050 24E0     		b	.L45
+ 638              	.L55:
+ 639              	.LBE5:
+ 640              	.LBB6:
+ 284:Src/libatomic.c **** #endif
+ 285:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I2
+ 286:Src/libatomic.c ****     case 2:
+ 287:Src/libatomic.c ****       STORE (2);
+ARM GAS  /tmp/ccSDQVbU.s 			page 17
+
+
+ 641              		.loc 1 287 7 discriminator 1
+ 642 0052 7B68     		ldr	r3, [r7, #4]
+ 643 0054 1B88     		ldrh	r3, [r3]	@ unaligned
+ 644 0056 9BB2     		uxth	r3, r3
+ 645 0058 BB83     		strh	r3, [r7, #28]	@ movhi
+ 646 005a BA8B     		ldrh	r2, [r7, #28]
+ 647 005c BB68     		ldr	r3, [r7, #8]
+ 648 005e BFF35B8F 		dmb	ish
+ 649 0062 1A80     		strh	r2, [r3]	@ movhi
+ 650 0064 BFF35B8F 		dmb	ish
+ 651 0068 18E0     		b	.L45
+ 652              	.L56:
+ 653              	.LBE6:
+ 654              	.LBB7:
+ 288:Src/libatomic.c **** #endif
+ 289:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I4
+ 290:Src/libatomic.c ****     case 4:
+ 291:Src/libatomic.c ****       STORE (4);
+ 655              		.loc 1 291 7 discriminator 1
+ 656 006a 7B68     		ldr	r3, [r7, #4]
+ 657 006c 1B68     		ldr	r3, [r3]	@ unaligned
+ 658 006e BB61     		str	r3, [r7, #24]
+ 659 0070 BA69     		ldr	r2, [r7, #24]
+ 660 0072 BB68     		ldr	r3, [r7, #8]
+ 661 0074 BFF35B8F 		dmb	ish
+ 662 0078 1A60     		str	r2, [r3]
+ 663 007a BFF35B8F 		dmb	ish
+ 664 007e 0DE0     		b	.L45
+ 665              	.L57:
+ 666              	.LBE7:
+ 292:Src/libatomic.c **** #endif
+ 293:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I8
+ 294:Src/libatomic.c ****     case 8:
+ 295:Src/libatomic.c ****       STORE (8);
+ 296:Src/libatomic.c **** #endif
+ 297:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I16
+ 298:Src/libatomic.c ****     case 16:
+ 299:Src/libatomic.c ****       STORE (16);
+ 300:Src/libatomic.c **** #endif
+ 301:Src/libatomic.c ****     default:
+ 302:Src/libatomic.c ****       break;
+ 667              		.loc 1 302 7
+ 668 0080 00BF     		nop
+ 303:Src/libatomic.c ****   }
+ 304:Src/libatomic.c **** 
+ 305:Src/libatomic.c ****   /* If control gets here, a lock is needed.  */
+ 306:Src/libatomic.c ****   get_lock (mem, model);
+ 669              		.loc 1 306 3
+ 670 0082 3968     		ldr	r1, [r7]
+ 671 0084 B868     		ldr	r0, [r7, #8]
+ 672 0086 FFF7FEFF 		bl	get_lock
+ 307:Src/libatomic.c ****   memcpy (mem, val, size);
+ 673              		.loc 1 307 3
+ 674 008a FA68     		ldr	r2, [r7, #12]
+ 675 008c 7968     		ldr	r1, [r7, #4]
+ 676 008e B868     		ldr	r0, [r7, #8]
+ 677 0090 FFF7FEFF 		bl	memcpy
+ARM GAS  /tmp/ccSDQVbU.s 			page 18
+
+
+ 308:Src/libatomic.c ****   free_lock (mem, model);
+ 678              		.loc 1 308 3
+ 679 0094 3968     		ldr	r1, [r7]
+ 680 0096 B868     		ldr	r0, [r7, #8]
+ 681 0098 FFF7FEFF 		bl	free_lock
+ 682              	.L45:
+ 309:Src/libatomic.c **** }
+ 683              		.loc 1 309 1
+ 684 009c 2037     		adds	r7, r7, #32
+ 685              	.LCFI42:
+ 686              		.cfi_def_cfa_offset 8
+ 687 009e BD46     		mov	sp, r7
+ 688              	.LCFI43:
+ 689              		.cfi_def_cfa_register 13
+ 690              		@ sp needed
+ 691 00a0 80BD     		pop	{r7, pc}
+ 692              		.cfi_endproc
+ 693              	.LFE7:
+ 695 00a2 00BF     		.section	.text.__atomic_exchange,"ax",%progbits
+ 696              		.align	1
+ 697              		.global	__atomic_exchange
+ 698              		.syntax unified
+ 699              		.thumb
+ 700              		.thumb_func
+ 701              		.fpu fpv4-sp-d16
+ 703              	__atomic_exchange:
+ 704              	.LFB8:
+ 310:Src/libatomic.c **** 
+ 311:Src/libatomic.c **** 
+ 312:Src/libatomic.c **** /* If SIZE is lockfree, issue a lockfree sequence for the exchange, otherwise
+ 313:Src/libatomic.c ****    break from the switch element.  */
+ 314:Src/libatomic.c **** #define EXCHANGE(SIZE)						\
+ 315:Src/libatomic.c ****   if (__atomic_always_lock_free (SIZE, 0))			\
+ 316:Src/libatomic.c ****     { 						     		\
+ 317:Src/libatomic.c ****       I ## SIZE tmp1, tmp2;					\
+ 318:Src/libatomic.c ****       memcpy (&tmp2, val, SIZE);				\
+ 319:Src/libatomic.c ****       tmp1 = __atomic_exchange_ ## SIZE (mem, tmp2, model);	\
+ 320:Src/libatomic.c ****       memcpy (ret, &tmp1, SIZE); 				\
+ 321:Src/libatomic.c ****       return;					     		\
+ 322:Src/libatomic.c ****     }								\
+ 323:Src/libatomic.c ****   else						     		\
+ 324:Src/libatomic.c ****     break;
+ 325:Src/libatomic.c **** 
+ 326:Src/libatomic.c **** /* Perform an atomic exchange for an object of SIZE.  Store VAL into MEM using 
+ 327:Src/libatomic.c ****    MODEL, and return the previous value of MEM in RET.  */
+ 328:Src/libatomic.c **** 
+ 329:Src/libatomic.c **** void 
+ 330:Src/libatomic.c **** __atomic_exchange (size_t size, void *mem, void *val, void *ret, int model)
+ 331:Src/libatomic.c **** {
+ 705              		.loc 1 331 1
+ 706              		.cfi_startproc
+ 707              		@ args = 4, pretend = 0, frame = 48
+ 708              		@ frame_needed = 1, uses_anonymous_args = 0
+ 709 0000 80B5     		push	{r7, lr}
+ 710              	.LCFI44:
+ 711              		.cfi_def_cfa_offset 8
+ 712              		.cfi_offset 7, -8
+ARM GAS  /tmp/ccSDQVbU.s 			page 19
+
+
+ 713              		.cfi_offset 14, -4
+ 714 0002 8CB0     		sub	sp, sp, #48
+ 715              	.LCFI45:
+ 716              		.cfi_def_cfa_offset 56
+ 717 0004 00AF     		add	r7, sp, #0
+ 718              	.LCFI46:
+ 719              		.cfi_def_cfa_register 7
+ 720 0006 F860     		str	r0, [r7, #12]
+ 721 0008 B960     		str	r1, [r7, #8]
+ 722 000a 7A60     		str	r2, [r7, #4]
+ 723 000c 3B60     		str	r3, [r7]
+ 332:Src/libatomic.c ****   switch (size)
+ 724              		.loc 1 332 3
+ 725 000e FB68     		ldr	r3, [r7, #12]
+ 726 0010 013B     		subs	r3, r3, #1
+ 727 0012 072B     		cmp	r3, #7
+ 728 0014 55D8     		bhi	.L70
+ 729 0016 01A2     		adr	r2, .L61
+ 730 0018 52F823F0 		ldr	pc, [r2, r3, lsl #2]
+ 731              		.p2align 2
+ 732              	.L61:
+ 733 001c 3D000000 		.word	.L67+1
+ 734 0020 6F000000 		.word	.L68+1
+ 735 0024 C3000000 		.word	.L70+1
+ 736 0028 9B000000 		.word	.L69+1
+ 737 002c C3000000 		.word	.L70+1
+ 738 0030 C3000000 		.word	.L70+1
+ 739 0034 C3000000 		.word	.L70+1
+ 740 0038 C3000000 		.word	.L70+1
+ 741              		.p2align 1
+ 742              	.L67:
+ 743              	.LBB8:
+ 333:Src/libatomic.c ****   {
+ 334:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I1
+ 335:Src/libatomic.c ****     case 1:
+ 336:Src/libatomic.c ****       EXCHANGE (1);
+ 744              		.loc 1 336 7 discriminator 1
+ 745 003c 7B68     		ldr	r3, [r7, #4]
+ 746 003e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 747 0040 87F82E30 		strb	r3, [r7, #46]
+ 748 0044 97F82E20 		ldrb	r2, [r7, #46]	@ zero_extendqisi2
+ 749 0048 BB68     		ldr	r3, [r7, #8]
+ 750 004a BFF35B8F 		dmb	ish
+ 751              	.L71:
+ 752 004e D3E84F1F 		ldrexb	r1, [r3]
+ 753 0052 C3E8402F 		strexb	r0, r2, [r3]
+ 754 0056 0028     		cmp	r0, #0
+ 755 0058 F9D1     		bne	.L71
+ 756 005a BFF35B8F 		dmb	ish
+ 757 005e CBB2     		uxtb	r3, r1
+ 758 0060 87F82F30 		strb	r3, [r7, #47]
+ 759 0064 97F82F20 		ldrb	r2, [r7, #47]	@ zero_extendqisi2
+ 760 0068 3B68     		ldr	r3, [r7]
+ 761 006a 1A70     		strb	r2, [r3]
+ 762 006c 3CE0     		b	.L58
+ 763              	.L68:
+ 764              	.LBE8:
+ARM GAS  /tmp/ccSDQVbU.s 			page 20
+
+
+ 765              	.LBB9:
+ 337:Src/libatomic.c **** #endif
+ 338:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I2
+ 339:Src/libatomic.c ****     case 2:
+ 340:Src/libatomic.c ****       EXCHANGE (2);
+ 766              		.loc 1 340 7 discriminator 1
+ 767 006e 7B68     		ldr	r3, [r7, #4]
+ 768 0070 1B88     		ldrh	r3, [r3]	@ unaligned
+ 769 0072 9BB2     		uxth	r3, r3
+ 770 0074 7B85     		strh	r3, [r7, #42]	@ movhi
+ 771 0076 7A8D     		ldrh	r2, [r7, #42]
+ 772 0078 BB68     		ldr	r3, [r7, #8]
+ 773 007a BFF35B8F 		dmb	ish
+ 774              	.L72:
+ 775 007e D3E85F1F 		ldrexh	r1, [r3]
+ 776 0082 C3E8502F 		strexh	r0, r2, [r3]
+ 777 0086 0028     		cmp	r0, #0
+ 778 0088 F9D1     		bne	.L72
+ 779 008a BFF35B8F 		dmb	ish
+ 780 008e 8BB2     		uxth	r3, r1
+ 781 0090 BB85     		strh	r3, [r7, #44]	@ movhi
+ 782 0092 BA8D     		ldrh	r2, [r7, #44]
+ 783 0094 3B68     		ldr	r3, [r7]
+ 784 0096 1A80     		strh	r2, [r3]	@ unaligned
+ 785 0098 26E0     		b	.L58
+ 786              	.L69:
+ 787              	.LBE9:
+ 788              	.LBB10:
+ 341:Src/libatomic.c **** #endif
+ 342:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I4
+ 343:Src/libatomic.c ****     case 4:
+ 344:Src/libatomic.c ****       EXCHANGE (4);
+ 789              		.loc 1 344 7 discriminator 1
+ 790 009a 7B68     		ldr	r3, [r7, #4]
+ 791 009c 1B68     		ldr	r3, [r3]	@ unaligned
+ 792 009e 3B62     		str	r3, [r7, #32]
+ 793 00a0 396A     		ldr	r1, [r7, #32]
+ 794 00a2 BA68     		ldr	r2, [r7, #8]
+ 795 00a4 BFF35B8F 		dmb	ish
+ 796              	.L73:
+ 797 00a8 52E8003F 		ldrex	r3, [r2]
+ 798 00ac 42E80010 		strex	r0, r1, [r2]
+ 799 00b0 0028     		cmp	r0, #0
+ 800 00b2 F9D1     		bne	.L73
+ 801 00b4 BFF35B8F 		dmb	ish
+ 802 00b8 7B62     		str	r3, [r7, #36]
+ 803 00ba 7A6A     		ldr	r2, [r7, #36]
+ 804 00bc 3B68     		ldr	r3, [r7]
+ 805 00be 1A60     		str	r2, [r3]	@ unaligned
+ 806 00c0 12E0     		b	.L58
+ 807              	.L70:
+ 808              	.LBE10:
+ 345:Src/libatomic.c **** #endif
+ 346:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I8
+ 347:Src/libatomic.c ****     case 8:
+ 348:Src/libatomic.c ****       EXCHANGE (8);
+ 349:Src/libatomic.c **** #endif
+ARM GAS  /tmp/ccSDQVbU.s 			page 21
+
+
+ 350:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I16
+ 351:Src/libatomic.c ****     case 16:
+ 352:Src/libatomic.c ****       EXCHANGE (16);
+ 353:Src/libatomic.c **** #endif
+ 354:Src/libatomic.c ****     default:
+ 355:Src/libatomic.c ****       break;
+ 809              		.loc 1 355 7
+ 810 00c2 00BF     		nop
+ 356:Src/libatomic.c ****   }
+ 357:Src/libatomic.c **** 
+ 358:Src/libatomic.c ****   /* If control gets here, a lock is needed.  */
+ 359:Src/libatomic.c ****   get_lock (mem, model);
+ 811              		.loc 1 359 3
+ 812 00c4 B96B     		ldr	r1, [r7, #56]
+ 813 00c6 B868     		ldr	r0, [r7, #8]
+ 814 00c8 FFF7FEFF 		bl	get_lock
+ 360:Src/libatomic.c ****   memcpy (ret, mem, size);
+ 815              		.loc 1 360 3
+ 816 00cc FA68     		ldr	r2, [r7, #12]
+ 817 00ce B968     		ldr	r1, [r7, #8]
+ 818 00d0 3868     		ldr	r0, [r7]
+ 819 00d2 FFF7FEFF 		bl	memcpy
+ 361:Src/libatomic.c ****   memcpy (mem, val, size);
+ 820              		.loc 1 361 3
+ 821 00d6 FA68     		ldr	r2, [r7, #12]
+ 822 00d8 7968     		ldr	r1, [r7, #4]
+ 823 00da B868     		ldr	r0, [r7, #8]
+ 824 00dc FFF7FEFF 		bl	memcpy
+ 362:Src/libatomic.c ****   free_lock (mem, model);
+ 825              		.loc 1 362 3
+ 826 00e0 B96B     		ldr	r1, [r7, #56]
+ 827 00e2 B868     		ldr	r0, [r7, #8]
+ 828 00e4 FFF7FEFF 		bl	free_lock
+ 829              	.L58:
+ 363:Src/libatomic.c **** }
+ 830              		.loc 1 363 1
+ 831 00e8 3037     		adds	r7, r7, #48
+ 832              	.LCFI47:
+ 833              		.cfi_def_cfa_offset 8
+ 834 00ea BD46     		mov	sp, r7
+ 835              	.LCFI48:
+ 836              		.cfi_def_cfa_register 13
+ 837              		@ sp needed
+ 838 00ec 80BD     		pop	{r7, pc}
+ 839              		.cfi_endproc
+ 840              	.LFE8:
+ 842 00ee 00BF     		.section	.text.__atomic_compare_exchange,"ax",%progbits
+ 843              		.align	1
+ 844              		.global	__atomic_compare_exchange
+ 845              		.syntax unified
+ 846              		.thumb
+ 847              		.thumb_func
+ 848              		.fpu fpv4-sp-d16
+ 850              	__atomic_compare_exchange:
+ 851              	.LFB9:
+ 364:Src/libatomic.c **** 
+ 365:Src/libatomic.c **** 
+ARM GAS  /tmp/ccSDQVbU.s 			page 22
+
+
+ 366:Src/libatomic.c **** /* If SIZE is lockfree, issue a lockfree sequence for the compare_exchange,
+ 367:Src/libatomic.c ****    otherwise break from the switch element.  */
+ 368:Src/libatomic.c **** #define COMPARE_EXCHANGE(SIZE)						\
+ 369:Src/libatomic.c ****   if (__atomic_always_lock_free (SIZE, 0))				\
+ 370:Src/libatomic.c ****     { 						     			\
+ 371:Src/libatomic.c ****       bool ret;								\
+ 372:Src/libatomic.c ****       I ## SIZE tmp;							\
+ 373:Src/libatomic.c ****       memcpy (&tmp, desired, SIZE); 					\
+ 374:Src/libatomic.c ****       ret = __atomic_compare_exchange_ ## SIZE (mem, expect, tmp, 0,	\
+ 375:Src/libatomic.c **** 						success, failure);	\
+ 376:Src/libatomic.c ****       return ret;				     			\
+ 377:Src/libatomic.c ****     }									\
+ 378:Src/libatomic.c ****   else						     			\
+ 379:Src/libatomic.c ****     break;
+ 380:Src/libatomic.c **** 
+ 381:Src/libatomic.c **** /* Perform an atomic compare_exchange for an object of SIZE.  If MEM contains
+ 382:Src/libatomic.c ****    the value in EXPECT, copy DESIRED into MEM utilizing memory model SUCESS and
+ 383:Src/libatomic.c ****    return true.  Otherwise copy the contents of MEM into EXPECT using memory
+ 384:Src/libatomic.c ****    model FAILURE and return false.  */
+ 385:Src/libatomic.c **** 
+ 386:Src/libatomic.c **** bool
+ 387:Src/libatomic.c **** __atomic_compare_exchange (size_t size, void *mem, void *expect, void *desired, int success, int fa
+ 388:Src/libatomic.c **** {
+ 852              		.loc 1 388 1
+ 853              		.cfi_startproc
+ 854              		@ args = 8, pretend = 0, frame = 40
+ 855              		@ frame_needed = 1, uses_anonymous_args = 0
+ 856 0000 80B5     		push	{r7, lr}
+ 857              	.LCFI49:
+ 858              		.cfi_def_cfa_offset 8
+ 859              		.cfi_offset 7, -8
+ 860              		.cfi_offset 14, -4
+ 861 0002 8AB0     		sub	sp, sp, #40
+ 862              	.LCFI50:
+ 863              		.cfi_def_cfa_offset 48
+ 864 0004 00AF     		add	r7, sp, #0
+ 865              	.LCFI51:
+ 866              		.cfi_def_cfa_register 7
+ 867 0006 F860     		str	r0, [r7, #12]
+ 868 0008 B960     		str	r1, [r7, #8]
+ 869 000a 7A60     		str	r2, [r7, #4]
+ 870 000c 3B60     		str	r3, [r7]
+ 389:Src/libatomic.c ****   switch (size)
+ 871              		.loc 1 389 3
+ 872 000e FB68     		ldr	r3, [r7, #12]
+ 873 0010 013B     		subs	r3, r3, #1
+ 874 0012 072B     		cmp	r3, #7
+ 875 0014 7FD8     		bhi	.L90
+ 876 0016 01A2     		adr	r2, .L77
+ 877 0018 52F823F0 		ldr	pc, [r2, r3, lsl #2]
+ 878              		.p2align 2
+ 879              	.L77:
+ 880 001c 3D000000 		.word	.L87+1
+ 881 0020 89000000 		.word	.L88+1
+ 882 0024 17010000 		.word	.L90+1
+ 883 0028 D3000000 		.word	.L89+1
+ 884 002c 17010000 		.word	.L90+1
+ARM GAS  /tmp/ccSDQVbU.s 			page 23
+
+
+ 885 0030 17010000 		.word	.L90+1
+ 886 0034 17010000 		.word	.L90+1
+ 887 0038 17010000 		.word	.L90+1
+ 888              		.p2align 1
+ 889              	.L87:
+ 890              	.LBB11:
+ 390:Src/libatomic.c ****   {
+ 391:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I1
+ 392:Src/libatomic.c ****     case 1:
+ 393:Src/libatomic.c ****       COMPARE_EXCHANGE (1);
+ 891              		.loc 1 393 7 discriminator 1
+ 892 003c 3B68     		ldr	r3, [r7]
+ 893 003e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 894 0040 87F82430 		strb	r3, [r7, #36]
+ 895 0044 97F82410 		ldrb	r1, [r7, #36]	@ zero_extendqisi2
+ 896 0048 BB68     		ldr	r3, [r7, #8]
+ 897 004a 7A68     		ldr	r2, [r7, #4]
+ 898 004c 1278     		ldrb	r2, [r2]
+ 899 004e D2B2     		uxtb	r2, r2
+ 900 0050 BFF35B8F 		dmb	ish
+ 901              	.L91:
+ 902 0054 D3E84F0F 		ldrexb	r0, [r3]
+ 903 0058 9042     		cmp	r0, r2
+ 904 005a 06D1     		bne	.L92
+ 905 005c C3E84C1F 		strexb	ip, r1, [r3]
+ 906 0060 BCF1000F 		cmp	ip, #0
+ 907 0064 BCF1000F 		cmp	ip, #0
+ 908 0068 F4D1     		bne	.L91
+ 909              	.L92:
+ 910 006a BFF35B8F 		dmb	ish
+ 911 006e 0146     		mov	r1, r0
+ 912 0070 0CBF     		ite	eq
+ 913 0072 0123     		moveq	r3, #1
+ 914 0074 0023     		movne	r3, #0
+ 915 0076 002B     		cmp	r3, #0
+ 916 0078 01D1     		bne	.L81
+ 917 007a 7A68     		ldr	r2, [r7, #4]
+ 918 007c 1170     		strb	r1, [r2]
+ 919              	.L81:
+ 920 007e 87F82730 		strb	r3, [r7, #39]
+ 921 0082 97F82730 		ldrb	r3, [r7, #39]	@ zero_extendqisi2
+ 922 0086 68E0     		b	.L82
+ 923              	.L88:
+ 924              	.LBE11:
+ 925              	.LBB12:
+ 394:Src/libatomic.c **** #endif
+ 395:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I2
+ 396:Src/libatomic.c ****     case 2:
+ 397:Src/libatomic.c ****       COMPARE_EXCHANGE (2);
+ 926              		.loc 1 397 7 discriminator 1
+ 927 0088 3B68     		ldr	r3, [r7]
+ 928 008a 1B88     		ldrh	r3, [r3]	@ unaligned
+ 929 008c 9BB2     		uxth	r3, r3
+ 930 008e 7B84     		strh	r3, [r7, #34]	@ movhi
+ 931 0090 798C     		ldrh	r1, [r7, #34]
+ 932 0092 BB68     		ldr	r3, [r7, #8]
+ 933 0094 7A68     		ldr	r2, [r7, #4]
+ARM GAS  /tmp/ccSDQVbU.s 			page 24
+
+
+ 934 0096 1288     		ldrh	r2, [r2]	@ movhi
+ 935 0098 92B2     		uxth	r2, r2
+ 936 009a BFF35B8F 		dmb	ish
+ 937              	.L93:
+ 938 009e D3E85F0F 		ldrexh	r0, [r3]
+ 939 00a2 9042     		cmp	r0, r2
+ 940 00a4 06D1     		bne	.L94
+ 941 00a6 C3E85C1F 		strexh	ip, r1, [r3]
+ 942 00aa BCF1000F 		cmp	ip, #0
+ 943 00ae BCF1000F 		cmp	ip, #0
+ 944 00b2 F4D1     		bne	.L93
+ 945              	.L94:
+ 946 00b4 BFF35B8F 		dmb	ish
+ 947 00b8 0146     		mov	r1, r0	@ movhi
+ 948 00ba 0CBF     		ite	eq
+ 949 00bc 0123     		moveq	r3, #1
+ 950 00be 0023     		movne	r3, #0
+ 951 00c0 002B     		cmp	r3, #0
+ 952 00c2 01D1     		bne	.L83
+ 953 00c4 7A68     		ldr	r2, [r7, #4]
+ 954 00c6 1180     		strh	r1, [r2]	@ movhi
+ 955              	.L83:
+ 956 00c8 87F82630 		strb	r3, [r7, #38]
+ 957 00cc 97F82630 		ldrb	r3, [r7, #38]	@ zero_extendqisi2
+ 958 00d0 43E0     		b	.L82
+ 959              	.L89:
+ 960              	.LBE12:
+ 961              	.LBB13:
+ 398:Src/libatomic.c **** #endif
+ 399:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I4
+ 400:Src/libatomic.c ****     case 4:
+ 401:Src/libatomic.c ****       COMPARE_EXCHANGE (4);
+ 962              		.loc 1 401 7 discriminator 1
+ 963 00d2 3B68     		ldr	r3, [r7]
+ 964 00d4 1B68     		ldr	r3, [r3]	@ unaligned
+ 965 00d6 FB61     		str	r3, [r7, #28]
+ 966 00d8 F869     		ldr	r0, [r7, #28]
+ 967 00da BB68     		ldr	r3, [r7, #8]
+ 968 00dc 7A68     		ldr	r2, [r7, #4]
+ 969 00de 1268     		ldr	r2, [r2]
+ 970 00e0 BFF35B8F 		dmb	ish
+ 971              	.L95:
+ 972 00e4 53E8001F 		ldrex	r1, [r3]
+ 973 00e8 9142     		cmp	r1, r2
+ 974 00ea 06D1     		bne	.L96
+ 975 00ec 43E8000C 		strex	ip, r0, [r3]
+ 976 00f0 BCF1000F 		cmp	ip, #0
+ 977 00f4 BCF1000F 		cmp	ip, #0
+ 978 00f8 F4D1     		bne	.L95
+ 979              	.L96:
+ 980 00fa BFF35B8F 		dmb	ish
+ 981 00fe 0CBF     		ite	eq
+ 982 0100 0123     		moveq	r3, #1
+ 983 0102 0023     		movne	r3, #0
+ 984 0104 002B     		cmp	r3, #0
+ 985 0106 01D1     		bne	.L84
+ 986 0108 7A68     		ldr	r2, [r7, #4]
+ARM GAS  /tmp/ccSDQVbU.s 			page 25
+
+
+ 987 010a 1160     		str	r1, [r2]
+ 988              	.L84:
+ 989 010c 87F82530 		strb	r3, [r7, #37]
+ 990 0110 97F82530 		ldrb	r3, [r7, #37]	@ zero_extendqisi2
+ 991 0114 21E0     		b	.L82
+ 992              	.L90:
+ 993              	.LBE13:
+ 402:Src/libatomic.c **** #endif
+ 403:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I8
+ 404:Src/libatomic.c ****     case 8:
+ 405:Src/libatomic.c ****       COMPARE_EXCHANGE (8);
+ 406:Src/libatomic.c **** #endif
+ 407:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I16
+ 408:Src/libatomic.c ****     case 16:
+ 409:Src/libatomic.c ****       COMPARE_EXCHANGE (16);
+ 410:Src/libatomic.c **** #endif
+ 411:Src/libatomic.c ****     default:
+ 412:Src/libatomic.c ****       break;
+ 994              		.loc 1 412 7
+ 995 0116 00BF     		nop
+ 413:Src/libatomic.c ****   }
+ 414:Src/libatomic.c **** 
+ 415:Src/libatomic.c ****   /* If control gets here, a lock is needed.  */
+ 416:Src/libatomic.c ****   get_lock (mem, success);
+ 996              		.loc 1 416 3
+ 997 0118 396B     		ldr	r1, [r7, #48]
+ 998 011a B868     		ldr	r0, [r7, #8]
+ 999 011c FFF7FEFF 		bl	get_lock
+ 417:Src/libatomic.c ****   if (memcmp (mem, expect, size) == 0)
+ 1000              		.loc 1 417 7
+ 1001 0120 FA68     		ldr	r2, [r7, #12]
+ 1002 0122 7968     		ldr	r1, [r7, #4]
+ 1003 0124 B868     		ldr	r0, [r7, #8]
+ 1004 0126 FFF7FEFF 		bl	memcmp
+ 1005 012a 0346     		mov	r3, r0
+ 1006              		.loc 1 417 6
+ 1007 012c 002B     		cmp	r3, #0
+ 1008 012e 0AD1     		bne	.L86
+ 418:Src/libatomic.c ****     {
+ 419:Src/libatomic.c ****       memcpy (mem, desired, size);
+ 1009              		.loc 1 419 7
+ 1010 0130 FA68     		ldr	r2, [r7, #12]
+ 1011 0132 3968     		ldr	r1, [r7]
+ 1012 0134 B868     		ldr	r0, [r7, #8]
+ 1013 0136 FFF7FEFF 		bl	memcpy
+ 420:Src/libatomic.c ****       free_lock (mem, success);
+ 1014              		.loc 1 420 7
+ 1015 013a 396B     		ldr	r1, [r7, #48]
+ 1016 013c B868     		ldr	r0, [r7, #8]
+ 1017 013e FFF7FEFF 		bl	free_lock
+ 421:Src/libatomic.c ****       return true;
+ 1018              		.loc 1 421 14
+ 1019 0142 0123     		movs	r3, #1
+ 1020 0144 09E0     		b	.L82
+ 1021              	.L86:
+ 422:Src/libatomic.c ****     }
+ 423:Src/libatomic.c ****   memcpy (expect, mem, size);
+ARM GAS  /tmp/ccSDQVbU.s 			page 26
+
+
+ 1022              		.loc 1 423 3
+ 1023 0146 FA68     		ldr	r2, [r7, #12]
+ 1024 0148 B968     		ldr	r1, [r7, #8]
+ 1025 014a 7868     		ldr	r0, [r7, #4]
+ 1026 014c FFF7FEFF 		bl	memcpy
+ 424:Src/libatomic.c ****   free_lock (mem, failure);
+ 1027              		.loc 1 424 3
+ 1028 0150 796B     		ldr	r1, [r7, #52]
+ 1029 0152 B868     		ldr	r0, [r7, #8]
+ 1030 0154 FFF7FEFF 		bl	free_lock
+ 425:Src/libatomic.c ****   return false;
+ 1031              		.loc 1 425 10
+ 1032 0158 0023     		movs	r3, #0
+ 1033              	.L82:
+ 426:Src/libatomic.c **** }
+ 1034              		.loc 1 426 1 discriminator 1
+ 1035 015a 1846     		mov	r0, r3
+ 1036 015c 2837     		adds	r7, r7, #40
+ 1037              	.LCFI52:
+ 1038              		.cfi_def_cfa_offset 8
+ 1039 015e BD46     		mov	sp, r7
+ 1040              	.LCFI53:
+ 1041              		.cfi_def_cfa_register 13
+ 1042              		@ sp needed
+ 1043 0160 80BD     		pop	{r7, pc}
+ 1044              		.cfi_endproc
+ 1045              	.LFE9:
+ 1047 0162 00BF     		.section	.text.__atomic_load_1,"ax",%progbits
+ 1048              		.align	1
+ 1049              		.global	__atomic_load_1
+ 1050              		.syntax unified
+ 1051              		.thumb
+ 1052              		.thumb_func
+ 1053              		.fpu fpv4-sp-d16
+ 1055              	__atomic_load_1:
+ 1056              	.LFB10:
+ 427:Src/libatomic.c **** 
+ 428:Src/libatomic.c **** 
+ 429:Src/libatomic.c **** /* Issue a SIZE specific __atomic_load_N function.  */
+ 430:Src/libatomic.c **** #define ATOMIC_LOAD(SIZE) I ## SIZE			\
+ 431:Src/libatomic.c **** __atomic_load_ ## SIZE   (I ## SIZE *mem, int model)	\
+ 432:Src/libatomic.c **** {							\
+ 433:Src/libatomic.c ****   I ## SIZE ret;					\
+ 434:Src/libatomic.c ****   if (__atomic_always_lock_free (sizeof (ret), 0))	\
+ 435:Src/libatomic.c ****     return __atomic_load_n (mem, model);		\
+ 436:Src/libatomic.c ****   get_lock (mem, model);				\
+ 437:Src/libatomic.c ****   ret = *mem;						\
+ 438:Src/libatomic.c ****   free_lock (mem, model);				\
+ 439:Src/libatomic.c ****   return ret;						\
+ 440:Src/libatomic.c **** }
+ 441:Src/libatomic.c **** 
+ 442:Src/libatomic.c **** 
+ 443:Src/libatomic.c **** /* Issue a SIZE specific __atomic_store_N function.  */
+ 444:Src/libatomic.c **** #define ATOMIC_STORE(SIZE) void						\
+ 445:Src/libatomic.c **** __atomic_store_ ## SIZE (I ## SIZE *mem, I ## SIZE val, int model)	\
+ 446:Src/libatomic.c **** {									\
+ 447:Src/libatomic.c ****   if (__atomic_always_lock_free (sizeof (val), 0))			\
+ARM GAS  /tmp/ccSDQVbU.s 			page 27
+
+
+ 448:Src/libatomic.c ****     __atomic_store_n (mem, val, model);					\
+ 449:Src/libatomic.c ****   else									\
+ 450:Src/libatomic.c ****     {									\
+ 451:Src/libatomic.c ****       get_lock (mem, model);						\
+ 452:Src/libatomic.c ****       *mem = val;							\
+ 453:Src/libatomic.c ****       free_lock (mem, model);						\
+ 454:Src/libatomic.c ****     }									\
+ 455:Src/libatomic.c **** }
+ 456:Src/libatomic.c **** 
+ 457:Src/libatomic.c **** /*#define ATOMIC_STORE(SIZE) void						\
+ 458:Src/libatomic.c **** __atomic_store_ ## SIZE (I ## SIZE *mem, I ## SIZE val, int model)	\
+ 459:Src/libatomic.c **** {									\
+ 460:Src/libatomic.c ****   if (__atomic_always_lock_free (sizeof (val), 0))			\
+ 461:Src/libatomic.c ****     __atomic_store_n (mem, val, model);					\
+ 462:Src/libatomic.c ****   else									\
+ 463:Src/libatomic.c ****     {									\
+ 464:Src/libatomic.c ****       *mem = val;							\
+ 465:Src/libatomic.c ****     }									\
+ 466:Src/libatomic.c **** }*/
+ 467:Src/libatomic.c **** 
+ 468:Src/libatomic.c **** /* Issue a SIZE specific __atomic_exchange_N function.  */
+ 469:Src/libatomic.c **** #define ATOMIC_EXCHANGE(SIZE) I ## SIZE					\
+ 470:Src/libatomic.c **** __atomic_exchange_ ## SIZE   (I ## SIZE *mem, I ## SIZE val, int model)	\
+ 471:Src/libatomic.c **** {									\
+ 472:Src/libatomic.c ****   I ## SIZE ret;							\
+ 473:Src/libatomic.c ****   if (__atomic_always_lock_free (sizeof (ret), 0))			\
+ 474:Src/libatomic.c ****     return __atomic_exchange_n (mem, val, model);			\
+ 475:Src/libatomic.c ****   get_lock (mem, model);						\
+ 476:Src/libatomic.c ****   ret = *mem;								\
+ 477:Src/libatomic.c ****   *mem = val;								\
+ 478:Src/libatomic.c ****   free_lock (mem, model);						\
+ 479:Src/libatomic.c ****   return ret;								\
+ 480:Src/libatomic.c **** }
+ 481:Src/libatomic.c **** 
+ 482:Src/libatomic.c **** /* Issue a SIZE specific __atomic_compare_exchange_N function.
+ 483:Src/libatomic.c ****    Note the compiler complains when compiling these since these functions
+ 484:Src/libatomic.c ****    do not have the boolean weak parameter, so the params dont match the
+ 485:Src/libatomic.c ****    builtin exactly.  */
+ 486:Src/libatomic.c **** 
+ 487:Src/libatomic.c **** #define ATOMIC_COMPARE_EXCHANGE(SIZE) bool			\
+ 488:Src/libatomic.c **** __atomic_compare_exchange_ ## SIZE   (I ## SIZE *mem, I ## SIZE *expect, I ## SIZE desired, int suc
+ 489:Src/libatomic.c **** {								\
+ 490:Src/libatomic.c ****   if (__atomic_always_lock_free (sizeof (desired), 0))		\
+ 491:Src/libatomic.c ****     return __atomic_compare_exchange_n (mem, expect, desired, 0,\
+ 492:Src/libatomic.c **** 				        success, failure);	\
+ 493:Src/libatomic.c ****   get_lock (mem, success);					\
+ 494:Src/libatomic.c ****   if (*mem == *expect)						\
+ 495:Src/libatomic.c ****     {								\
+ 496:Src/libatomic.c ****       *mem = desired;						\
+ 497:Src/libatomic.c ****       free_lock (mem, success);					\
+ 498:Src/libatomic.c ****       return true;						\
+ 499:Src/libatomic.c ****     }								\
+ 500:Src/libatomic.c ****   *expect = *mem;						\
+ 501:Src/libatomic.c ****   free_lock (mem, failure);					\
+ 502:Src/libatomic.c ****   return false;							\
+ 503:Src/libatomic.c **** }
+ 504:Src/libatomic.c **** 
+ARM GAS  /tmp/ccSDQVbU.s 			page 28
+
+
+ 505:Src/libatomic.c **** 
+ 506:Src/libatomic.c **** #define ATOMIC_FETCH(SIZE,OP,SYM) I ## SIZE				\
+ 507:Src/libatomic.c **** __atomic_fetch_## OP ## SIZE (I ## SIZE *mem, I ## SIZE val, int model) \
+ 508:Src/libatomic.c **** {									\
+ 509:Src/libatomic.c ****   I ## SIZE ret;							\
+ 510:Src/libatomic.c ****   if (__atomic_always_lock_free (sizeof (ret), 0))			\
+ 511:Src/libatomic.c ****     return __atomic_fetch_ ## OP ## SIZE (mem, val, model);		\
+ 512:Src/libatomic.c ****   get_lock (mem, model);						\
+ 513:Src/libatomic.c ****   ret = *mem;								\
+ 514:Src/libatomic.c ****   *mem SYM ## =  val;							\
+ 515:Src/libatomic.c ****   free_lock (mem, model);						\
+ 516:Src/libatomic.c ****   return ret;								\
+ 517:Src/libatomic.c **** }
+ 518:Src/libatomic.c **** 
+ 519:Src/libatomic.c **** #define ATOMIC_FETCH_NAND(SIZE) I ## SIZE				\
+ 520:Src/libatomic.c **** __atomic_fetch_nand_ ## SIZE (I ## SIZE *mem, I ## SIZE val, int model)	\
+ 521:Src/libatomic.c **** {									\
+ 522:Src/libatomic.c ****   I ## SIZE ret;							\
+ 523:Src/libatomic.c ****   if (__atomic_always_lock_free (sizeof (ret), 0))			\
+ 524:Src/libatomic.c ****     return __atomic_fetch_nand_ ## SIZE (mem, val, model);		\
+ 525:Src/libatomic.c ****   get_lock (mem, model);						\
+ 526:Src/libatomic.c ****   ret = *mem;								\
+ 527:Src/libatomic.c ****   *mem =  ~(*mem & val);						\
+ 528:Src/libatomic.c ****   free_lock (mem, model);						\
+ 529:Src/libatomic.c ****   return ret;								\
+ 530:Src/libatomic.c **** }
+ 531:Src/libatomic.c **** 
+ 532:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I1	
+ 533:Src/libatomic.c **** ATOMIC_LOAD (1)
+ 1057              		.loc 1 533 1
+ 1058              		.cfi_startproc
+ 1059              		@ args = 0, pretend = 0, frame = 8
+ 1060              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1061              		@ link register save eliminated.
+ 1062 0000 80B4     		push	{r7}
+ 1063              	.LCFI54:
+ 1064              		.cfi_def_cfa_offset 4
+ 1065              		.cfi_offset 7, -4
+ 1066 0002 83B0     		sub	sp, sp, #12
+ 1067              	.LCFI55:
+ 1068              		.cfi_def_cfa_offset 16
+ 1069 0004 00AF     		add	r7, sp, #0
+ 1070              	.LCFI56:
+ 1071              		.cfi_def_cfa_register 7
+ 1072 0006 7860     		str	r0, [r7, #4]
+ 1073 0008 3960     		str	r1, [r7]
+ 1074              		.loc 1 533 1
+ 1075 000a 7B68     		ldr	r3, [r7, #4]
+ 1076 000c BFF35B8F 		dmb	ish
+ 1077 0010 1B78     		ldrb	r3, [r3]
+ 1078 0012 BFF35B8F 		dmb	ish
+ 1079 0016 DBB2     		uxtb	r3, r3
+ 1080 0018 00BF     		nop
+ 1081 001a 1846     		mov	r0, r3
+ 1082 001c 0C37     		adds	r7, r7, #12
+ 1083              	.LCFI57:
+ 1084              		.cfi_def_cfa_offset 4
+ARM GAS  /tmp/ccSDQVbU.s 			page 29
+
+
+ 1085 001e BD46     		mov	sp, r7
+ 1086              	.LCFI58:
+ 1087              		.cfi_def_cfa_register 13
+ 1088              		@ sp needed
+ 1089 0020 5DF8047B 		ldr	r7, [sp], #4
+ 1090              	.LCFI59:
+ 1091              		.cfi_restore 7
+ 1092              		.cfi_def_cfa_offset 0
+ 1093 0024 7047     		bx	lr
+ 1094              		.cfi_endproc
+ 1095              	.LFE10:
+ 1097              		.section	.text.__atomic_store_1,"ax",%progbits
+ 1098              		.align	1
+ 1099              		.global	__atomic_store_1
+ 1100              		.syntax unified
+ 1101              		.thumb
+ 1102              		.thumb_func
+ 1103              		.fpu fpv4-sp-d16
+ 1105              	__atomic_store_1:
+ 1106              	.LFB11:
+ 534:Src/libatomic.c **** ATOMIC_STORE (1)
+ 1107              		.loc 1 534 1
+ 1108              		.cfi_startproc
+ 1109              		@ args = 0, pretend = 0, frame = 16
+ 1110              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1111              		@ link register save eliminated.
+ 1112 0000 80B4     		push	{r7}
+ 1113              	.LCFI60:
+ 1114              		.cfi_def_cfa_offset 4
+ 1115              		.cfi_offset 7, -4
+ 1116 0002 85B0     		sub	sp, sp, #20
+ 1117              	.LCFI61:
+ 1118              		.cfi_def_cfa_offset 24
+ 1119 0004 00AF     		add	r7, sp, #0
+ 1120              	.LCFI62:
+ 1121              		.cfi_def_cfa_register 7
+ 1122 0006 F860     		str	r0, [r7, #12]
+ 1123 0008 0B46     		mov	r3, r1
+ 1124 000a 7A60     		str	r2, [r7, #4]
+ 1125 000c FB72     		strb	r3, [r7, #11]
+ 1126              		.loc 1 534 1
+ 1127 000e FB68     		ldr	r3, [r7, #12]
+ 1128 0010 BFF35B8F 		dmb	ish
+ 1129 0014 FA7A     		ldrb	r2, [r7, #11]
+ 1130 0016 1A70     		strb	r2, [r3]
+ 1131 0018 BFF35B8F 		dmb	ish
+ 1132 001c 00BF     		nop
+ 1133 001e 1437     		adds	r7, r7, #20
+ 1134              	.LCFI63:
+ 1135              		.cfi_def_cfa_offset 4
+ 1136 0020 BD46     		mov	sp, r7
+ 1137              	.LCFI64:
+ 1138              		.cfi_def_cfa_register 13
+ 1139              		@ sp needed
+ 1140 0022 5DF8047B 		ldr	r7, [sp], #4
+ 1141              	.LCFI65:
+ 1142              		.cfi_restore 7
+ARM GAS  /tmp/ccSDQVbU.s 			page 30
+
+
+ 1143              		.cfi_def_cfa_offset 0
+ 1144 0026 7047     		bx	lr
+ 1145              		.cfi_endproc
+ 1146              	.LFE11:
+ 1148              		.section	.text.__atomic_exchange_1,"ax",%progbits
+ 1149              		.align	1
+ 1150              		.global	__atomic_exchange_1
+ 1151              		.syntax unified
+ 1152              		.thumb
+ 1153              		.thumb_func
+ 1154              		.fpu fpv4-sp-d16
+ 1156              	__atomic_exchange_1:
+ 1157              	.LFB12:
+ 535:Src/libatomic.c **** ATOMIC_EXCHANGE (1)
+ 1158              		.loc 1 535 1
+ 1159              		.cfi_startproc
+ 1160              		@ args = 0, pretend = 0, frame = 16
+ 1161              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1162              		@ link register save eliminated.
+ 1163 0000 80B4     		push	{r7}
+ 1164              	.LCFI66:
+ 1165              		.cfi_def_cfa_offset 4
+ 1166              		.cfi_offset 7, -4
+ 1167 0002 85B0     		sub	sp, sp, #20
+ 1168              	.LCFI67:
+ 1169              		.cfi_def_cfa_offset 24
+ 1170 0004 00AF     		add	r7, sp, #0
+ 1171              	.LCFI68:
+ 1172              		.cfi_def_cfa_register 7
+ 1173 0006 F860     		str	r0, [r7, #12]
+ 1174 0008 0B46     		mov	r3, r1
+ 1175 000a 7A60     		str	r2, [r7, #4]
+ 1176 000c FB72     		strb	r3, [r7, #11]
+ 1177              		.loc 1 535 1
+ 1178 000e FB68     		ldr	r3, [r7, #12]
+ 1179 0010 FA7A     		ldrb	r2, [r7, #11]
+ 1180 0012 BFF35B8F 		dmb	ish
+ 1181              	.L102:
+ 1182 0016 D3E84F1F 		ldrexb	r1, [r3]
+ 1183 001a C3E8402F 		strexb	r0, r2, [r3]
+ 1184 001e 0028     		cmp	r0, #0
+ 1185 0020 F9D1     		bne	.L102
+ 1186 0022 BFF35B8F 		dmb	ish
+ 1187 0026 CBB2     		uxtb	r3, r1
+ 1188 0028 00BF     		nop
+ 1189 002a 1846     		mov	r0, r3
+ 1190 002c 1437     		adds	r7, r7, #20
+ 1191              	.LCFI69:
+ 1192              		.cfi_def_cfa_offset 4
+ 1193 002e BD46     		mov	sp, r7
+ 1194              	.LCFI70:
+ 1195              		.cfi_def_cfa_register 13
+ 1196              		@ sp needed
+ 1197 0030 5DF8047B 		ldr	r7, [sp], #4
+ 1198              	.LCFI71:
+ 1199              		.cfi_restore 7
+ 1200              		.cfi_def_cfa_offset 0
+ARM GAS  /tmp/ccSDQVbU.s 			page 31
+
+
+ 1201 0034 7047     		bx	lr
+ 1202              		.cfi_endproc
+ 1203              	.LFE12:
+ 1205              		.section	.text.__atomic_fetch_add_1,"ax",%progbits
+ 1206              		.align	1
+ 1207              		.global	__atomic_fetch_add_1
+ 1208              		.syntax unified
+ 1209              		.thumb
+ 1210              		.thumb_func
+ 1211              		.fpu fpv4-sp-d16
+ 1213              	__atomic_fetch_add_1:
+ 1214              	.LFB13:
+ 536:Src/libatomic.c **** // ATOMIC_COMPARE_EXCHANGE (1)
+ 537:Src/libatomic.c **** ATOMIC_FETCH (1, add_, +)
+ 1215              		.loc 1 537 1
+ 1216              		.cfi_startproc
+ 1217              		@ args = 0, pretend = 0, frame = 16
+ 1218              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1219              		@ link register save eliminated.
+ 1220 0000 80B4     		push	{r7}
+ 1221              	.LCFI72:
+ 1222              		.cfi_def_cfa_offset 4
+ 1223              		.cfi_offset 7, -4
+ 1224 0002 85B0     		sub	sp, sp, #20
+ 1225              	.LCFI73:
+ 1226              		.cfi_def_cfa_offset 24
+ 1227 0004 00AF     		add	r7, sp, #0
+ 1228              	.LCFI74:
+ 1229              		.cfi_def_cfa_register 7
+ 1230 0006 F860     		str	r0, [r7, #12]
+ 1231 0008 0B46     		mov	r3, r1
+ 1232 000a 7A60     		str	r2, [r7, #4]
+ 1233 000c FB72     		strb	r3, [r7, #11]
+ 1234              		.loc 1 537 1
+ 1235 000e FB68     		ldr	r3, [r7, #12]
+ 1236 0010 FA7A     		ldrb	r2, [r7, #11]
+ 1237 0012 BFF35B8F 		dmb	ish
+ 1238              	.L105:
+ 1239 0016 D3E84F1F 		ldrexb	r1, [r3]
+ 1240 001a 01EB0200 		add	r0, r1, r2
+ 1241 001e C3E84C0F 		strexb	ip, r0, [r3]
+ 1242 0022 BCF1000F 		cmp	ip, #0
+ 1243 0026 F6D1     		bne	.L105
+ 1244 0028 BFF35B8F 		dmb	ish
+ 1245 002c CBB2     		uxtb	r3, r1
+ 1246 002e 1846     		mov	r0, r3
+ 1247 0030 1437     		adds	r7, r7, #20
+ 1248              	.LCFI75:
+ 1249              		.cfi_def_cfa_offset 4
+ 1250 0032 BD46     		mov	sp, r7
+ 1251              	.LCFI76:
+ 1252              		.cfi_def_cfa_register 13
+ 1253              		@ sp needed
+ 1254 0034 5DF8047B 		ldr	r7, [sp], #4
+ 1255              	.LCFI77:
+ 1256              		.cfi_restore 7
+ 1257              		.cfi_def_cfa_offset 0
+ARM GAS  /tmp/ccSDQVbU.s 			page 32
+
+
+ 1258 0038 7047     		bx	lr
+ 1259              		.cfi_endproc
+ 1260              	.LFE13:
+ 1262              		.section	.text.__atomic_fetch_sub_1,"ax",%progbits
+ 1263              		.align	1
+ 1264              		.global	__atomic_fetch_sub_1
+ 1265              		.syntax unified
+ 1266              		.thumb
+ 1267              		.thumb_func
+ 1268              		.fpu fpv4-sp-d16
+ 1270              	__atomic_fetch_sub_1:
+ 1271              	.LFB14:
+ 538:Src/libatomic.c **** ATOMIC_FETCH (1, sub_, -)
+ 1272              		.loc 1 538 1
+ 1273              		.cfi_startproc
+ 1274              		@ args = 0, pretend = 0, frame = 16
+ 1275              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1276              		@ link register save eliminated.
+ 1277 0000 80B4     		push	{r7}
+ 1278              	.LCFI78:
+ 1279              		.cfi_def_cfa_offset 4
+ 1280              		.cfi_offset 7, -4
+ 1281 0002 85B0     		sub	sp, sp, #20
+ 1282              	.LCFI79:
+ 1283              		.cfi_def_cfa_offset 24
+ 1284 0004 00AF     		add	r7, sp, #0
+ 1285              	.LCFI80:
+ 1286              		.cfi_def_cfa_register 7
+ 1287 0006 F860     		str	r0, [r7, #12]
+ 1288 0008 0B46     		mov	r3, r1
+ 1289 000a 7A60     		str	r2, [r7, #4]
+ 1290 000c FB72     		strb	r3, [r7, #11]
+ 1291              		.loc 1 538 1
+ 1292 000e FB68     		ldr	r3, [r7, #12]
+ 1293 0010 FA7A     		ldrb	r2, [r7, #11]
+ 1294 0012 BFF35B8F 		dmb	ish
+ 1295              	.L108:
+ 1296 0016 D3E84F1F 		ldrexb	r1, [r3]
+ 1297 001a A1EB0200 		sub	r0, r1, r2
+ 1298 001e C3E84C0F 		strexb	ip, r0, [r3]
+ 1299 0022 BCF1000F 		cmp	ip, #0
+ 1300 0026 F6D1     		bne	.L108
+ 1301 0028 BFF35B8F 		dmb	ish
+ 1302 002c CBB2     		uxtb	r3, r1
+ 1303 002e 1846     		mov	r0, r3
+ 1304 0030 1437     		adds	r7, r7, #20
+ 1305              	.LCFI81:
+ 1306              		.cfi_def_cfa_offset 4
+ 1307 0032 BD46     		mov	sp, r7
+ 1308              	.LCFI82:
+ 1309              		.cfi_def_cfa_register 13
+ 1310              		@ sp needed
+ 1311 0034 5DF8047B 		ldr	r7, [sp], #4
+ 1312              	.LCFI83:
+ 1313              		.cfi_restore 7
+ 1314              		.cfi_def_cfa_offset 0
+ 1315 0038 7047     		bx	lr
+ARM GAS  /tmp/ccSDQVbU.s 			page 33
+
+
+ 1316              		.cfi_endproc
+ 1317              	.LFE14:
+ 1319              		.section	.text.__atomic_fetch_and_1,"ax",%progbits
+ 1320              		.align	1
+ 1321              		.global	__atomic_fetch_and_1
+ 1322              		.syntax unified
+ 1323              		.thumb
+ 1324              		.thumb_func
+ 1325              		.fpu fpv4-sp-d16
+ 1327              	__atomic_fetch_and_1:
+ 1328              	.LFB15:
+ 539:Src/libatomic.c **** ATOMIC_FETCH (1, and_, &)
+ 1329              		.loc 1 539 1
+ 1330              		.cfi_startproc
+ 1331              		@ args = 0, pretend = 0, frame = 16
+ 1332              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1333              		@ link register save eliminated.
+ 1334 0000 80B4     		push	{r7}
+ 1335              	.LCFI84:
+ 1336              		.cfi_def_cfa_offset 4
+ 1337              		.cfi_offset 7, -4
+ 1338 0002 85B0     		sub	sp, sp, #20
+ 1339              	.LCFI85:
+ 1340              		.cfi_def_cfa_offset 24
+ 1341 0004 00AF     		add	r7, sp, #0
+ 1342              	.LCFI86:
+ 1343              		.cfi_def_cfa_register 7
+ 1344 0006 F860     		str	r0, [r7, #12]
+ 1345 0008 0B46     		mov	r3, r1
+ 1346 000a 7A60     		str	r2, [r7, #4]
+ 1347 000c FB72     		strb	r3, [r7, #11]
+ 1348              		.loc 1 539 1
+ 1349 000e FB68     		ldr	r3, [r7, #12]
+ 1350 0010 FA7A     		ldrb	r2, [r7, #11]
+ 1351 0012 BFF35B8F 		dmb	ish
+ 1352              	.L111:
+ 1353 0016 D3E84F1F 		ldrexb	r1, [r3]
+ 1354 001a 01EA0200 		and	r0, r1, r2
+ 1355 001e C3E84C0F 		strexb	ip, r0, [r3]
+ 1356 0022 BCF1000F 		cmp	ip, #0
+ 1357 0026 F6D1     		bne	.L111
+ 1358 0028 BFF35B8F 		dmb	ish
+ 1359 002c CBB2     		uxtb	r3, r1
+ 1360 002e 1846     		mov	r0, r3
+ 1361 0030 1437     		adds	r7, r7, #20
+ 1362              	.LCFI87:
+ 1363              		.cfi_def_cfa_offset 4
+ 1364 0032 BD46     		mov	sp, r7
+ 1365              	.LCFI88:
+ 1366              		.cfi_def_cfa_register 13
+ 1367              		@ sp needed
+ 1368 0034 5DF8047B 		ldr	r7, [sp], #4
+ 1369              	.LCFI89:
+ 1370              		.cfi_restore 7
+ 1371              		.cfi_def_cfa_offset 0
+ 1372 0038 7047     		bx	lr
+ 1373              		.cfi_endproc
+ARM GAS  /tmp/ccSDQVbU.s 			page 34
+
+
+ 1374              	.LFE15:
+ 1376              		.section	.text.__atomic_fetch_or_1,"ax",%progbits
+ 1377              		.align	1
+ 1378              		.global	__atomic_fetch_or_1
+ 1379              		.syntax unified
+ 1380              		.thumb
+ 1381              		.thumb_func
+ 1382              		.fpu fpv4-sp-d16
+ 1384              	__atomic_fetch_or_1:
+ 1385              	.LFB16:
+ 540:Src/libatomic.c **** ATOMIC_FETCH (1, or_, |)
+ 1386              		.loc 1 540 1
+ 1387              		.cfi_startproc
+ 1388              		@ args = 0, pretend = 0, frame = 16
+ 1389              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1390              		@ link register save eliminated.
+ 1391 0000 80B4     		push	{r7}
+ 1392              	.LCFI90:
+ 1393              		.cfi_def_cfa_offset 4
+ 1394              		.cfi_offset 7, -4
+ 1395 0002 85B0     		sub	sp, sp, #20
+ 1396              	.LCFI91:
+ 1397              		.cfi_def_cfa_offset 24
+ 1398 0004 00AF     		add	r7, sp, #0
+ 1399              	.LCFI92:
+ 1400              		.cfi_def_cfa_register 7
+ 1401 0006 F860     		str	r0, [r7, #12]
+ 1402 0008 0B46     		mov	r3, r1
+ 1403 000a 7A60     		str	r2, [r7, #4]
+ 1404 000c FB72     		strb	r3, [r7, #11]
+ 1405              		.loc 1 540 1
+ 1406 000e FB68     		ldr	r3, [r7, #12]
+ 1407 0010 FA7A     		ldrb	r2, [r7, #11]
+ 1408 0012 BFF35B8F 		dmb	ish
+ 1409              	.L114:
+ 1410 0016 D3E84F1F 		ldrexb	r1, [r3]
+ 1411 001a 41EA0200 		orr	r0, r1, r2
+ 1412 001e C3E84C0F 		strexb	ip, r0, [r3]
+ 1413 0022 BCF1000F 		cmp	ip, #0
+ 1414 0026 F6D1     		bne	.L114
+ 1415 0028 BFF35B8F 		dmb	ish
+ 1416 002c CBB2     		uxtb	r3, r1
+ 1417 002e 1846     		mov	r0, r3
+ 1418 0030 1437     		adds	r7, r7, #20
+ 1419              	.LCFI93:
+ 1420              		.cfi_def_cfa_offset 4
+ 1421 0032 BD46     		mov	sp, r7
+ 1422              	.LCFI94:
+ 1423              		.cfi_def_cfa_register 13
+ 1424              		@ sp needed
+ 1425 0034 5DF8047B 		ldr	r7, [sp], #4
+ 1426              	.LCFI95:
+ 1427              		.cfi_restore 7
+ 1428              		.cfi_def_cfa_offset 0
+ 1429 0038 7047     		bx	lr
+ 1430              		.cfi_endproc
+ 1431              	.LFE16:
+ARM GAS  /tmp/ccSDQVbU.s 			page 35
+
+
+ 1433              		.section	.text.__atomic_fetch_xor_1,"ax",%progbits
+ 1434              		.align	1
+ 1435              		.global	__atomic_fetch_xor_1
+ 1436              		.syntax unified
+ 1437              		.thumb
+ 1438              		.thumb_func
+ 1439              		.fpu fpv4-sp-d16
+ 1441              	__atomic_fetch_xor_1:
+ 1442              	.LFB17:
+ 541:Src/libatomic.c **** ATOMIC_FETCH (1, xor_, ^)
+ 1443              		.loc 1 541 1
+ 1444              		.cfi_startproc
+ 1445              		@ args = 0, pretend = 0, frame = 16
+ 1446              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1447              		@ link register save eliminated.
+ 1448 0000 80B4     		push	{r7}
+ 1449              	.LCFI96:
+ 1450              		.cfi_def_cfa_offset 4
+ 1451              		.cfi_offset 7, -4
+ 1452 0002 85B0     		sub	sp, sp, #20
+ 1453              	.LCFI97:
+ 1454              		.cfi_def_cfa_offset 24
+ 1455 0004 00AF     		add	r7, sp, #0
+ 1456              	.LCFI98:
+ 1457              		.cfi_def_cfa_register 7
+ 1458 0006 F860     		str	r0, [r7, #12]
+ 1459 0008 0B46     		mov	r3, r1
+ 1460 000a 7A60     		str	r2, [r7, #4]
+ 1461 000c FB72     		strb	r3, [r7, #11]
+ 1462              		.loc 1 541 1
+ 1463 000e FB68     		ldr	r3, [r7, #12]
+ 1464 0010 FA7A     		ldrb	r2, [r7, #11]
+ 1465 0012 BFF35B8F 		dmb	ish
+ 1466              	.L117:
+ 1467 0016 D3E84F1F 		ldrexb	r1, [r3]
+ 1468 001a 81EA0200 		eor	r0, r1, r2
+ 1469 001e C3E84C0F 		strexb	ip, r0, [r3]
+ 1470 0022 BCF1000F 		cmp	ip, #0
+ 1471 0026 F6D1     		bne	.L117
+ 1472 0028 BFF35B8F 		dmb	ish
+ 1473 002c CBB2     		uxtb	r3, r1
+ 1474 002e 1846     		mov	r0, r3
+ 1475 0030 1437     		adds	r7, r7, #20
+ 1476              	.LCFI99:
+ 1477              		.cfi_def_cfa_offset 4
+ 1478 0032 BD46     		mov	sp, r7
+ 1479              	.LCFI100:
+ 1480              		.cfi_def_cfa_register 13
+ 1481              		@ sp needed
+ 1482 0034 5DF8047B 		ldr	r7, [sp], #4
+ 1483              	.LCFI101:
+ 1484              		.cfi_restore 7
+ 1485              		.cfi_def_cfa_offset 0
+ 1486 0038 7047     		bx	lr
+ 1487              		.cfi_endproc
+ 1488              	.LFE17:
+ 1490              		.section	.text.__atomic_fetch_nand_1,"ax",%progbits
+ARM GAS  /tmp/ccSDQVbU.s 			page 36
+
+
+ 1491              		.align	1
+ 1492              		.global	__atomic_fetch_nand_1
+ 1493              		.syntax unified
+ 1494              		.thumb
+ 1495              		.thumb_func
+ 1496              		.fpu fpv4-sp-d16
+ 1498              	__atomic_fetch_nand_1:
+ 1499              	.LFB18:
+ 542:Src/libatomic.c **** ATOMIC_FETCH_NAND (1)
+ 1500              		.loc 1 542 1
+ 1501              		.cfi_startproc
+ 1502              		@ args = 0, pretend = 0, frame = 16
+ 1503              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1504              		@ link register save eliminated.
+ 1505 0000 80B4     		push	{r7}
+ 1506              	.LCFI102:
+ 1507              		.cfi_def_cfa_offset 4
+ 1508              		.cfi_offset 7, -4
+ 1509 0002 85B0     		sub	sp, sp, #20
+ 1510              	.LCFI103:
+ 1511              		.cfi_def_cfa_offset 24
+ 1512 0004 00AF     		add	r7, sp, #0
+ 1513              	.LCFI104:
+ 1514              		.cfi_def_cfa_register 7
+ 1515 0006 F860     		str	r0, [r7, #12]
+ 1516 0008 0B46     		mov	r3, r1
+ 1517 000a 7A60     		str	r2, [r7, #4]
+ 1518 000c FB72     		strb	r3, [r7, #11]
+ 1519              		.loc 1 542 1
+ 1520 000e FB68     		ldr	r3, [r7, #12]
+ 1521 0010 FA7A     		ldrb	r2, [r7, #11]
+ 1522 0012 BFF35B8F 		dmb	ish
+ 1523              	.L120:
+ 1524 0016 D3E84F1F 		ldrexb	r1, [r3]
+ 1525 001a 01EA0200 		and	r0, r1, r2
+ 1526 001e 6FEA0000 		mvn	r0, r0
+ 1527 0022 C3E84C0F 		strexb	ip, r0, [r3]
+ 1528 0026 BCF1000F 		cmp	ip, #0
+ 1529 002a F4D1     		bne	.L120
+ 1530 002c BFF35B8F 		dmb	ish
+ 1531 0030 CBB2     		uxtb	r3, r1
+ 1532 0032 1846     		mov	r0, r3
+ 1533 0034 1437     		adds	r7, r7, #20
+ 1534              	.LCFI105:
+ 1535              		.cfi_def_cfa_offset 4
+ 1536 0036 BD46     		mov	sp, r7
+ 1537              	.LCFI106:
+ 1538              		.cfi_def_cfa_register 13
+ 1539              		@ sp needed
+ 1540 0038 5DF8047B 		ldr	r7, [sp], #4
+ 1541              	.LCFI107:
+ 1542              		.cfi_restore 7
+ 1543              		.cfi_def_cfa_offset 0
+ 1544 003c 7047     		bx	lr
+ 1545              		.cfi_endproc
+ 1546              	.LFE18:
+ 1548              		.section	.text.__atomic_load_2,"ax",%progbits
+ARM GAS  /tmp/ccSDQVbU.s 			page 37
+
+
+ 1549              		.align	1
+ 1550              		.global	__atomic_load_2
+ 1551              		.syntax unified
+ 1552              		.thumb
+ 1553              		.thumb_func
+ 1554              		.fpu fpv4-sp-d16
+ 1556              	__atomic_load_2:
+ 1557              	.LFB19:
+ 543:Src/libatomic.c **** #endif
+ 544:Src/libatomic.c **** 
+ 545:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I2	
+ 546:Src/libatomic.c **** ATOMIC_LOAD (2)
+ 1558              		.loc 1 546 1
+ 1559              		.cfi_startproc
+ 1560              		@ args = 0, pretend = 0, frame = 8
+ 1561              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1562              		@ link register save eliminated.
+ 1563 0000 80B4     		push	{r7}
+ 1564              	.LCFI108:
+ 1565              		.cfi_def_cfa_offset 4
+ 1566              		.cfi_offset 7, -4
+ 1567 0002 83B0     		sub	sp, sp, #12
+ 1568              	.LCFI109:
+ 1569              		.cfi_def_cfa_offset 16
+ 1570 0004 00AF     		add	r7, sp, #0
+ 1571              	.LCFI110:
+ 1572              		.cfi_def_cfa_register 7
+ 1573 0006 7860     		str	r0, [r7, #4]
+ 1574 0008 3960     		str	r1, [r7]
+ 1575              		.loc 1 546 1
+ 1576 000a 7B68     		ldr	r3, [r7, #4]
+ 1577 000c BFF35B8F 		dmb	ish
+ 1578 0010 1B88     		ldrh	r3, [r3]	@ movhi
+ 1579 0012 BFF35B8F 		dmb	ish
+ 1580 0016 9BB2     		uxth	r3, r3
+ 1581 0018 00BF     		nop
+ 1582 001a 1846     		mov	r0, r3
+ 1583 001c 0C37     		adds	r7, r7, #12
+ 1584              	.LCFI111:
+ 1585              		.cfi_def_cfa_offset 4
+ 1586 001e BD46     		mov	sp, r7
+ 1587              	.LCFI112:
+ 1588              		.cfi_def_cfa_register 13
+ 1589              		@ sp needed
+ 1590 0020 5DF8047B 		ldr	r7, [sp], #4
+ 1591              	.LCFI113:
+ 1592              		.cfi_restore 7
+ 1593              		.cfi_def_cfa_offset 0
+ 1594 0024 7047     		bx	lr
+ 1595              		.cfi_endproc
+ 1596              	.LFE19:
+ 1598              		.section	.text.__atomic_store_2,"ax",%progbits
+ 1599              		.align	1
+ 1600              		.global	__atomic_store_2
+ 1601              		.syntax unified
+ 1602              		.thumb
+ 1603              		.thumb_func
+ARM GAS  /tmp/ccSDQVbU.s 			page 38
+
+
+ 1604              		.fpu fpv4-sp-d16
+ 1606              	__atomic_store_2:
+ 1607              	.LFB20:
+ 547:Src/libatomic.c **** ATOMIC_STORE (2)
+ 1608              		.loc 1 547 1
+ 1609              		.cfi_startproc
+ 1610              		@ args = 0, pretend = 0, frame = 16
+ 1611              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1612              		@ link register save eliminated.
+ 1613 0000 80B4     		push	{r7}
+ 1614              	.LCFI114:
+ 1615              		.cfi_def_cfa_offset 4
+ 1616              		.cfi_offset 7, -4
+ 1617 0002 85B0     		sub	sp, sp, #20
+ 1618              	.LCFI115:
+ 1619              		.cfi_def_cfa_offset 24
+ 1620 0004 00AF     		add	r7, sp, #0
+ 1621              	.LCFI116:
+ 1622              		.cfi_def_cfa_register 7
+ 1623 0006 F860     		str	r0, [r7, #12]
+ 1624 0008 0B46     		mov	r3, r1
+ 1625 000a 7A60     		str	r2, [r7, #4]
+ 1626 000c 7B81     		strh	r3, [r7, #10]	@ movhi
+ 1627              		.loc 1 547 1
+ 1628 000e FB68     		ldr	r3, [r7, #12]
+ 1629 0010 BFF35B8F 		dmb	ish
+ 1630 0014 7A89     		ldrh	r2, [r7, #10]	@ movhi
+ 1631 0016 1A80     		strh	r2, [r3]	@ movhi
+ 1632 0018 BFF35B8F 		dmb	ish
+ 1633 001c 00BF     		nop
+ 1634 001e 1437     		adds	r7, r7, #20
+ 1635              	.LCFI117:
+ 1636              		.cfi_def_cfa_offset 4
+ 1637 0020 BD46     		mov	sp, r7
+ 1638              	.LCFI118:
+ 1639              		.cfi_def_cfa_register 13
+ 1640              		@ sp needed
+ 1641 0022 5DF8047B 		ldr	r7, [sp], #4
+ 1642              	.LCFI119:
+ 1643              		.cfi_restore 7
+ 1644              		.cfi_def_cfa_offset 0
+ 1645 0026 7047     		bx	lr
+ 1646              		.cfi_endproc
+ 1647              	.LFE20:
+ 1649              		.section	.text.__atomic_exchange_2,"ax",%progbits
+ 1650              		.align	1
+ 1651              		.global	__atomic_exchange_2
+ 1652              		.syntax unified
+ 1653              		.thumb
+ 1654              		.thumb_func
+ 1655              		.fpu fpv4-sp-d16
+ 1657              	__atomic_exchange_2:
+ 1658              	.LFB21:
+ 548:Src/libatomic.c **** ATOMIC_EXCHANGE (2)
+ 1659              		.loc 1 548 1
+ 1660              		.cfi_startproc
+ 1661              		@ args = 0, pretend = 0, frame = 16
+ARM GAS  /tmp/ccSDQVbU.s 			page 39
+
+
+ 1662              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1663              		@ link register save eliminated.
+ 1664 0000 80B4     		push	{r7}
+ 1665              	.LCFI120:
+ 1666              		.cfi_def_cfa_offset 4
+ 1667              		.cfi_offset 7, -4
+ 1668 0002 85B0     		sub	sp, sp, #20
+ 1669              	.LCFI121:
+ 1670              		.cfi_def_cfa_offset 24
+ 1671 0004 00AF     		add	r7, sp, #0
+ 1672              	.LCFI122:
+ 1673              		.cfi_def_cfa_register 7
+ 1674 0006 F860     		str	r0, [r7, #12]
+ 1675 0008 0B46     		mov	r3, r1
+ 1676 000a 7A60     		str	r2, [r7, #4]
+ 1677 000c 7B81     		strh	r3, [r7, #10]	@ movhi
+ 1678              		.loc 1 548 1
+ 1679 000e FB68     		ldr	r3, [r7, #12]
+ 1680 0010 7A89     		ldrh	r2, [r7, #10]	@ movhi
+ 1681 0012 BFF35B8F 		dmb	ish
+ 1682              	.L126:
+ 1683 0016 D3E85F1F 		ldrexh	r1, [r3]
+ 1684 001a C3E8502F 		strexh	r0, r2, [r3]
+ 1685 001e 0028     		cmp	r0, #0
+ 1686 0020 F9D1     		bne	.L126
+ 1687 0022 BFF35B8F 		dmb	ish
+ 1688 0026 8BB2     		uxth	r3, r1
+ 1689 0028 00BF     		nop
+ 1690 002a 1846     		mov	r0, r3
+ 1691 002c 1437     		adds	r7, r7, #20
+ 1692              	.LCFI123:
+ 1693              		.cfi_def_cfa_offset 4
+ 1694 002e BD46     		mov	sp, r7
+ 1695              	.LCFI124:
+ 1696              		.cfi_def_cfa_register 13
+ 1697              		@ sp needed
+ 1698 0030 5DF8047B 		ldr	r7, [sp], #4
+ 1699              	.LCFI125:
+ 1700              		.cfi_restore 7
+ 1701              		.cfi_def_cfa_offset 0
+ 1702 0034 7047     		bx	lr
+ 1703              		.cfi_endproc
+ 1704              	.LFE21:
+ 1706              		.section	.text.__atomic_fetch_add_2,"ax",%progbits
+ 1707              		.align	1
+ 1708              		.global	__atomic_fetch_add_2
+ 1709              		.syntax unified
+ 1710              		.thumb
+ 1711              		.thumb_func
+ 1712              		.fpu fpv4-sp-d16
+ 1714              	__atomic_fetch_add_2:
+ 1715              	.LFB22:
+ 549:Src/libatomic.c **** // ATOMIC_COMPARE_EXCHANGE (2)
+ 550:Src/libatomic.c **** ATOMIC_FETCH (2, add_, +)
+ 1716              		.loc 1 550 1
+ 1717              		.cfi_startproc
+ 1718              		@ args = 0, pretend = 0, frame = 16
+ARM GAS  /tmp/ccSDQVbU.s 			page 40
+
+
+ 1719              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1720              		@ link register save eliminated.
+ 1721 0000 80B4     		push	{r7}
+ 1722              	.LCFI126:
+ 1723              		.cfi_def_cfa_offset 4
+ 1724              		.cfi_offset 7, -4
+ 1725 0002 85B0     		sub	sp, sp, #20
+ 1726              	.LCFI127:
+ 1727              		.cfi_def_cfa_offset 24
+ 1728 0004 00AF     		add	r7, sp, #0
+ 1729              	.LCFI128:
+ 1730              		.cfi_def_cfa_register 7
+ 1731 0006 F860     		str	r0, [r7, #12]
+ 1732 0008 0B46     		mov	r3, r1
+ 1733 000a 7A60     		str	r2, [r7, #4]
+ 1734 000c 7B81     		strh	r3, [r7, #10]	@ movhi
+ 1735              		.loc 1 550 1
+ 1736 000e FB68     		ldr	r3, [r7, #12]
+ 1737 0010 7A89     		ldrh	r2, [r7, #10]	@ movhi
+ 1738 0012 BFF35B8F 		dmb	ish
+ 1739              	.L129:
+ 1740 0016 D3E85F1F 		ldrexh	r1, [r3]
+ 1741 001a 01EB0200 		add	r0, r1, r2
+ 1742 001e C3E85C0F 		strexh	ip, r0, [r3]
+ 1743 0022 BCF1000F 		cmp	ip, #0
+ 1744 0026 F6D1     		bne	.L129
+ 1745 0028 BFF35B8F 		dmb	ish
+ 1746 002c 8BB2     		uxth	r3, r1
+ 1747 002e 1846     		mov	r0, r3
+ 1748 0030 1437     		adds	r7, r7, #20
+ 1749              	.LCFI129:
+ 1750              		.cfi_def_cfa_offset 4
+ 1751 0032 BD46     		mov	sp, r7
+ 1752              	.LCFI130:
+ 1753              		.cfi_def_cfa_register 13
+ 1754              		@ sp needed
+ 1755 0034 5DF8047B 		ldr	r7, [sp], #4
+ 1756              	.LCFI131:
+ 1757              		.cfi_restore 7
+ 1758              		.cfi_def_cfa_offset 0
+ 1759 0038 7047     		bx	lr
+ 1760              		.cfi_endproc
+ 1761              	.LFE22:
+ 1763              		.section	.text.__atomic_fetch_sub_2,"ax",%progbits
+ 1764              		.align	1
+ 1765              		.global	__atomic_fetch_sub_2
+ 1766              		.syntax unified
+ 1767              		.thumb
+ 1768              		.thumb_func
+ 1769              		.fpu fpv4-sp-d16
+ 1771              	__atomic_fetch_sub_2:
+ 1772              	.LFB23:
+ 551:Src/libatomic.c **** ATOMIC_FETCH (2, sub_, -)
+ 1773              		.loc 1 551 1
+ 1774              		.cfi_startproc
+ 1775              		@ args = 0, pretend = 0, frame = 16
+ 1776              		@ frame_needed = 1, uses_anonymous_args = 0
+ARM GAS  /tmp/ccSDQVbU.s 			page 41
+
+
+ 1777              		@ link register save eliminated.
+ 1778 0000 80B4     		push	{r7}
+ 1779              	.LCFI132:
+ 1780              		.cfi_def_cfa_offset 4
+ 1781              		.cfi_offset 7, -4
+ 1782 0002 85B0     		sub	sp, sp, #20
+ 1783              	.LCFI133:
+ 1784              		.cfi_def_cfa_offset 24
+ 1785 0004 00AF     		add	r7, sp, #0
+ 1786              	.LCFI134:
+ 1787              		.cfi_def_cfa_register 7
+ 1788 0006 F860     		str	r0, [r7, #12]
+ 1789 0008 0B46     		mov	r3, r1
+ 1790 000a 7A60     		str	r2, [r7, #4]
+ 1791 000c 7B81     		strh	r3, [r7, #10]	@ movhi
+ 1792              		.loc 1 551 1
+ 1793 000e FB68     		ldr	r3, [r7, #12]
+ 1794 0010 7A89     		ldrh	r2, [r7, #10]	@ movhi
+ 1795 0012 BFF35B8F 		dmb	ish
+ 1796              	.L132:
+ 1797 0016 D3E85F1F 		ldrexh	r1, [r3]
+ 1798 001a A1EB0200 		sub	r0, r1, r2
+ 1799 001e C3E85C0F 		strexh	ip, r0, [r3]
+ 1800 0022 BCF1000F 		cmp	ip, #0
+ 1801 0026 F6D1     		bne	.L132
+ 1802 0028 BFF35B8F 		dmb	ish
+ 1803 002c 8BB2     		uxth	r3, r1
+ 1804 002e 1846     		mov	r0, r3
+ 1805 0030 1437     		adds	r7, r7, #20
+ 1806              	.LCFI135:
+ 1807              		.cfi_def_cfa_offset 4
+ 1808 0032 BD46     		mov	sp, r7
+ 1809              	.LCFI136:
+ 1810              		.cfi_def_cfa_register 13
+ 1811              		@ sp needed
+ 1812 0034 5DF8047B 		ldr	r7, [sp], #4
+ 1813              	.LCFI137:
+ 1814              		.cfi_restore 7
+ 1815              		.cfi_def_cfa_offset 0
+ 1816 0038 7047     		bx	lr
+ 1817              		.cfi_endproc
+ 1818              	.LFE23:
+ 1820              		.section	.text.__atomic_fetch_and_2,"ax",%progbits
+ 1821              		.align	1
+ 1822              		.global	__atomic_fetch_and_2
+ 1823              		.syntax unified
+ 1824              		.thumb
+ 1825              		.thumb_func
+ 1826              		.fpu fpv4-sp-d16
+ 1828              	__atomic_fetch_and_2:
+ 1829              	.LFB24:
+ 552:Src/libatomic.c **** ATOMIC_FETCH (2, and_, &)
+ 1830              		.loc 1 552 1
+ 1831              		.cfi_startproc
+ 1832              		@ args = 0, pretend = 0, frame = 16
+ 1833              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1834              		@ link register save eliminated.
+ARM GAS  /tmp/ccSDQVbU.s 			page 42
+
+
+ 1835 0000 80B4     		push	{r7}
+ 1836              	.LCFI138:
+ 1837              		.cfi_def_cfa_offset 4
+ 1838              		.cfi_offset 7, -4
+ 1839 0002 85B0     		sub	sp, sp, #20
+ 1840              	.LCFI139:
+ 1841              		.cfi_def_cfa_offset 24
+ 1842 0004 00AF     		add	r7, sp, #0
+ 1843              	.LCFI140:
+ 1844              		.cfi_def_cfa_register 7
+ 1845 0006 F860     		str	r0, [r7, #12]
+ 1846 0008 0B46     		mov	r3, r1
+ 1847 000a 7A60     		str	r2, [r7, #4]
+ 1848 000c 7B81     		strh	r3, [r7, #10]	@ movhi
+ 1849              		.loc 1 552 1
+ 1850 000e FB68     		ldr	r3, [r7, #12]
+ 1851 0010 7A89     		ldrh	r2, [r7, #10]	@ movhi
+ 1852 0012 BFF35B8F 		dmb	ish
+ 1853              	.L135:
+ 1854 0016 D3E85F1F 		ldrexh	r1, [r3]
+ 1855 001a 01EA0200 		and	r0, r1, r2
+ 1856 001e C3E85C0F 		strexh	ip, r0, [r3]
+ 1857 0022 BCF1000F 		cmp	ip, #0
+ 1858 0026 F6D1     		bne	.L135
+ 1859 0028 BFF35B8F 		dmb	ish
+ 1860 002c 8BB2     		uxth	r3, r1
+ 1861 002e 1846     		mov	r0, r3
+ 1862 0030 1437     		adds	r7, r7, #20
+ 1863              	.LCFI141:
+ 1864              		.cfi_def_cfa_offset 4
+ 1865 0032 BD46     		mov	sp, r7
+ 1866              	.LCFI142:
+ 1867              		.cfi_def_cfa_register 13
+ 1868              		@ sp needed
+ 1869 0034 5DF8047B 		ldr	r7, [sp], #4
+ 1870              	.LCFI143:
+ 1871              		.cfi_restore 7
+ 1872              		.cfi_def_cfa_offset 0
+ 1873 0038 7047     		bx	lr
+ 1874              		.cfi_endproc
+ 1875              	.LFE24:
+ 1877              		.section	.text.__atomic_fetch_or_2,"ax",%progbits
+ 1878              		.align	1
+ 1879              		.global	__atomic_fetch_or_2
+ 1880              		.syntax unified
+ 1881              		.thumb
+ 1882              		.thumb_func
+ 1883              		.fpu fpv4-sp-d16
+ 1885              	__atomic_fetch_or_2:
+ 1886              	.LFB25:
+ 553:Src/libatomic.c **** ATOMIC_FETCH (2, or_, |)
+ 1887              		.loc 1 553 1
+ 1888              		.cfi_startproc
+ 1889              		@ args = 0, pretend = 0, frame = 16
+ 1890              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1891              		@ link register save eliminated.
+ 1892 0000 80B4     		push	{r7}
+ARM GAS  /tmp/ccSDQVbU.s 			page 43
+
+
+ 1893              	.LCFI144:
+ 1894              		.cfi_def_cfa_offset 4
+ 1895              		.cfi_offset 7, -4
+ 1896 0002 85B0     		sub	sp, sp, #20
+ 1897              	.LCFI145:
+ 1898              		.cfi_def_cfa_offset 24
+ 1899 0004 00AF     		add	r7, sp, #0
+ 1900              	.LCFI146:
+ 1901              		.cfi_def_cfa_register 7
+ 1902 0006 F860     		str	r0, [r7, #12]
+ 1903 0008 0B46     		mov	r3, r1
+ 1904 000a 7A60     		str	r2, [r7, #4]
+ 1905 000c 7B81     		strh	r3, [r7, #10]	@ movhi
+ 1906              		.loc 1 553 1
+ 1907 000e FB68     		ldr	r3, [r7, #12]
+ 1908 0010 7A89     		ldrh	r2, [r7, #10]	@ movhi
+ 1909 0012 BFF35B8F 		dmb	ish
+ 1910              	.L138:
+ 1911 0016 D3E85F1F 		ldrexh	r1, [r3]
+ 1912 001a 41EA0200 		orr	r0, r1, r2
+ 1913 001e C3E85C0F 		strexh	ip, r0, [r3]
+ 1914 0022 BCF1000F 		cmp	ip, #0
+ 1915 0026 F6D1     		bne	.L138
+ 1916 0028 BFF35B8F 		dmb	ish
+ 1917 002c 8BB2     		uxth	r3, r1
+ 1918 002e 1846     		mov	r0, r3
+ 1919 0030 1437     		adds	r7, r7, #20
+ 1920              	.LCFI147:
+ 1921              		.cfi_def_cfa_offset 4
+ 1922 0032 BD46     		mov	sp, r7
+ 1923              	.LCFI148:
+ 1924              		.cfi_def_cfa_register 13
+ 1925              		@ sp needed
+ 1926 0034 5DF8047B 		ldr	r7, [sp], #4
+ 1927              	.LCFI149:
+ 1928              		.cfi_restore 7
+ 1929              		.cfi_def_cfa_offset 0
+ 1930 0038 7047     		bx	lr
+ 1931              		.cfi_endproc
+ 1932              	.LFE25:
+ 1934              		.section	.text.__atomic_fetch_xor_2,"ax",%progbits
+ 1935              		.align	1
+ 1936              		.global	__atomic_fetch_xor_2
+ 1937              		.syntax unified
+ 1938              		.thumb
+ 1939              		.thumb_func
+ 1940              		.fpu fpv4-sp-d16
+ 1942              	__atomic_fetch_xor_2:
+ 1943              	.LFB26:
+ 554:Src/libatomic.c **** ATOMIC_FETCH (2, xor_, ^)
+ 1944              		.loc 1 554 1
+ 1945              		.cfi_startproc
+ 1946              		@ args = 0, pretend = 0, frame = 16
+ 1947              		@ frame_needed = 1, uses_anonymous_args = 0
+ 1948              		@ link register save eliminated.
+ 1949 0000 80B4     		push	{r7}
+ 1950              	.LCFI150:
+ARM GAS  /tmp/ccSDQVbU.s 			page 44
+
+
+ 1951              		.cfi_def_cfa_offset 4
+ 1952              		.cfi_offset 7, -4
+ 1953 0002 85B0     		sub	sp, sp, #20
+ 1954              	.LCFI151:
+ 1955              		.cfi_def_cfa_offset 24
+ 1956 0004 00AF     		add	r7, sp, #0
+ 1957              	.LCFI152:
+ 1958              		.cfi_def_cfa_register 7
+ 1959 0006 F860     		str	r0, [r7, #12]
+ 1960 0008 0B46     		mov	r3, r1
+ 1961 000a 7A60     		str	r2, [r7, #4]
+ 1962 000c 7B81     		strh	r3, [r7, #10]	@ movhi
+ 1963              		.loc 1 554 1
+ 1964 000e FB68     		ldr	r3, [r7, #12]
+ 1965 0010 7A89     		ldrh	r2, [r7, #10]	@ movhi
+ 1966 0012 BFF35B8F 		dmb	ish
+ 1967              	.L141:
+ 1968 0016 D3E85F1F 		ldrexh	r1, [r3]
+ 1969 001a 81EA0200 		eor	r0, r1, r2
+ 1970 001e C3E85C0F 		strexh	ip, r0, [r3]
+ 1971 0022 BCF1000F 		cmp	ip, #0
+ 1972 0026 F6D1     		bne	.L141
+ 1973 0028 BFF35B8F 		dmb	ish
+ 1974 002c 8BB2     		uxth	r3, r1
+ 1975 002e 1846     		mov	r0, r3
+ 1976 0030 1437     		adds	r7, r7, #20
+ 1977              	.LCFI153:
+ 1978              		.cfi_def_cfa_offset 4
+ 1979 0032 BD46     		mov	sp, r7
+ 1980              	.LCFI154:
+ 1981              		.cfi_def_cfa_register 13
+ 1982              		@ sp needed
+ 1983 0034 5DF8047B 		ldr	r7, [sp], #4
+ 1984              	.LCFI155:
+ 1985              		.cfi_restore 7
+ 1986              		.cfi_def_cfa_offset 0
+ 1987 0038 7047     		bx	lr
+ 1988              		.cfi_endproc
+ 1989              	.LFE26:
+ 1991              		.section	.text.__atomic_fetch_nand_2,"ax",%progbits
+ 1992              		.align	1
+ 1993              		.global	__atomic_fetch_nand_2
+ 1994              		.syntax unified
+ 1995              		.thumb
+ 1996              		.thumb_func
+ 1997              		.fpu fpv4-sp-d16
+ 1999              	__atomic_fetch_nand_2:
+ 2000              	.LFB27:
+ 555:Src/libatomic.c **** ATOMIC_FETCH_NAND (2)
+ 2001              		.loc 1 555 1
+ 2002              		.cfi_startproc
+ 2003              		@ args = 0, pretend = 0, frame = 16
+ 2004              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2005              		@ link register save eliminated.
+ 2006 0000 80B4     		push	{r7}
+ 2007              	.LCFI156:
+ 2008              		.cfi_def_cfa_offset 4
+ARM GAS  /tmp/ccSDQVbU.s 			page 45
+
+
+ 2009              		.cfi_offset 7, -4
+ 2010 0002 85B0     		sub	sp, sp, #20
+ 2011              	.LCFI157:
+ 2012              		.cfi_def_cfa_offset 24
+ 2013 0004 00AF     		add	r7, sp, #0
+ 2014              	.LCFI158:
+ 2015              		.cfi_def_cfa_register 7
+ 2016 0006 F860     		str	r0, [r7, #12]
+ 2017 0008 0B46     		mov	r3, r1
+ 2018 000a 7A60     		str	r2, [r7, #4]
+ 2019 000c 7B81     		strh	r3, [r7, #10]	@ movhi
+ 2020              		.loc 1 555 1
+ 2021 000e FB68     		ldr	r3, [r7, #12]
+ 2022 0010 7A89     		ldrh	r2, [r7, #10]	@ movhi
+ 2023 0012 BFF35B8F 		dmb	ish
+ 2024              	.L144:
+ 2025 0016 D3E85F1F 		ldrexh	r1, [r3]
+ 2026 001a 01EA0200 		and	r0, r1, r2
+ 2027 001e 6FEA0000 		mvn	r0, r0
+ 2028 0022 C3E85C0F 		strexh	ip, r0, [r3]
+ 2029 0026 BCF1000F 		cmp	ip, #0
+ 2030 002a F4D1     		bne	.L144
+ 2031 002c BFF35B8F 		dmb	ish
+ 2032 0030 8BB2     		uxth	r3, r1
+ 2033 0032 1846     		mov	r0, r3
+ 2034 0034 1437     		adds	r7, r7, #20
+ 2035              	.LCFI159:
+ 2036              		.cfi_def_cfa_offset 4
+ 2037 0036 BD46     		mov	sp, r7
+ 2038              	.LCFI160:
+ 2039              		.cfi_def_cfa_register 13
+ 2040              		@ sp needed
+ 2041 0038 5DF8047B 		ldr	r7, [sp], #4
+ 2042              	.LCFI161:
+ 2043              		.cfi_restore 7
+ 2044              		.cfi_def_cfa_offset 0
+ 2045 003c 7047     		bx	lr
+ 2046              		.cfi_endproc
+ 2047              	.LFE27:
+ 2049              		.section	.text.__atomic_load_4,"ax",%progbits
+ 2050              		.align	1
+ 2051              		.global	__atomic_load_4
+ 2052              		.syntax unified
+ 2053              		.thumb
+ 2054              		.thumb_func
+ 2055              		.fpu fpv4-sp-d16
+ 2057              	__atomic_load_4:
+ 2058              	.LFB28:
+ 556:Src/libatomic.c **** #endif
+ 557:Src/libatomic.c **** 
+ 558:Src/libatomic.c **** 
+ 559:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I4	
+ 560:Src/libatomic.c **** ATOMIC_LOAD (4)
+ 2059              		.loc 1 560 1
+ 2060              		.cfi_startproc
+ 2061              		@ args = 0, pretend = 0, frame = 8
+ 2062              		@ frame_needed = 1, uses_anonymous_args = 0
+ARM GAS  /tmp/ccSDQVbU.s 			page 46
+
+
+ 2063              		@ link register save eliminated.
+ 2064 0000 80B4     		push	{r7}
+ 2065              	.LCFI162:
+ 2066              		.cfi_def_cfa_offset 4
+ 2067              		.cfi_offset 7, -4
+ 2068 0002 83B0     		sub	sp, sp, #12
+ 2069              	.LCFI163:
+ 2070              		.cfi_def_cfa_offset 16
+ 2071 0004 00AF     		add	r7, sp, #0
+ 2072              	.LCFI164:
+ 2073              		.cfi_def_cfa_register 7
+ 2074 0006 7860     		str	r0, [r7, #4]
+ 2075 0008 3960     		str	r1, [r7]
+ 2076              		.loc 1 560 1
+ 2077 000a 7B68     		ldr	r3, [r7, #4]
+ 2078 000c BFF35B8F 		dmb	ish
+ 2079 0010 1B68     		ldr	r3, [r3]
+ 2080 0012 BFF35B8F 		dmb	ish
+ 2081 0016 00BF     		nop
+ 2082 0018 1846     		mov	r0, r3
+ 2083 001a 0C37     		adds	r7, r7, #12
+ 2084              	.LCFI165:
+ 2085              		.cfi_def_cfa_offset 4
+ 2086 001c BD46     		mov	sp, r7
+ 2087              	.LCFI166:
+ 2088              		.cfi_def_cfa_register 13
+ 2089              		@ sp needed
+ 2090 001e 5DF8047B 		ldr	r7, [sp], #4
+ 2091              	.LCFI167:
+ 2092              		.cfi_restore 7
+ 2093              		.cfi_def_cfa_offset 0
+ 2094 0022 7047     		bx	lr
+ 2095              		.cfi_endproc
+ 2096              	.LFE28:
+ 2098              		.section	.text.__atomic_store_4,"ax",%progbits
+ 2099              		.align	1
+ 2100              		.global	__atomic_store_4
+ 2101              		.syntax unified
+ 2102              		.thumb
+ 2103              		.thumb_func
+ 2104              		.fpu fpv4-sp-d16
+ 2106              	__atomic_store_4:
+ 2107              	.LFB29:
+ 561:Src/libatomic.c **** ATOMIC_STORE (4)
+ 2108              		.loc 1 561 1
+ 2109              		.cfi_startproc
+ 2110              		@ args = 0, pretend = 0, frame = 16
+ 2111              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2112              		@ link register save eliminated.
+ 2113 0000 80B4     		push	{r7}
+ 2114              	.LCFI168:
+ 2115              		.cfi_def_cfa_offset 4
+ 2116              		.cfi_offset 7, -4
+ 2117 0002 85B0     		sub	sp, sp, #20
+ 2118              	.LCFI169:
+ 2119              		.cfi_def_cfa_offset 24
+ 2120 0004 00AF     		add	r7, sp, #0
+ARM GAS  /tmp/ccSDQVbU.s 			page 47
+
+
+ 2121              	.LCFI170:
+ 2122              		.cfi_def_cfa_register 7
+ 2123 0006 F860     		str	r0, [r7, #12]
+ 2124 0008 B960     		str	r1, [r7, #8]
+ 2125 000a 7A60     		str	r2, [r7, #4]
+ 2126              		.loc 1 561 1
+ 2127 000c FB68     		ldr	r3, [r7, #12]
+ 2128 000e BFF35B8F 		dmb	ish
+ 2129 0012 BA68     		ldr	r2, [r7, #8]
+ 2130 0014 1A60     		str	r2, [r3]
+ 2131 0016 BFF35B8F 		dmb	ish
+ 2132 001a 00BF     		nop
+ 2133 001c 1437     		adds	r7, r7, #20
+ 2134              	.LCFI171:
+ 2135              		.cfi_def_cfa_offset 4
+ 2136 001e BD46     		mov	sp, r7
+ 2137              	.LCFI172:
+ 2138              		.cfi_def_cfa_register 13
+ 2139              		@ sp needed
+ 2140 0020 5DF8047B 		ldr	r7, [sp], #4
+ 2141              	.LCFI173:
+ 2142              		.cfi_restore 7
+ 2143              		.cfi_def_cfa_offset 0
+ 2144 0024 7047     		bx	lr
+ 2145              		.cfi_endproc
+ 2146              	.LFE29:
+ 2148              		.section	.text.__atomic_exchange_4,"ax",%progbits
+ 2149              		.align	1
+ 2150              		.global	__atomic_exchange_4
+ 2151              		.syntax unified
+ 2152              		.thumb
+ 2153              		.thumb_func
+ 2154              		.fpu fpv4-sp-d16
+ 2156              	__atomic_exchange_4:
+ 2157              	.LFB30:
+ 562:Src/libatomic.c **** ATOMIC_EXCHANGE (4)
+ 2158              		.loc 1 562 1
+ 2159              		.cfi_startproc
+ 2160              		@ args = 0, pretend = 0, frame = 16
+ 2161              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2162              		@ link register save eliminated.
+ 2163 0000 80B4     		push	{r7}
+ 2164              	.LCFI174:
+ 2165              		.cfi_def_cfa_offset 4
+ 2166              		.cfi_offset 7, -4
+ 2167 0002 85B0     		sub	sp, sp, #20
+ 2168              	.LCFI175:
+ 2169              		.cfi_def_cfa_offset 24
+ 2170 0004 00AF     		add	r7, sp, #0
+ 2171              	.LCFI176:
+ 2172              		.cfi_def_cfa_register 7
+ 2173 0006 F860     		str	r0, [r7, #12]
+ 2174 0008 B960     		str	r1, [r7, #8]
+ 2175 000a 7A60     		str	r2, [r7, #4]
+ 2176              		.loc 1 562 1
+ 2177 000c FB68     		ldr	r3, [r7, #12]
+ 2178 000e BA68     		ldr	r2, [r7, #8]
+ARM GAS  /tmp/ccSDQVbU.s 			page 48
+
+
+ 2179 0010 BFF35B8F 		dmb	ish
+ 2180              	.L150:
+ 2181 0014 53E8001F 		ldrex	r1, [r3]
+ 2182 0018 43E80020 		strex	r0, r2, [r3]
+ 2183 001c 0028     		cmp	r0, #0
+ 2184 001e F9D1     		bne	.L150
+ 2185 0020 BFF35B8F 		dmb	ish
+ 2186 0024 00BF     		nop
+ 2187 0026 0B46     		mov	r3, r1
+ 2188 0028 1846     		mov	r0, r3
+ 2189 002a 1437     		adds	r7, r7, #20
+ 2190              	.LCFI177:
+ 2191              		.cfi_def_cfa_offset 4
+ 2192 002c BD46     		mov	sp, r7
+ 2193              	.LCFI178:
+ 2194              		.cfi_def_cfa_register 13
+ 2195              		@ sp needed
+ 2196 002e 5DF8047B 		ldr	r7, [sp], #4
+ 2197              	.LCFI179:
+ 2198              		.cfi_restore 7
+ 2199              		.cfi_def_cfa_offset 0
+ 2200 0032 7047     		bx	lr
+ 2201              		.cfi_endproc
+ 2202              	.LFE30:
+ 2204              		.section	.text.__atomic_fetch_add_4,"ax",%progbits
+ 2205              		.align	1
+ 2206              		.global	__atomic_fetch_add_4
+ 2207              		.syntax unified
+ 2208              		.thumb
+ 2209              		.thumb_func
+ 2210              		.fpu fpv4-sp-d16
+ 2212              	__atomic_fetch_add_4:
+ 2213              	.LFB31:
+ 563:Src/libatomic.c **** // ATOMIC_COMPARE_EXCHANGE (4)
+ 564:Src/libatomic.c **** ATOMIC_FETCH (4, add_, +)
+ 2214              		.loc 1 564 1
+ 2215              		.cfi_startproc
+ 2216              		@ args = 0, pretend = 0, frame = 16
+ 2217              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2218              		@ link register save eliminated.
+ 2219 0000 80B4     		push	{r7}
+ 2220              	.LCFI180:
+ 2221              		.cfi_def_cfa_offset 4
+ 2222              		.cfi_offset 7, -4
+ 2223 0002 85B0     		sub	sp, sp, #20
+ 2224              	.LCFI181:
+ 2225              		.cfi_def_cfa_offset 24
+ 2226 0004 00AF     		add	r7, sp, #0
+ 2227              	.LCFI182:
+ 2228              		.cfi_def_cfa_register 7
+ 2229 0006 F860     		str	r0, [r7, #12]
+ 2230 0008 B960     		str	r1, [r7, #8]
+ 2231 000a 7A60     		str	r2, [r7, #4]
+ 2232              		.loc 1 564 1
+ 2233 000c FB68     		ldr	r3, [r7, #12]
+ 2234 000e BA68     		ldr	r2, [r7, #8]
+ 2235 0010 BFF35B8F 		dmb	ish
+ARM GAS  /tmp/ccSDQVbU.s 			page 49
+
+
+ 2236              	.L153:
+ 2237 0014 53E8001F 		ldrex	r1, [r3]
+ 2238 0018 01EB0200 		add	r0, r1, r2
+ 2239 001c 43E8000C 		strex	ip, r0, [r3]
+ 2240 0020 BCF1000F 		cmp	ip, #0
+ 2241 0024 F6D1     		bne	.L153
+ 2242 0026 BFF35B8F 		dmb	ish
+ 2243 002a 0B46     		mov	r3, r1
+ 2244 002c 1846     		mov	r0, r3
+ 2245 002e 1437     		adds	r7, r7, #20
+ 2246              	.LCFI183:
+ 2247              		.cfi_def_cfa_offset 4
+ 2248 0030 BD46     		mov	sp, r7
+ 2249              	.LCFI184:
+ 2250              		.cfi_def_cfa_register 13
+ 2251              		@ sp needed
+ 2252 0032 5DF8047B 		ldr	r7, [sp], #4
+ 2253              	.LCFI185:
+ 2254              		.cfi_restore 7
+ 2255              		.cfi_def_cfa_offset 0
+ 2256 0036 7047     		bx	lr
+ 2257              		.cfi_endproc
+ 2258              	.LFE31:
+ 2260              		.section	.text.__atomic_fetch_sub_4,"ax",%progbits
+ 2261              		.align	1
+ 2262              		.global	__atomic_fetch_sub_4
+ 2263              		.syntax unified
+ 2264              		.thumb
+ 2265              		.thumb_func
+ 2266              		.fpu fpv4-sp-d16
+ 2268              	__atomic_fetch_sub_4:
+ 2269              	.LFB32:
+ 565:Src/libatomic.c **** ATOMIC_FETCH (4, sub_, -)
+ 2270              		.loc 1 565 1
+ 2271              		.cfi_startproc
+ 2272              		@ args = 0, pretend = 0, frame = 16
+ 2273              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2274              		@ link register save eliminated.
+ 2275 0000 80B4     		push	{r7}
+ 2276              	.LCFI186:
+ 2277              		.cfi_def_cfa_offset 4
+ 2278              		.cfi_offset 7, -4
+ 2279 0002 85B0     		sub	sp, sp, #20
+ 2280              	.LCFI187:
+ 2281              		.cfi_def_cfa_offset 24
+ 2282 0004 00AF     		add	r7, sp, #0
+ 2283              	.LCFI188:
+ 2284              		.cfi_def_cfa_register 7
+ 2285 0006 F860     		str	r0, [r7, #12]
+ 2286 0008 B960     		str	r1, [r7, #8]
+ 2287 000a 7A60     		str	r2, [r7, #4]
+ 2288              		.loc 1 565 1
+ 2289 000c FB68     		ldr	r3, [r7, #12]
+ 2290 000e BA68     		ldr	r2, [r7, #8]
+ 2291 0010 BFF35B8F 		dmb	ish
+ 2292              	.L156:
+ 2293 0014 53E8001F 		ldrex	r1, [r3]
+ARM GAS  /tmp/ccSDQVbU.s 			page 50
+
+
+ 2294 0018 A1EB0200 		sub	r0, r1, r2
+ 2295 001c 43E8000C 		strex	ip, r0, [r3]
+ 2296 0020 BCF1000F 		cmp	ip, #0
+ 2297 0024 F6D1     		bne	.L156
+ 2298 0026 BFF35B8F 		dmb	ish
+ 2299 002a 0B46     		mov	r3, r1
+ 2300 002c 1846     		mov	r0, r3
+ 2301 002e 1437     		adds	r7, r7, #20
+ 2302              	.LCFI189:
+ 2303              		.cfi_def_cfa_offset 4
+ 2304 0030 BD46     		mov	sp, r7
+ 2305              	.LCFI190:
+ 2306              		.cfi_def_cfa_register 13
+ 2307              		@ sp needed
+ 2308 0032 5DF8047B 		ldr	r7, [sp], #4
+ 2309              	.LCFI191:
+ 2310              		.cfi_restore 7
+ 2311              		.cfi_def_cfa_offset 0
+ 2312 0036 7047     		bx	lr
+ 2313              		.cfi_endproc
+ 2314              	.LFE32:
+ 2316              		.section	.text.__atomic_fetch_and_4,"ax",%progbits
+ 2317              		.align	1
+ 2318              		.global	__atomic_fetch_and_4
+ 2319              		.syntax unified
+ 2320              		.thumb
+ 2321              		.thumb_func
+ 2322              		.fpu fpv4-sp-d16
+ 2324              	__atomic_fetch_and_4:
+ 2325              	.LFB33:
+ 566:Src/libatomic.c **** ATOMIC_FETCH (4, and_, &)
+ 2326              		.loc 1 566 1
+ 2327              		.cfi_startproc
+ 2328              		@ args = 0, pretend = 0, frame = 16
+ 2329              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2330              		@ link register save eliminated.
+ 2331 0000 80B4     		push	{r7}
+ 2332              	.LCFI192:
+ 2333              		.cfi_def_cfa_offset 4
+ 2334              		.cfi_offset 7, -4
+ 2335 0002 85B0     		sub	sp, sp, #20
+ 2336              	.LCFI193:
+ 2337              		.cfi_def_cfa_offset 24
+ 2338 0004 00AF     		add	r7, sp, #0
+ 2339              	.LCFI194:
+ 2340              		.cfi_def_cfa_register 7
+ 2341 0006 F860     		str	r0, [r7, #12]
+ 2342 0008 B960     		str	r1, [r7, #8]
+ 2343 000a 7A60     		str	r2, [r7, #4]
+ 2344              		.loc 1 566 1
+ 2345 000c FB68     		ldr	r3, [r7, #12]
+ 2346 000e BA68     		ldr	r2, [r7, #8]
+ 2347 0010 BFF35B8F 		dmb	ish
+ 2348              	.L159:
+ 2349 0014 53E8001F 		ldrex	r1, [r3]
+ 2350 0018 01EA0200 		and	r0, r1, r2
+ 2351 001c 43E8000C 		strex	ip, r0, [r3]
+ARM GAS  /tmp/ccSDQVbU.s 			page 51
+
+
+ 2352 0020 BCF1000F 		cmp	ip, #0
+ 2353 0024 F6D1     		bne	.L159
+ 2354 0026 BFF35B8F 		dmb	ish
+ 2355 002a 0B46     		mov	r3, r1
+ 2356 002c 1846     		mov	r0, r3
+ 2357 002e 1437     		adds	r7, r7, #20
+ 2358              	.LCFI195:
+ 2359              		.cfi_def_cfa_offset 4
+ 2360 0030 BD46     		mov	sp, r7
+ 2361              	.LCFI196:
+ 2362              		.cfi_def_cfa_register 13
+ 2363              		@ sp needed
+ 2364 0032 5DF8047B 		ldr	r7, [sp], #4
+ 2365              	.LCFI197:
+ 2366              		.cfi_restore 7
+ 2367              		.cfi_def_cfa_offset 0
+ 2368 0036 7047     		bx	lr
+ 2369              		.cfi_endproc
+ 2370              	.LFE33:
+ 2372              		.section	.text.__atomic_fetch_or_4,"ax",%progbits
+ 2373              		.align	1
+ 2374              		.global	__atomic_fetch_or_4
+ 2375              		.syntax unified
+ 2376              		.thumb
+ 2377              		.thumb_func
+ 2378              		.fpu fpv4-sp-d16
+ 2380              	__atomic_fetch_or_4:
+ 2381              	.LFB34:
+ 567:Src/libatomic.c **** ATOMIC_FETCH (4, or_, |)
+ 2382              		.loc 1 567 1
+ 2383              		.cfi_startproc
+ 2384              		@ args = 0, pretend = 0, frame = 16
+ 2385              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2386              		@ link register save eliminated.
+ 2387 0000 80B4     		push	{r7}
+ 2388              	.LCFI198:
+ 2389              		.cfi_def_cfa_offset 4
+ 2390              		.cfi_offset 7, -4
+ 2391 0002 85B0     		sub	sp, sp, #20
+ 2392              	.LCFI199:
+ 2393              		.cfi_def_cfa_offset 24
+ 2394 0004 00AF     		add	r7, sp, #0
+ 2395              	.LCFI200:
+ 2396              		.cfi_def_cfa_register 7
+ 2397 0006 F860     		str	r0, [r7, #12]
+ 2398 0008 B960     		str	r1, [r7, #8]
+ 2399 000a 7A60     		str	r2, [r7, #4]
+ 2400              		.loc 1 567 1
+ 2401 000c FB68     		ldr	r3, [r7, #12]
+ 2402 000e BA68     		ldr	r2, [r7, #8]
+ 2403 0010 BFF35B8F 		dmb	ish
+ 2404              	.L162:
+ 2405 0014 53E8001F 		ldrex	r1, [r3]
+ 2406 0018 41EA0200 		orr	r0, r1, r2
+ 2407 001c 43E8000C 		strex	ip, r0, [r3]
+ 2408 0020 BCF1000F 		cmp	ip, #0
+ 2409 0024 F6D1     		bne	.L162
+ARM GAS  /tmp/ccSDQVbU.s 			page 52
+
+
+ 2410 0026 BFF35B8F 		dmb	ish
+ 2411 002a 0B46     		mov	r3, r1
+ 2412 002c 1846     		mov	r0, r3
+ 2413 002e 1437     		adds	r7, r7, #20
+ 2414              	.LCFI201:
+ 2415              		.cfi_def_cfa_offset 4
+ 2416 0030 BD46     		mov	sp, r7
+ 2417              	.LCFI202:
+ 2418              		.cfi_def_cfa_register 13
+ 2419              		@ sp needed
+ 2420 0032 5DF8047B 		ldr	r7, [sp], #4
+ 2421              	.LCFI203:
+ 2422              		.cfi_restore 7
+ 2423              		.cfi_def_cfa_offset 0
+ 2424 0036 7047     		bx	lr
+ 2425              		.cfi_endproc
+ 2426              	.LFE34:
+ 2428              		.section	.text.__atomic_fetch_xor_4,"ax",%progbits
+ 2429              		.align	1
+ 2430              		.global	__atomic_fetch_xor_4
+ 2431              		.syntax unified
+ 2432              		.thumb
+ 2433              		.thumb_func
+ 2434              		.fpu fpv4-sp-d16
+ 2436              	__atomic_fetch_xor_4:
+ 2437              	.LFB35:
+ 568:Src/libatomic.c **** ATOMIC_FETCH (4, xor_, ^)
+ 2438              		.loc 1 568 1
+ 2439              		.cfi_startproc
+ 2440              		@ args = 0, pretend = 0, frame = 16
+ 2441              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2442              		@ link register save eliminated.
+ 2443 0000 80B4     		push	{r7}
+ 2444              	.LCFI204:
+ 2445              		.cfi_def_cfa_offset 4
+ 2446              		.cfi_offset 7, -4
+ 2447 0002 85B0     		sub	sp, sp, #20
+ 2448              	.LCFI205:
+ 2449              		.cfi_def_cfa_offset 24
+ 2450 0004 00AF     		add	r7, sp, #0
+ 2451              	.LCFI206:
+ 2452              		.cfi_def_cfa_register 7
+ 2453 0006 F860     		str	r0, [r7, #12]
+ 2454 0008 B960     		str	r1, [r7, #8]
+ 2455 000a 7A60     		str	r2, [r7, #4]
+ 2456              		.loc 1 568 1
+ 2457 000c FB68     		ldr	r3, [r7, #12]
+ 2458 000e BA68     		ldr	r2, [r7, #8]
+ 2459 0010 BFF35B8F 		dmb	ish
+ 2460              	.L165:
+ 2461 0014 53E8001F 		ldrex	r1, [r3]
+ 2462 0018 81EA0200 		eor	r0, r1, r2
+ 2463 001c 43E8000C 		strex	ip, r0, [r3]
+ 2464 0020 BCF1000F 		cmp	ip, #0
+ 2465 0024 F6D1     		bne	.L165
+ 2466 0026 BFF35B8F 		dmb	ish
+ 2467 002a 0B46     		mov	r3, r1
+ARM GAS  /tmp/ccSDQVbU.s 			page 53
+
+
+ 2468 002c 1846     		mov	r0, r3
+ 2469 002e 1437     		adds	r7, r7, #20
+ 2470              	.LCFI207:
+ 2471              		.cfi_def_cfa_offset 4
+ 2472 0030 BD46     		mov	sp, r7
+ 2473              	.LCFI208:
+ 2474              		.cfi_def_cfa_register 13
+ 2475              		@ sp needed
+ 2476 0032 5DF8047B 		ldr	r7, [sp], #4
+ 2477              	.LCFI209:
+ 2478              		.cfi_restore 7
+ 2479              		.cfi_def_cfa_offset 0
+ 2480 0036 7047     		bx	lr
+ 2481              		.cfi_endproc
+ 2482              	.LFE35:
+ 2484              		.section	.text.__atomic_fetch_nand_4,"ax",%progbits
+ 2485              		.align	1
+ 2486              		.global	__atomic_fetch_nand_4
+ 2487              		.syntax unified
+ 2488              		.thumb
+ 2489              		.thumb_func
+ 2490              		.fpu fpv4-sp-d16
+ 2492              	__atomic_fetch_nand_4:
+ 2493              	.LFB36:
+ 569:Src/libatomic.c **** ATOMIC_FETCH_NAND (4)
+ 2494              		.loc 1 569 1
+ 2495              		.cfi_startproc
+ 2496              		@ args = 0, pretend = 0, frame = 16
+ 2497              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2498              		@ link register save eliminated.
+ 2499 0000 80B4     		push	{r7}
+ 2500              	.LCFI210:
+ 2501              		.cfi_def_cfa_offset 4
+ 2502              		.cfi_offset 7, -4
+ 2503 0002 85B0     		sub	sp, sp, #20
+ 2504              	.LCFI211:
+ 2505              		.cfi_def_cfa_offset 24
+ 2506 0004 00AF     		add	r7, sp, #0
+ 2507              	.LCFI212:
+ 2508              		.cfi_def_cfa_register 7
+ 2509 0006 F860     		str	r0, [r7, #12]
+ 2510 0008 B960     		str	r1, [r7, #8]
+ 2511 000a 7A60     		str	r2, [r7, #4]
+ 2512              		.loc 1 569 1
+ 2513 000c FB68     		ldr	r3, [r7, #12]
+ 2514 000e BA68     		ldr	r2, [r7, #8]
+ 2515 0010 BFF35B8F 		dmb	ish
+ 2516              	.L168:
+ 2517 0014 53E8001F 		ldrex	r1, [r3]
+ 2518 0018 01EA0200 		and	r0, r1, r2
+ 2519 001c 6FEA0000 		mvn	r0, r0
+ 2520 0020 43E8000C 		strex	ip, r0, [r3]
+ 2521 0024 BCF1000F 		cmp	ip, #0
+ 2522 0028 F4D1     		bne	.L168
+ 2523 002a BFF35B8F 		dmb	ish
+ 2524 002e 0B46     		mov	r3, r1
+ 2525 0030 1846     		mov	r0, r3
+ARM GAS  /tmp/ccSDQVbU.s 			page 54
+
+
+ 2526 0032 1437     		adds	r7, r7, #20
+ 2527              	.LCFI213:
+ 2528              		.cfi_def_cfa_offset 4
+ 2529 0034 BD46     		mov	sp, r7
+ 2530              	.LCFI214:
+ 2531              		.cfi_def_cfa_register 13
+ 2532              		@ sp needed
+ 2533 0036 5DF8047B 		ldr	r7, [sp], #4
+ 2534              	.LCFI215:
+ 2535              		.cfi_restore 7
+ 2536              		.cfi_def_cfa_offset 0
+ 2537 003a 7047     		bx	lr
+ 2538              		.cfi_endproc
+ 2539              	.LFE36:
+ 2541              		.section	.text.__atomic_load_8,"ax",%progbits
+ 2542              		.align	1
+ 2543              		.global	__atomic_load_8
+ 2544              		.syntax unified
+ 2545              		.thumb
+ 2546              		.thumb_func
+ 2547              		.fpu fpv4-sp-d16
+ 2549              	__atomic_load_8:
+ 2550              	.LFB37:
+ 570:Src/libatomic.c **** #endif
+ 571:Src/libatomic.c **** 
+ 572:Src/libatomic.c **** 
+ 573:Src/libatomic.c **** #if __LIBATOMIC_SUPPORTS_I8	
+ 574:Src/libatomic.c **** ATOMIC_LOAD (8)
+ 2551              		.loc 1 574 1
+ 2552              		.cfi_startproc
+ 2553              		@ args = 0, pretend = 0, frame = 16
+ 2554              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2555 0000 90B5     		push	{r4, r7, lr}
+ 2556              	.LCFI216:
+ 2557              		.cfi_def_cfa_offset 12
+ 2558              		.cfi_offset 4, -12
+ 2559              		.cfi_offset 7, -8
+ 2560              		.cfi_offset 14, -4
+ 2561 0002 85B0     		sub	sp, sp, #20
+ 2562              	.LCFI217:
+ 2563              		.cfi_def_cfa_offset 32
+ 2564 0004 00AF     		add	r7, sp, #0
+ 2565              	.LCFI218:
+ 2566              		.cfi_def_cfa_register 7
+ 2567 0006 7860     		str	r0, [r7, #4]
+ 2568 0008 3960     		str	r1, [r7]
+ 2569              		.loc 1 574 1
+ 2570 000a 3968     		ldr	r1, [r7]
+ 2571 000c 7868     		ldr	r0, [r7, #4]
+ 2572 000e FFF7FEFF 		bl	get_lock
+ 2573 0012 7B68     		ldr	r3, [r7, #4]
+ 2574 0014 D3E90034 		ldrd	r3, [r3]
+ 2575 0018 C7E90234 		strd	r3, [r7, #8]
+ 2576 001c 3968     		ldr	r1, [r7]
+ 2577 001e 7868     		ldr	r0, [r7, #4]
+ 2578 0020 FFF7FEFF 		bl	free_lock
+ 2579 0024 D7E90234 		ldrd	r3, [r7, #8]
+ARM GAS  /tmp/ccSDQVbU.s 			page 55
+
+
+ 2580 0028 1846     		mov	r0, r3
+ 2581 002a 2146     		mov	r1, r4
+ 2582 002c 1437     		adds	r7, r7, #20
+ 2583              	.LCFI219:
+ 2584              		.cfi_def_cfa_offset 12
+ 2585 002e BD46     		mov	sp, r7
+ 2586              	.LCFI220:
+ 2587              		.cfi_def_cfa_register 13
+ 2588              		@ sp needed
+ 2589 0030 90BD     		pop	{r4, r7, pc}
+ 2590              		.cfi_endproc
+ 2591              	.LFE37:
+ 2593              		.section	.text.__atomic_store_8,"ax",%progbits
+ 2594              		.align	1
+ 2595              		.global	__atomic_store_8
+ 2596              		.syntax unified
+ 2597              		.thumb
+ 2598              		.thumb_func
+ 2599              		.fpu fpv4-sp-d16
+ 2601              	__atomic_store_8:
+ 2602              	.LFB38:
+ 575:Src/libatomic.c **** ATOMIC_STORE (8)
+ 2603              		.loc 1 575 1
+ 2604              		.cfi_startproc
+ 2605              		@ args = 4, pretend = 0, frame = 16
+ 2606              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2607 0000 90B5     		push	{r4, r7, lr}
+ 2608              	.LCFI221:
+ 2609              		.cfi_def_cfa_offset 12
+ 2610              		.cfi_offset 4, -12
+ 2611              		.cfi_offset 7, -8
+ 2612              		.cfi_offset 14, -4
+ 2613 0002 85B0     		sub	sp, sp, #20
+ 2614              	.LCFI222:
+ 2615              		.cfi_def_cfa_offset 32
+ 2616 0004 00AF     		add	r7, sp, #0
+ 2617              	.LCFI223:
+ 2618              		.cfi_def_cfa_register 7
+ 2619 0006 F860     		str	r0, [r7, #12]
+ 2620 0008 C7E90023 		strd	r2, [r7]
+ 2621              		.loc 1 575 1
+ 2622 000c 396A     		ldr	r1, [r7, #32]
+ 2623 000e F868     		ldr	r0, [r7, #12]
+ 2624 0010 FFF7FEFF 		bl	get_lock
+ 2625 0014 FA68     		ldr	r2, [r7, #12]
+ 2626 0016 D7E90034 		ldrd	r3, [r7]
+ 2627 001a C2E90034 		strd	r3, [r2]
+ 2628 001e 396A     		ldr	r1, [r7, #32]
+ 2629 0020 F868     		ldr	r0, [r7, #12]
+ 2630 0022 FFF7FEFF 		bl	free_lock
+ 2631 0026 00BF     		nop
+ 2632 0028 1437     		adds	r7, r7, #20
+ 2633              	.LCFI224:
+ 2634              		.cfi_def_cfa_offset 12
+ 2635 002a BD46     		mov	sp, r7
+ 2636              	.LCFI225:
+ 2637              		.cfi_def_cfa_register 13
+ARM GAS  /tmp/ccSDQVbU.s 			page 56
+
+
+ 2638              		@ sp needed
+ 2639 002c 90BD     		pop	{r4, r7, pc}
+ 2640              		.cfi_endproc
+ 2641              	.LFE38:
+ 2643              		.section	.text.__atomic_exchange_8,"ax",%progbits
+ 2644              		.align	1
+ 2645              		.global	__atomic_exchange_8
+ 2646              		.syntax unified
+ 2647              		.thumb
+ 2648              		.thumb_func
+ 2649              		.fpu fpv4-sp-d16
+ 2651              	__atomic_exchange_8:
+ 2652              	.LFB39:
+ 576:Src/libatomic.c **** ATOMIC_EXCHANGE (8)
+ 2653              		.loc 1 576 1
+ 2654              		.cfi_startproc
+ 2655              		@ args = 4, pretend = 0, frame = 24
+ 2656              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2657 0000 90B5     		push	{r4, r7, lr}
+ 2658              	.LCFI226:
+ 2659              		.cfi_def_cfa_offset 12
+ 2660              		.cfi_offset 4, -12
+ 2661              		.cfi_offset 7, -8
+ 2662              		.cfi_offset 14, -4
+ 2663 0002 87B0     		sub	sp, sp, #28
+ 2664              	.LCFI227:
+ 2665              		.cfi_def_cfa_offset 40
+ 2666 0004 00AF     		add	r7, sp, #0
+ 2667              	.LCFI228:
+ 2668              		.cfi_def_cfa_register 7
+ 2669 0006 F860     		str	r0, [r7, #12]
+ 2670 0008 C7E90023 		strd	r2, [r7]
+ 2671              		.loc 1 576 1
+ 2672 000c B96A     		ldr	r1, [r7, #40]
+ 2673 000e F868     		ldr	r0, [r7, #12]
+ 2674 0010 FFF7FEFF 		bl	get_lock
+ 2675 0014 FB68     		ldr	r3, [r7, #12]
+ 2676 0016 D3E90034 		ldrd	r3, [r3]
+ 2677 001a C7E90434 		strd	r3, [r7, #16]
+ 2678 001e FA68     		ldr	r2, [r7, #12]
+ 2679 0020 D7E90034 		ldrd	r3, [r7]
+ 2680 0024 C2E90034 		strd	r3, [r2]
+ 2681 0028 B96A     		ldr	r1, [r7, #40]
+ 2682 002a F868     		ldr	r0, [r7, #12]
+ 2683 002c FFF7FEFF 		bl	free_lock
+ 2684 0030 D7E90434 		ldrd	r3, [r7, #16]
+ 2685 0034 1846     		mov	r0, r3
+ 2686 0036 2146     		mov	r1, r4
+ 2687 0038 1C37     		adds	r7, r7, #28
+ 2688              	.LCFI229:
+ 2689              		.cfi_def_cfa_offset 12
+ 2690 003a BD46     		mov	sp, r7
+ 2691              	.LCFI230:
+ 2692              		.cfi_def_cfa_register 13
+ 2693              		@ sp needed
+ 2694 003c 90BD     		pop	{r4, r7, pc}
+ 2695              		.cfi_endproc
+ARM GAS  /tmp/ccSDQVbU.s 			page 57
+
+
+ 2696              	.LFE39:
+ 2698              		.section	.text.__atomic_fetch_add_8,"ax",%progbits
+ 2699              		.align	1
+ 2700              		.global	__atomic_fetch_add_8
+ 2701              		.syntax unified
+ 2702              		.thumb
+ 2703              		.thumb_func
+ 2704              		.fpu fpv4-sp-d16
+ 2706              	__atomic_fetch_add_8:
+ 2707              	.LFB40:
+ 577:Src/libatomic.c **** // ATOMIC_COMPARE_EXCHANGE (8)
+ 578:Src/libatomic.c **** ATOMIC_FETCH (8, add_, +)
+ 2708              		.loc 1 578 1
+ 2709              		.cfi_startproc
+ 2710              		@ args = 4, pretend = 0, frame = 24
+ 2711              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2712 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 2713              	.LCFI231:
+ 2714              		.cfi_def_cfa_offset 20
+ 2715              		.cfi_offset 4, -20
+ 2716              		.cfi_offset 5, -16
+ 2717              		.cfi_offset 6, -12
+ 2718              		.cfi_offset 7, -8
+ 2719              		.cfi_offset 14, -4
+ 2720 0002 87B0     		sub	sp, sp, #28
+ 2721              	.LCFI232:
+ 2722              		.cfi_def_cfa_offset 48
+ 2723 0004 00AF     		add	r7, sp, #0
+ 2724              	.LCFI233:
+ 2725              		.cfi_def_cfa_register 7
+ 2726 0006 F860     		str	r0, [r7, #12]
+ 2727 0008 C7E90023 		strd	r2, [r7]
+ 2728              		.loc 1 578 1
+ 2729 000c 396B     		ldr	r1, [r7, #48]
+ 2730 000e F868     		ldr	r0, [r7, #12]
+ 2731 0010 FFF7FEFF 		bl	get_lock
+ 2732 0014 FB68     		ldr	r3, [r7, #12]
+ 2733 0016 D3E90034 		ldrd	r3, [r3]
+ 2734 001a C7E90434 		strd	r3, [r7, #16]
+ 2735 001e FB68     		ldr	r3, [r7, #12]
+ 2736 0020 D3E90012 		ldrd	r1, [r3]
+ 2737 0024 D7E90034 		ldrd	r3, [r7]
+ 2738 0028 CD18     		adds	r5, r1, r3
+ 2739 002a 42EB0406 		adc	r6, r2, r4
+ 2740 002e FB68     		ldr	r3, [r7, #12]
+ 2741 0030 C3E90056 		strd	r5, [r3]
+ 2742 0034 396B     		ldr	r1, [r7, #48]
+ 2743 0036 F868     		ldr	r0, [r7, #12]
+ 2744 0038 FFF7FEFF 		bl	free_lock
+ 2745 003c D7E90434 		ldrd	r3, [r7, #16]
+ 2746 0040 1846     		mov	r0, r3
+ 2747 0042 2146     		mov	r1, r4
+ 2748 0044 1C37     		adds	r7, r7, #28
+ 2749              	.LCFI234:
+ 2750              		.cfi_def_cfa_offset 20
+ 2751 0046 BD46     		mov	sp, r7
+ 2752              	.LCFI235:
+ARM GAS  /tmp/ccSDQVbU.s 			page 58
+
+
+ 2753              		.cfi_def_cfa_register 13
+ 2754              		@ sp needed
+ 2755 0048 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 2756              		.cfi_endproc
+ 2757              	.LFE40:
+ 2759              		.section	.text.__atomic_fetch_sub_8,"ax",%progbits
+ 2760              		.align	1
+ 2761              		.global	__atomic_fetch_sub_8
+ 2762              		.syntax unified
+ 2763              		.thumb
+ 2764              		.thumb_func
+ 2765              		.fpu fpv4-sp-d16
+ 2767              	__atomic_fetch_sub_8:
+ 2768              	.LFB41:
+ 579:Src/libatomic.c **** ATOMIC_FETCH (8, sub_, -)
+ 2769              		.loc 1 579 1
+ 2770              		.cfi_startproc
+ 2771              		@ args = 4, pretend = 0, frame = 24
+ 2772              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2773 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 2774              	.LCFI236:
+ 2775              		.cfi_def_cfa_offset 20
+ 2776              		.cfi_offset 4, -20
+ 2777              		.cfi_offset 5, -16
+ 2778              		.cfi_offset 6, -12
+ 2779              		.cfi_offset 7, -8
+ 2780              		.cfi_offset 14, -4
+ 2781 0002 87B0     		sub	sp, sp, #28
+ 2782              	.LCFI237:
+ 2783              		.cfi_def_cfa_offset 48
+ 2784 0004 00AF     		add	r7, sp, #0
+ 2785              	.LCFI238:
+ 2786              		.cfi_def_cfa_register 7
+ 2787 0006 F860     		str	r0, [r7, #12]
+ 2788 0008 C7E90023 		strd	r2, [r7]
+ 2789              		.loc 1 579 1
+ 2790 000c 396B     		ldr	r1, [r7, #48]
+ 2791 000e F868     		ldr	r0, [r7, #12]
+ 2792 0010 FFF7FEFF 		bl	get_lock
+ 2793 0014 FB68     		ldr	r3, [r7, #12]
+ 2794 0016 D3E90034 		ldrd	r3, [r3]
+ 2795 001a C7E90434 		strd	r3, [r7, #16]
+ 2796 001e FB68     		ldr	r3, [r7, #12]
+ 2797 0020 D3E90012 		ldrd	r1, [r3]
+ 2798 0024 D7E90034 		ldrd	r3, [r7]
+ 2799 0028 CD1A     		subs	r5, r1, r3
+ 2800 002a 62EB0406 		sbc	r6, r2, r4
+ 2801 002e FB68     		ldr	r3, [r7, #12]
+ 2802 0030 C3E90056 		strd	r5, [r3]
+ 2803 0034 396B     		ldr	r1, [r7, #48]
+ 2804 0036 F868     		ldr	r0, [r7, #12]
+ 2805 0038 FFF7FEFF 		bl	free_lock
+ 2806 003c D7E90434 		ldrd	r3, [r7, #16]
+ 2807 0040 1846     		mov	r0, r3
+ 2808 0042 2146     		mov	r1, r4
+ 2809 0044 1C37     		adds	r7, r7, #28
+ 2810              	.LCFI239:
+ARM GAS  /tmp/ccSDQVbU.s 			page 59
+
+
+ 2811              		.cfi_def_cfa_offset 20
+ 2812 0046 BD46     		mov	sp, r7
+ 2813              	.LCFI240:
+ 2814              		.cfi_def_cfa_register 13
+ 2815              		@ sp needed
+ 2816 0048 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 2817              		.cfi_endproc
+ 2818              	.LFE41:
+ 2820              		.section	.text.__atomic_fetch_and_8,"ax",%progbits
+ 2821              		.align	1
+ 2822              		.global	__atomic_fetch_and_8
+ 2823              		.syntax unified
+ 2824              		.thumb
+ 2825              		.thumb_func
+ 2826              		.fpu fpv4-sp-d16
+ 2828              	__atomic_fetch_and_8:
+ 2829              	.LFB42:
+ 580:Src/libatomic.c **** ATOMIC_FETCH (8, and_, &)
+ 2830              		.loc 1 580 1
+ 2831              		.cfi_startproc
+ 2832              		@ args = 4, pretend = 0, frame = 24
+ 2833              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2834 0000 B0B5     		push	{r4, r5, r7, lr}
+ 2835              	.LCFI241:
+ 2836              		.cfi_def_cfa_offset 16
+ 2837              		.cfi_offset 4, -16
+ 2838              		.cfi_offset 5, -12
+ 2839              		.cfi_offset 7, -8
+ 2840              		.cfi_offset 14, -4
+ 2841 0002 86B0     		sub	sp, sp, #24
+ 2842              	.LCFI242:
+ 2843              		.cfi_def_cfa_offset 40
+ 2844 0004 00AF     		add	r7, sp, #0
+ 2845              	.LCFI243:
+ 2846              		.cfi_def_cfa_register 7
+ 2847 0006 F860     		str	r0, [r7, #12]
+ 2848 0008 C7E90023 		strd	r2, [r7]
+ 2849              		.loc 1 580 1
+ 2850 000c B96A     		ldr	r1, [r7, #40]
+ 2851 000e F868     		ldr	r0, [r7, #12]
+ 2852 0010 FFF7FEFF 		bl	get_lock
+ 2853 0014 FB68     		ldr	r3, [r7, #12]
+ 2854 0016 D3E90023 		ldrd	r2, [r3]
+ 2855 001a C7E90423 		strd	r2, [r7, #16]
+ 2856 001e FB68     		ldr	r3, [r7, #12]
+ 2857 0020 D3E90001 		ldrd	r0, [r3]
+ 2858 0024 D7E90023 		ldrd	r2, [r7]
+ 2859 0028 00EA0204 		and	r4, r0, r2
+ 2860 002c 01EA0305 		and	r5, r1, r3
+ 2861 0030 FB68     		ldr	r3, [r7, #12]
+ 2862 0032 C3E90045 		strd	r4, [r3]
+ 2863 0036 B96A     		ldr	r1, [r7, #40]
+ 2864 0038 F868     		ldr	r0, [r7, #12]
+ 2865 003a FFF7FEFF 		bl	free_lock
+ 2866 003e D7E90434 		ldrd	r3, [r7, #16]
+ 2867 0042 1846     		mov	r0, r3
+ 2868 0044 2146     		mov	r1, r4
+ARM GAS  /tmp/ccSDQVbU.s 			page 60
+
+
+ 2869 0046 1837     		adds	r7, r7, #24
+ 2870              	.LCFI244:
+ 2871              		.cfi_def_cfa_offset 16
+ 2872 0048 BD46     		mov	sp, r7
+ 2873              	.LCFI245:
+ 2874              		.cfi_def_cfa_register 13
+ 2875              		@ sp needed
+ 2876 004a B0BD     		pop	{r4, r5, r7, pc}
+ 2877              		.cfi_endproc
+ 2878              	.LFE42:
+ 2880              		.section	.text.__atomic_fetch_or_8,"ax",%progbits
+ 2881              		.align	1
+ 2882              		.global	__atomic_fetch_or_8
+ 2883              		.syntax unified
+ 2884              		.thumb
+ 2885              		.thumb_func
+ 2886              		.fpu fpv4-sp-d16
+ 2888              	__atomic_fetch_or_8:
+ 2889              	.LFB43:
+ 581:Src/libatomic.c **** ATOMIC_FETCH (8, or_, |)
+ 2890              		.loc 1 581 1
+ 2891              		.cfi_startproc
+ 2892              		@ args = 4, pretend = 0, frame = 24
+ 2893              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2894 0000 B0B5     		push	{r4, r5, r7, lr}
+ 2895              	.LCFI246:
+ 2896              		.cfi_def_cfa_offset 16
+ 2897              		.cfi_offset 4, -16
+ 2898              		.cfi_offset 5, -12
+ 2899              		.cfi_offset 7, -8
+ 2900              		.cfi_offset 14, -4
+ 2901 0002 86B0     		sub	sp, sp, #24
+ 2902              	.LCFI247:
+ 2903              		.cfi_def_cfa_offset 40
+ 2904 0004 00AF     		add	r7, sp, #0
+ 2905              	.LCFI248:
+ 2906              		.cfi_def_cfa_register 7
+ 2907 0006 F860     		str	r0, [r7, #12]
+ 2908 0008 C7E90023 		strd	r2, [r7]
+ 2909              		.loc 1 581 1
+ 2910 000c B96A     		ldr	r1, [r7, #40]
+ 2911 000e F868     		ldr	r0, [r7, #12]
+ 2912 0010 FFF7FEFF 		bl	get_lock
+ 2913 0014 FB68     		ldr	r3, [r7, #12]
+ 2914 0016 D3E90023 		ldrd	r2, [r3]
+ 2915 001a C7E90423 		strd	r2, [r7, #16]
+ 2916 001e FB68     		ldr	r3, [r7, #12]
+ 2917 0020 D3E90001 		ldrd	r0, [r3]
+ 2918 0024 D7E90023 		ldrd	r2, [r7]
+ 2919 0028 40EA0204 		orr	r4, r0, r2
+ 2920 002c 41EA0305 		orr	r5, r1, r3
+ 2921 0030 FB68     		ldr	r3, [r7, #12]
+ 2922 0032 C3E90045 		strd	r4, [r3]
+ 2923 0036 B96A     		ldr	r1, [r7, #40]
+ 2924 0038 F868     		ldr	r0, [r7, #12]
+ 2925 003a FFF7FEFF 		bl	free_lock
+ 2926 003e D7E90434 		ldrd	r3, [r7, #16]
+ARM GAS  /tmp/ccSDQVbU.s 			page 61
+
+
+ 2927 0042 1846     		mov	r0, r3
+ 2928 0044 2146     		mov	r1, r4
+ 2929 0046 1837     		adds	r7, r7, #24
+ 2930              	.LCFI249:
+ 2931              		.cfi_def_cfa_offset 16
+ 2932 0048 BD46     		mov	sp, r7
+ 2933              	.LCFI250:
+ 2934              		.cfi_def_cfa_register 13
+ 2935              		@ sp needed
+ 2936 004a B0BD     		pop	{r4, r5, r7, pc}
+ 2937              		.cfi_endproc
+ 2938              	.LFE43:
+ 2940              		.section	.text.__atomic_fetch_xor_8,"ax",%progbits
+ 2941              		.align	1
+ 2942              		.global	__atomic_fetch_xor_8
+ 2943              		.syntax unified
+ 2944              		.thumb
+ 2945              		.thumb_func
+ 2946              		.fpu fpv4-sp-d16
+ 2948              	__atomic_fetch_xor_8:
+ 2949              	.LFB44:
+ 582:Src/libatomic.c **** ATOMIC_FETCH (8, xor_, ^)
+ 2950              		.loc 1 582 1
+ 2951              		.cfi_startproc
+ 2952              		@ args = 4, pretend = 0, frame = 24
+ 2953              		@ frame_needed = 1, uses_anonymous_args = 0
+ 2954 0000 B0B5     		push	{r4, r5, r7, lr}
+ 2955              	.LCFI251:
+ 2956              		.cfi_def_cfa_offset 16
+ 2957              		.cfi_offset 4, -16
+ 2958              		.cfi_offset 5, -12
+ 2959              		.cfi_offset 7, -8
+ 2960              		.cfi_offset 14, -4
+ 2961 0002 86B0     		sub	sp, sp, #24
+ 2962              	.LCFI252:
+ 2963              		.cfi_def_cfa_offset 40
+ 2964 0004 00AF     		add	r7, sp, #0
+ 2965              	.LCFI253:
+ 2966              		.cfi_def_cfa_register 7
+ 2967 0006 F860     		str	r0, [r7, #12]
+ 2968 0008 C7E90023 		strd	r2, [r7]
+ 2969              		.loc 1 582 1
+ 2970 000c B96A     		ldr	r1, [r7, #40]
+ 2971 000e F868     		ldr	r0, [r7, #12]
+ 2972 0010 FFF7FEFF 		bl	get_lock
+ 2973 0014 FB68     		ldr	r3, [r7, #12]
+ 2974 0016 D3E90023 		ldrd	r2, [r3]
+ 2975 001a C7E90423 		strd	r2, [r7, #16]
+ 2976 001e FB68     		ldr	r3, [r7, #12]
+ 2977 0020 D3E90001 		ldrd	r0, [r3]
+ 2978 0024 D7E90023 		ldrd	r2, [r7]
+ 2979 0028 80EA0204 		eor	r4, r0, r2
+ 2980 002c 81EA0305 		eor	r5, r1, r3
+ 2981 0030 FB68     		ldr	r3, [r7, #12]
+ 2982 0032 C3E90045 		strd	r4, [r3]
+ 2983 0036 B96A     		ldr	r1, [r7, #40]
+ 2984 0038 F868     		ldr	r0, [r7, #12]
+ARM GAS  /tmp/ccSDQVbU.s 			page 62
+
+
+ 2985 003a FFF7FEFF 		bl	free_lock
+ 2986 003e D7E90434 		ldrd	r3, [r7, #16]
+ 2987 0042 1846     		mov	r0, r3
+ 2988 0044 2146     		mov	r1, r4
+ 2989 0046 1837     		adds	r7, r7, #24
+ 2990              	.LCFI254:
+ 2991              		.cfi_def_cfa_offset 16
+ 2992 0048 BD46     		mov	sp, r7
+ 2993              	.LCFI255:
+ 2994              		.cfi_def_cfa_register 13
+ 2995              		@ sp needed
+ 2996 004a B0BD     		pop	{r4, r5, r7, pc}
+ 2997              		.cfi_endproc
+ 2998              	.LFE44:
+ 3000              		.section	.text.__atomic_fetch_nand_8,"ax",%progbits
+ 3001              		.align	1
+ 3002              		.global	__atomic_fetch_nand_8
+ 3003              		.syntax unified
+ 3004              		.thumb
+ 3005              		.thumb_func
+ 3006              		.fpu fpv4-sp-d16
+ 3008              	__atomic_fetch_nand_8:
+ 3009              	.LFB45:
+ 583:Src/libatomic.c **** ATOMIC_FETCH_NAND (8)
+ 3010              		.loc 1 583 1
+ 3011              		.cfi_startproc
+ 3012              		@ args = 4, pretend = 0, frame = 24
+ 3013              		@ frame_needed = 1, uses_anonymous_args = 0
+ 3014 0000 2DE9B043 		push	{r4, r5, r7, r8, r9, lr}
+ 3015              	.LCFI256:
+ 3016              		.cfi_def_cfa_offset 24
+ 3017              		.cfi_offset 4, -24
+ 3018              		.cfi_offset 5, -20
+ 3019              		.cfi_offset 7, -16
+ 3020              		.cfi_offset 8, -12
+ 3021              		.cfi_offset 9, -8
+ 3022              		.cfi_offset 14, -4
+ 3023 0004 86B0     		sub	sp, sp, #24
+ 3024              	.LCFI257:
+ 3025              		.cfi_def_cfa_offset 48
+ 3026 0006 00AF     		add	r7, sp, #0
+ 3027              	.LCFI258:
+ 3028              		.cfi_def_cfa_register 7
+ 3029 0008 F860     		str	r0, [r7, #12]
+ 3030 000a C7E90023 		strd	r2, [r7]
+ 3031              		.loc 1 583 1
+ 3032 000e 396B     		ldr	r1, [r7, #48]
+ 3033 0010 F868     		ldr	r0, [r7, #12]
+ 3034 0012 FFF7FEFF 		bl	get_lock
+ 3035 0016 FB68     		ldr	r3, [r7, #12]
+ 3036 0018 D3E90023 		ldrd	r2, [r3]
+ 3037 001c C7E90423 		strd	r2, [r7, #16]
+ 3038 0020 FB68     		ldr	r3, [r7, #12]
+ 3039 0022 D3E90001 		ldrd	r0, [r3]
+ 3040 0026 D7E90023 		ldrd	r2, [r7]
+ 3041 002a 00EA0204 		and	r4, r0, r2
+ 3042 002e 01EA0305 		and	r5, r1, r3
+ARM GAS  /tmp/ccSDQVbU.s 			page 63
+
+
+ 3043 0032 6FEA0408 		mvn	r8, r4
+ 3044 0036 6FEA0509 		mvn	r9, r5
+ 3045 003a FB68     		ldr	r3, [r7, #12]
+ 3046 003c C3E90089 		strd	r8, [r3]
+ 3047 0040 396B     		ldr	r1, [r7, #48]
+ 3048 0042 F868     		ldr	r0, [r7, #12]
+ 3049 0044 FFF7FEFF 		bl	free_lock
+ 3050 0048 D7E90434 		ldrd	r3, [r7, #16]
+ 3051 004c 1846     		mov	r0, r3
+ 3052 004e 2146     		mov	r1, r4
+ 3053 0050 1837     		adds	r7, r7, #24
+ 3054              	.LCFI259:
+ 3055              		.cfi_def_cfa_offset 24
+ 3056 0052 BD46     		mov	sp, r7
+ 3057              	.LCFI260:
+ 3058              		.cfi_def_cfa_register 13
+ 3059              		@ sp needed
+ 3060 0054 BDE8B083 		pop	{r4, r5, r7, r8, r9, pc}
+ 3061              		.cfi_endproc
+ 3062              	.LFE45:
+ 3064              		.section	.bss.flag_table.5961,"aw",%nobits
+ 3065              		.align	2
+ 3068              	flag_table.5961:
+ 3069 0000 00000000 		.space	16
+ 3069      00000000 
+ 3069      00000000 
+ 3069      00000000 
+ 3070              		.text
+ 3071              	.Letext0:
+ 3072              		.file 2 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/lib/gcc/arm-none-eabi/8.3.1/include/std
+ 3073              		.file 3 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/machine/_default_
+ 3074              		.file 4 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_types.h"
+ 3075              		.file 5 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/reent.h"
+ 3076              		.file 6 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/lock.h"
+ 3077              		.file 7 "/home/mip-laptop/uros_frtos_ws/firmware/toolchain/arm-none-eabi/include/sys/_stdint.h"
+ARM GAS  /tmp/ccSDQVbU.s 			page 64
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 libatomic.c
+     /tmp/ccSDQVbU.s:18     .text.__libatomic_flag_for_address:0000000000000000 $t
+     /tmp/ccSDQVbU.s:25     .text.__libatomic_flag_for_address:0000000000000000 __libatomic_flag_for_address
+     /tmp/ccSDQVbU.s:108    .text.__libatomic_flag_for_address:0000000000000058 $d
+     /tmp/ccSDQVbU.s:3068   .bss.flag_table.5961:0000000000000000 flag_table.5961
+     /tmp/ccSDQVbU.s:113    .text.maybe_release_fence:0000000000000000 $t
+     /tmp/ccSDQVbU.s:119    .text.maybe_release_fence:0000000000000000 maybe_release_fence
+     /tmp/ccSDQVbU.s:183    .text.maybe_acquire_fence:0000000000000000 $t
+     /tmp/ccSDQVbU.s:189    .text.maybe_acquire_fence:0000000000000000 maybe_acquire_fence
+     /tmp/ccSDQVbU.s:253    .text.get_lock:0000000000000000 $t
+     /tmp/ccSDQVbU.s:259    .text.get_lock:0000000000000000 get_lock
+     /tmp/ccSDQVbU.s:316    .text.free_lock:0000000000000000 $t
+     /tmp/ccSDQVbU.s:322    .text.free_lock:0000000000000000 free_lock
+     /tmp/ccSDQVbU.s:367    .text.__atomic_is_lock_free:0000000000000000 $t
+     /tmp/ccSDQVbU.s:374    .text.__atomic_is_lock_free:0000000000000000 __atomic_is_lock_free
+     /tmp/ccSDQVbU.s:402    .text.__atomic_is_lock_free:0000000000000018 $d
+     /tmp/ccSDQVbU.s:418    .text.__atomic_is_lock_free:0000000000000058 $t
+     /tmp/ccSDQVbU.s:463    .text.__atomic_load:0000000000000000 $t
+     /tmp/ccSDQVbU.s:470    .text.__atomic_load:0000000000000000 __atomic_load
+     /tmp/ccSDQVbU.s:500    .text.__atomic_load:000000000000001c $d
+     /tmp/ccSDQVbU.s:508    .text.__atomic_load:000000000000003c $t
+     /tmp/ccSDQVbU.s:580    .text.__atomic_store:0000000000000000 $t
+     /tmp/ccSDQVbU.s:587    .text.__atomic_store:0000000000000000 __atomic_store
+     /tmp/ccSDQVbU.s:617    .text.__atomic_store:000000000000001c $d
+     /tmp/ccSDQVbU.s:625    .text.__atomic_store:000000000000003c $t
+     /tmp/ccSDQVbU.s:696    .text.__atomic_exchange:0000000000000000 $t
+     /tmp/ccSDQVbU.s:703    .text.__atomic_exchange:0000000000000000 __atomic_exchange
+     /tmp/ccSDQVbU.s:733    .text.__atomic_exchange:000000000000001c $d
+     /tmp/ccSDQVbU.s:741    .text.__atomic_exchange:000000000000003c $t
+     /tmp/ccSDQVbU.s:843    .text.__atomic_compare_exchange:0000000000000000 $t
+     /tmp/ccSDQVbU.s:850    .text.__atomic_compare_exchange:0000000000000000 __atomic_compare_exchange
+     /tmp/ccSDQVbU.s:880    .text.__atomic_compare_exchange:000000000000001c $d
+     /tmp/ccSDQVbU.s:888    .text.__atomic_compare_exchange:000000000000003c $t
+     /tmp/ccSDQVbU.s:1048   .text.__atomic_load_1:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1055   .text.__atomic_load_1:0000000000000000 __atomic_load_1
+     /tmp/ccSDQVbU.s:1098   .text.__atomic_store_1:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1105   .text.__atomic_store_1:0000000000000000 __atomic_store_1
+     /tmp/ccSDQVbU.s:1149   .text.__atomic_exchange_1:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1156   .text.__atomic_exchange_1:0000000000000000 __atomic_exchange_1
+     /tmp/ccSDQVbU.s:1206   .text.__atomic_fetch_add_1:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1213   .text.__atomic_fetch_add_1:0000000000000000 __atomic_fetch_add_1
+     /tmp/ccSDQVbU.s:1263   .text.__atomic_fetch_sub_1:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1270   .text.__atomic_fetch_sub_1:0000000000000000 __atomic_fetch_sub_1
+     /tmp/ccSDQVbU.s:1320   .text.__atomic_fetch_and_1:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1327   .text.__atomic_fetch_and_1:0000000000000000 __atomic_fetch_and_1
+     /tmp/ccSDQVbU.s:1377   .text.__atomic_fetch_or_1:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1384   .text.__atomic_fetch_or_1:0000000000000000 __atomic_fetch_or_1
+     /tmp/ccSDQVbU.s:1434   .text.__atomic_fetch_xor_1:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1441   .text.__atomic_fetch_xor_1:0000000000000000 __atomic_fetch_xor_1
+     /tmp/ccSDQVbU.s:1491   .text.__atomic_fetch_nand_1:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1498   .text.__atomic_fetch_nand_1:0000000000000000 __atomic_fetch_nand_1
+     /tmp/ccSDQVbU.s:1549   .text.__atomic_load_2:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1556   .text.__atomic_load_2:0000000000000000 __atomic_load_2
+     /tmp/ccSDQVbU.s:1599   .text.__atomic_store_2:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1606   .text.__atomic_store_2:0000000000000000 __atomic_store_2
+     /tmp/ccSDQVbU.s:1650   .text.__atomic_exchange_2:0000000000000000 $t
+ARM GAS  /tmp/ccSDQVbU.s 			page 65
+
+
+     /tmp/ccSDQVbU.s:1657   .text.__atomic_exchange_2:0000000000000000 __atomic_exchange_2
+     /tmp/ccSDQVbU.s:1707   .text.__atomic_fetch_add_2:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1714   .text.__atomic_fetch_add_2:0000000000000000 __atomic_fetch_add_2
+     /tmp/ccSDQVbU.s:1764   .text.__atomic_fetch_sub_2:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1771   .text.__atomic_fetch_sub_2:0000000000000000 __atomic_fetch_sub_2
+     /tmp/ccSDQVbU.s:1821   .text.__atomic_fetch_and_2:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1828   .text.__atomic_fetch_and_2:0000000000000000 __atomic_fetch_and_2
+     /tmp/ccSDQVbU.s:1878   .text.__atomic_fetch_or_2:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1885   .text.__atomic_fetch_or_2:0000000000000000 __atomic_fetch_or_2
+     /tmp/ccSDQVbU.s:1935   .text.__atomic_fetch_xor_2:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1942   .text.__atomic_fetch_xor_2:0000000000000000 __atomic_fetch_xor_2
+     /tmp/ccSDQVbU.s:1992   .text.__atomic_fetch_nand_2:0000000000000000 $t
+     /tmp/ccSDQVbU.s:1999   .text.__atomic_fetch_nand_2:0000000000000000 __atomic_fetch_nand_2
+     /tmp/ccSDQVbU.s:2050   .text.__atomic_load_4:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2057   .text.__atomic_load_4:0000000000000000 __atomic_load_4
+     /tmp/ccSDQVbU.s:2099   .text.__atomic_store_4:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2106   .text.__atomic_store_4:0000000000000000 __atomic_store_4
+     /tmp/ccSDQVbU.s:2149   .text.__atomic_exchange_4:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2156   .text.__atomic_exchange_4:0000000000000000 __atomic_exchange_4
+     /tmp/ccSDQVbU.s:2205   .text.__atomic_fetch_add_4:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2212   .text.__atomic_fetch_add_4:0000000000000000 __atomic_fetch_add_4
+     /tmp/ccSDQVbU.s:2261   .text.__atomic_fetch_sub_4:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2268   .text.__atomic_fetch_sub_4:0000000000000000 __atomic_fetch_sub_4
+     /tmp/ccSDQVbU.s:2317   .text.__atomic_fetch_and_4:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2324   .text.__atomic_fetch_and_4:0000000000000000 __atomic_fetch_and_4
+     /tmp/ccSDQVbU.s:2373   .text.__atomic_fetch_or_4:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2380   .text.__atomic_fetch_or_4:0000000000000000 __atomic_fetch_or_4
+     /tmp/ccSDQVbU.s:2429   .text.__atomic_fetch_xor_4:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2436   .text.__atomic_fetch_xor_4:0000000000000000 __atomic_fetch_xor_4
+     /tmp/ccSDQVbU.s:2485   .text.__atomic_fetch_nand_4:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2492   .text.__atomic_fetch_nand_4:0000000000000000 __atomic_fetch_nand_4
+     /tmp/ccSDQVbU.s:2542   .text.__atomic_load_8:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2549   .text.__atomic_load_8:0000000000000000 __atomic_load_8
+     /tmp/ccSDQVbU.s:2594   .text.__atomic_store_8:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2601   .text.__atomic_store_8:0000000000000000 __atomic_store_8
+     /tmp/ccSDQVbU.s:2644   .text.__atomic_exchange_8:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2651   .text.__atomic_exchange_8:0000000000000000 __atomic_exchange_8
+     /tmp/ccSDQVbU.s:2699   .text.__atomic_fetch_add_8:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2706   .text.__atomic_fetch_add_8:0000000000000000 __atomic_fetch_add_8
+     /tmp/ccSDQVbU.s:2760   .text.__atomic_fetch_sub_8:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2767   .text.__atomic_fetch_sub_8:0000000000000000 __atomic_fetch_sub_8
+     /tmp/ccSDQVbU.s:2821   .text.__atomic_fetch_and_8:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2828   .text.__atomic_fetch_and_8:0000000000000000 __atomic_fetch_and_8
+     /tmp/ccSDQVbU.s:2881   .text.__atomic_fetch_or_8:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2888   .text.__atomic_fetch_or_8:0000000000000000 __atomic_fetch_or_8
+     /tmp/ccSDQVbU.s:2941   .text.__atomic_fetch_xor_8:0000000000000000 $t
+     /tmp/ccSDQVbU.s:2948   .text.__atomic_fetch_xor_8:0000000000000000 __atomic_fetch_xor_8
+     /tmp/ccSDQVbU.s:3001   .text.__atomic_fetch_nand_8:0000000000000000 $t
+     /tmp/ccSDQVbU.s:3008   .text.__atomic_fetch_nand_8:0000000000000000 __atomic_fetch_nand_8
+     /tmp/ccSDQVbU.s:3065   .bss.flag_table.5961:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+memcpy
+memcmp
