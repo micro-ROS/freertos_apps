@@ -2,8 +2,8 @@
 Changelog for package micro_ros_freertos_apps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2022-05-25)
+------------------
 * Fix pvPortRealloc (`#99 <https://github.com/micro-ROS/freertos_apps/issues/99>`_)
 * Fix Olimex support for UDP (`#85 <https://github.com/micro-ROS/freertos_apps/issues/85>`_) (`#87 <https://github.com/micro-ROS/freertos_apps/issues/87>`_)
 * Update crazyflie demo with TF publish (`#81 <https://github.com/micro-ROS/freertos_apps/issues/81>`_)
