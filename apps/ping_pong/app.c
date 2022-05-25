@@ -80,6 +80,16 @@ void pong_subscription_callback(const void * msgin)
 
 void appMain(void *argument)
 {
+
+#if defined(CONFIG_ESP_WIFI_AP)
+	volatile bool *is_sta = (volatile bool *) argument;
+	// Wait for a connection to the wifi AP. The first to connect 
+	// is considered the agent
+	while (! *is_sta) {
+		usleep(100000);
+	}
+#endif // if defined(CONFIG_ESP_WIFI_AP)
+
 	rcl_allocator_t allocator = rcl_get_default_allocator();
 	rclc_support_t support;
 

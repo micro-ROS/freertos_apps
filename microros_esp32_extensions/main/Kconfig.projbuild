@@ -34,6 +34,12 @@ endmenu
 
 menu "WiFi Configuration"
 
+    config ESP_WIFI_AP
+        bool "Wifi act as Access point"
+        default false
+        help
+	  The ESP32 is acting as an access point 
+
     config ESP_WIFI_SSID
         string "WiFi SSID"
         default "myssid"
@@ -45,6 +51,12 @@ menu "WiFi Configuration"
         default "mypassword"
         help
             WiFi password (WPA or WPA2) for the example to use.
+
+    config ESP_WIFI_CHANNEL
+        int "Wifi channel 1 to 13"
+	range 1 11
+        default 8
+        help
 
     config ESP_MAXIMUM_RETRY
         int "Maximum retry"
