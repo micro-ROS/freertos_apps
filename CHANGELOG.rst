@@ -2,8 +2,8 @@
 Changelog for package micro_ros_freertos_apps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2022-05-25)
+------------------
 * Fix pvPortRealloc (`#99 <https://github.com/micro-ROS/freertos_apps/issues/99>`_) (`#101 <https://github.com/micro-ROS/freertos_apps/issues/101>`_)
 * Fix Olimex support for UDP (`#85 <https://github.com/micro-ROS/freertos_apps/issues/85>`_)
 * multichange tool (`#75 <https://github.com/micro-ROS/freertos_apps/issues/75>`_) (`#76 <https://github.com/micro-ROS/freertos_apps/issues/76>`_)
