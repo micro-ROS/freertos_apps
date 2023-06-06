@@ -2,6 +2,9 @@
 Changelog for package micro_ros_freertos_apps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.0.0 (2022-05-25)
 ------------------
 * Fix Rolling includes (`#102 <https://github.com/micro-ROS/freertos_apps/issues/102>`_)
