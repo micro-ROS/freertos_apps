@@ -2,6 +2,9 @@
 Changelog for package micro_ros_freertos_apps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 5.0.0 (2023-06-06)
 ------------------
 
