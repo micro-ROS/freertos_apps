@@ -1,5 +1,5 @@
 file(GLOB SRCS ${UROS_APP_FOLDER}/*.c*)
-idf_component_register(SRCS main.c microros_transports.c ${SRCS}
+idf_component_register(SRCS main.c microros_transports.c nanosleep.c ${SRCS}
                        INCLUDE_DIRS ".")
 
 set(EXTENSIONS_DIR ${COMPONENT_DIR}/..)
@@ -63,3 +63,7 @@ set_directory_properties( PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
 add_dependencies(${COMPONENT_LIB} microros)
 target_include_directories(${COMPONENT_LIB} PUBLIC microros)
 target_link_libraries(${COMPONENT_LIB} PUBLIC microros)
+
+# libmicroros.a is linked after this component, so force the linker to pull
+# in the nanosleep() shim before rclc references it
+target_link_libraries(${COMPONENT_LIB} INTERFACE "-u nanosleep")
